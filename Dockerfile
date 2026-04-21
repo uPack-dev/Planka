@@ -8,7 +8,8 @@ WORKDIR /app
 
 COPY server .
 
-RUN  npm install \
+# Убрано "npm install npm --global"
+RUN npm install \
   && npm run build \
   && npm prune --production
 
@@ -19,11 +20,11 @@ WORKDIR /app
 
 COPY client .
 
-RUN npm install npm --global \
-  && npm install --omit=dev \
+# Убрано глобальное обновление npm и флаги --omit=dev / --ignore-scripts
+RUN npm install \
   && INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true npm run build
 
-# Stage 3: Final image
+# Stage 3: Final image (этот этап остаётся без изменений)
 FROM node:22-alpine
 
 RUN apk -U upgrade \
