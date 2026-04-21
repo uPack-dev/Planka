@@ -20,7 +20,7 @@ WORKDIR /app
 COPY client .
 
 RUN npm install npm --global \
-  && npm install --omit=dev --ignore-scripts \
+  && npm install --omit=dev \
   && INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true npm run build
 
 # Stage 3: Final image
