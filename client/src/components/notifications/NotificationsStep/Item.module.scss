@@ -5,7 +5,7 @@
 
 :global(#app) {
   .author {
-    color: var(--glass-text-primary);
+    color: #17394d;
     font-weight: bold;
   }
 
@@ -22,7 +22,7 @@
     width: 20px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: #e9e9e9;
     }
   }
 
@@ -39,7 +39,7 @@
   }
 
   .date {
-    color: var(--glass-text-secondary);
+    color: #6b808c;
     font-size: 12px;
   }
 
@@ -47,7 +47,7 @@
     padding: 12px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: #f0f0f0;
     }
   }
 }

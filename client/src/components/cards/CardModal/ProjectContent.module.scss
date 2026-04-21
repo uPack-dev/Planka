@@ -5,26 +5,23 @@
 
 :global(#app) {
   .actionButton {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    box-shadow: none;
-    color: var(--glass-text-secondary);
+    background: #ebeef0;
+    box-shadow: 0 1px 0 0 rgba(9, 30, 66, 0.13);
+    color: #444;
     margin-top: 8px;
     padding: 6px 8px 6px 18px;
     text-align: left;
-    transition: all 0.2s ease;
+    transition: background 85ms ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.15);
-      box-shadow: none;
-      color: var(--glass-text-primary);
+      background: #dfe3e6;
+      box-shadow: 0 1px 0 0 rgba(9, 30, 66, 0.25);
+      color: #4c4c4c;
     }
   }
 
   .actionIcon {
-    color: var(--glass-text-secondary);
+    color: #17394d;
     margin-right: 8px;
   }
 
@@ -41,7 +38,7 @@
   }
 
   .actionsTitle {
-    color: var(--glass-text-muted);
+    color: #8c8c8c;
     font-size: 12px;
     font-weight: normal;
     letter-spacing: 0.04em;
@@ -104,31 +101,31 @@
   }
 
   .dueDate {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    color: var(--glass-text-secondary);
+    background: rgba(9, 30, 66, 0.04);
+    border: none;
+    border-radius: 3px;
+    color: #6b808c;
     cursor: pointer;
     line-height: 20px;
     outline: none;
     padding: 6px 14px;
     text-align: left;
     text-decoration: underline;
-    transition: all 0.2s ease;
+    transition: background 0.3s ease;
     vertical-align: top;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: var(--glass-text-primary);
+      background: rgba(9, 30, 66, 0.08);
+      color: #17394d;
     }
   }
 
   .descriptionButton {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
+    background: rgba(9, 30, 66, 0.04);
+    border: none;
+    border-radius: 3px;
     display: block;
-    color: var(--glass-text-secondary);
+    color: #6b808c;
     cursor: pointer;
     min-height: 54px;
     outline: none;
@@ -139,8 +136,8 @@
     width: 100%;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: var(--glass-text-primary);
+      background: rgba(9, 30, 66, 0.08);
+      color: #092d42;
     }
   }
 
@@ -150,10 +147,9 @@
   }
 
   .draftChip {
-    background: rgba(255, 200, 50, 0.15);
-    border: 1px solid rgba(255, 200, 50, 0.25);
-    border-radius: 6px;
-    color: rgba(255, 220, 100, 0.9);
+    background: #f1eee2;
+    border-radius: 3px;
+    color: rgba(0, 0, 0, 0.87);
     font-size: 14px;
     font-weight: normal;
     margin-left: 8px;
@@ -163,7 +159,6 @@
   .editButton {
     background: transparent;
     box-shadow: none;
-    color: var(--glass-text-secondary);
     line-height: 28px;
     margin: 0;
     min-height: auto;
@@ -175,8 +170,7 @@
     width: 28px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.10);
-      color: var(--glass-text-primary);
+      background: rgba(9, 30, 66, 0.08);
     }
   }
 
@@ -185,11 +179,10 @@
   }
 
   .headerTitle {
-    color: var(--glass-text-primary);
+    color: #17394d;
     font-size: 20px;
     font-weight: bold;
     line-height: 24px;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     word-wrap: break-word;
   }
 
@@ -211,15 +204,15 @@
 
   .list {
     align-items: center;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    color: var(--glass-text-secondary);
+    background: rgba(9, 30, 66, 0.04);
+    border: none;
+    border-radius: 3px;
+    color: #6b808c;
     display: flex;
     line-height: 20px;
     outline: none;
     padding: 6px 12px;
-    transition: all 0.2s ease;
+    transition: background 0.3s ease;
   }
 
   .listButton {
@@ -234,8 +227,8 @@
   }
 
   .listHoverable:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: var(--glass-text-primary);
+    background: rgba(9, 30, 66, 0.08);
+    color: #17394d;
   }
 
   .listIcon {
@@ -247,7 +240,7 @@
   }
 
   .moduleHeader {
-    color: var(--glass-text-primary);
+    color: #17394d;
     font-size: 16px;
     font-weight: bold;
     line-height: 1.5;
@@ -257,7 +250,7 @@
   }
 
   .moduleIcon {
-    color: var(--glass-text-secondary);
+    color: #17394d;
     font-size: 17px;
     height: 32px;
     left: -40px;
@@ -276,17 +269,17 @@
   .moreActionsButton {
     background: transparent;
     box-shadow: none;
-    color: var(--glass-text-secondary);
+    color: #6b808c;
     font-weight: normal;
     margin-top: 8px;
     padding: 6px 8px 6px 18px;
     text-align: left;
     text-decoration: underline;
-    transition: all 0.2s ease;
+    transition: none;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--glass-text-primary);
+      background: rgba(9, 30, 66, 0.08);
+      color: #092d42;
     }
   }
 
@@ -316,7 +309,7 @@
   }
 
   .text {
-    color: var(--glass-text-muted);
+    color: #6b808c;
     font-size: 12px;
     font-weight: bold;
     letter-spacing: 0.3px;
@@ -330,16 +323,8 @@
   }
 
   .wrapper {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid var(--glass-modal-border);
-    border-radius: 16px;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background: #f5f6f7;
+    border-radius: 4px;
     margin: 0;
-
-    @supports (backdrop-filter: blur(1px)) {
-      background: var(--glass-modal-bg);
-      backdrop-filter: blur(var(--glass-modal-blur));
-      -webkit-backdrop-filter: blur(var(--glass-modal-blur));
-    }
   }
 }

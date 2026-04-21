@@ -15,7 +15,6 @@ import { useClosableModal } from '../../../hooks';
 import UsersPane from './UsersPane';
 import SmtpPane from './SmtpPane';
 import WebhooksPane from './WebhooksPane';
-import AppearancePane from './AppearancePane';
 
 import styles from './AdministrationModal.module.scss';
 
@@ -57,10 +56,6 @@ const AdministrationModal = React.memo(() => {
       context: 'title',
     }),
     render: () => <WebhooksPane />,
-  });
-  panes.push({
-    menuItem: 'Appearance',
-    render: () => <AppearancePane />,
   });
 
   const isUsersPaneActive = activeTabIndex === 0;

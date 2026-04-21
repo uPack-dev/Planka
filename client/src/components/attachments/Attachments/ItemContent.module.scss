@@ -14,7 +14,6 @@
   .editButton {
     background: transparent;
     box-shadow: none;
-    color: var(--glass-text-secondary);
     line-height: 28px;
     margin: 0;
     min-height: auto;
@@ -26,20 +25,19 @@
     width: 28px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.10);
-      color: var(--glass-text-primary);
+      background: rgba(9, 30, 66, 0.08);
     }
   }
 
   .information {
     display: block;
-    color: var(--glass-text-secondary);
+    color: #6b808c;
     line-height: 20px;
     margin-bottom: 6px;
   }
 
   .name {
-    color: var(--glass-text-primary);
+    color: #17394d;
     font-size: 14px;
     font-weight: bold;
     line-height: 20px;
@@ -49,7 +47,7 @@
   .option {
     background: none;
     border: none;
-    color: var(--glass-text-secondary);
+    color: #6b808c;
     cursor: pointer;
     outline: none;
     padding: 0;
@@ -59,7 +57,7 @@
     }
 
     &:hover {
-      color: var(--glass-text-primary);
+      color: #172b4d;
     }
   }
 
@@ -73,14 +71,14 @@
 
   .options {
     display: block;
-    color: var(--glass-text-secondary);
+    color: #6b808c;
     line-height: 20px;
   }
 
   .thumbnail {
     align-items: center;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
+    background: rgba(9, 30, 66, 0.04);
+    border-radius: 3px;
     display: flex;
     height: 80px;
     justify-content: center;
@@ -91,7 +89,7 @@
   }
 
   .thumbnailExtension {
-    color: var(--glass-text-secondary);
+    color: #5e6c84;
     display: block;
     font-size: 18px;
     font-weight: bold;
@@ -117,7 +115,7 @@
 
     &:hover {
       .details {
-        background: rgba(255, 255, 255, 0.04);
+        background: rgba(9, 30, 66, 0.04);
       }
 
       .editButton {
@@ -127,6 +125,6 @@
   }
 
   .wrapperSubmitting {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(9, 30, 66, 0.04);
   }
 }

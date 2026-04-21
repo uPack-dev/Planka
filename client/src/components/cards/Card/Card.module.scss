@@ -7,9 +7,9 @@
   .actionsButton {
     background: none;
     box-shadow: none;
-    border-radius: 6px;
+    border-radius: 3px;
     box-sizing: content-box;
-    color: var(--glass-text-secondary);
+    color: #798d99;
     display: inline-block;
     margin: 0;
     min-height: auto;
@@ -24,8 +24,8 @@
     z-index: 1000;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: var(--glass-text-primary);
+      background: #ebeef0;
+      color: #516b7a;
     }
   }
 
@@ -49,29 +49,15 @@
   }
 
   .wrapper {
-    background: rgba(255, 255, 255, 0.65);
-    border-radius: var(--glass-card-radius);
-    box-shadow: var(--glass-card-shadow);
-    border: 1px solid var(--glass-card-border);
+    background: #fff;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 #ccc;
     overflow: hidden;
     position: relative;
-    transition: all 0.2s ease;
-
-    @supports (backdrop-filter: blur(1px)) {
-      background: var(--glass-card-bg);
-      backdrop-filter: blur(var(--glass-card-blur));
-      -webkit-backdrop-filter: blur(var(--glass-card-blur));
-    }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.75);
-      border-color: rgba(255, 255, 255, 0.20);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-      transform: translateY(-1px);
-
-      @supports (backdrop-filter: blur(1px)) {
-        background: rgba(255, 255, 255, 0.12);
-      }
+      background: #f5f6f7;
+      border-bottom-color: rgba(9, 30, 66, 0.25);
 
       .actionsButton {
         opacity: 1;

@@ -18,12 +18,12 @@
     width: 28px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.10);
+      background: rgba(9, 30, 66, 0.08);
     }
   }
 
   .moduleHeader {
-    color: var(--glass-text-primary);
+    color: #17394d;
     display: flex;
     font-size: 16px;
     font-weight: bold;
@@ -48,7 +48,7 @@
   }
 
   .moduleIcon {
-    color: var(--glass-text-secondary);
+    color: #17394d;
     font-size: 17px;
     height: 32px;
     left: -40px;

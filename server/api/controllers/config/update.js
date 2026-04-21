@@ -122,27 +122,6 @@ module.exports = {
       maxLength: 256,
       allowNull: true,
     },
-    loginLogoUrl: {
-      type: 'string',
-      isNotEmptyString: true,
-      allowNull: true,
-    },
-    loginAppName: {
-      type: 'string',
-      isNotEmptyString: true,
-      allowNull: true,
-    },
-    hidePoweredBy: {
-      type: 'boolean',
-    },
-    loginBackgroundUrl: {
-      type: 'string',
-      isNotEmptyString: true,
-      allowNull: true,
-    },
-    registrationEnabled: {
-      type: 'boolean',
-    },
   },
 
   async fn(inputs) {
@@ -157,11 +136,6 @@ module.exports = {
       'smtpUser',
       'smtpPassword',
       'smtpFrom',
-      'loginLogoUrl',
-      'loginAppName',
-      'hidePoweredBy',
-      'loginBackgroundUrl',
-      'registrationEnabled',
     ]);
 
     const config = await sails.helpers.config.updateMain.with({

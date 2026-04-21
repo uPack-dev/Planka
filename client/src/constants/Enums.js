@@ -47,10 +47,6 @@ export const ProjectBackgroundTypes = {
   IMAGE: 'image',
 };
 
-export const BoardBackgroundTypes = {
-  GRADIENT: 'gradient',
-};
-
 export const BoardViews = {
   KANBAN: 'kanban',
   GRID: 'grid',

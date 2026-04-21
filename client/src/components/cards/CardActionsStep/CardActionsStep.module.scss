@@ -10,7 +10,7 @@
   }
 
   .actionBarItem {
-    color: var(--glass-text-primary);
+    color: rgba(0, 0, 0, 0.87);
     cursor: pointer;
     display: flex;
     flex: 1;
@@ -21,12 +21,12 @@
     user-select: none;
 
     &:not(:last-child) {
-      border-right: 1px solid rgba(255, 255, 255, 0.10);
+      border-right: 1px solid #eee;
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--glass-text-primary);
+      background: rgba(0, 0, 0, 0.05);
+      color: rgba(0, 0, 0, 0.95);
     }
   }
 
@@ -40,7 +40,7 @@
   }
 
   .divider {
-    background: rgba(255, 255, 255, 0.10);
+    background: #eee;
     border: 0;
     height: 1px;
   }

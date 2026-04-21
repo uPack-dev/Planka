@@ -15,24 +15,24 @@
   }
 
   .field {
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    color: var(--glass-text-primary);
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 #ccc;
+    color: #333;
     outline: none;
     overflow: hidden;
     width: 100%;
 
     &:focus {
-      border-color: rgba(91, 164, 207, 0.6);
-      box-shadow: 0 0 4px rgba(91, 164, 207, 0.4);
+      border-color: #298fca;
+      box-shadow: 0 0 2px #298fca;
     }
   }
 
   .selectTypeButton {
     background: transparent;
     box-shadow: none;
-    color: var(--glass-text-secondary);
+    color: #6b808c;
     font-weight: normal;
     margin-left: auto;
     margin-right: 0;
@@ -43,8 +43,8 @@
     transition: none;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--glass-text-primary);
+      background: rgba(9, 30, 66, 0.08);
+      color: #092d42;
     }
   }
 
@@ -53,18 +53,10 @@
   }
 
   .wrapper {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid var(--glass-column-border);
-    border-radius: var(--glass-column-radius);
-    box-shadow: var(--glass-column-shadow);
+    background: #e2e4e6;
+    border-radius: 3px;
     padding: 4px;
     transition: opacity 40ms ease-in;
     width: 272px;
-
-    @supports (backdrop-filter: blur(1px)) {
-      background: var(--glass-column-bg);
-      backdrop-filter: blur(var(--glass-column-blur));
-      -webkit-backdrop-filter: blur(var(--glass-column-blur));
-    }
   }
 }

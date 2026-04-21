@@ -16,8 +16,7 @@
 }
 
 .content {
-  border-bottom: 1px solid var(--glass-popup-border, rgba(255, 255, 255, 0.12));
-  color: var(--glass-text-primary, rgba(255, 255, 255, 0.95));
+  border-bottom: 1px solid #eee;
   font-size: 14px;
   font-weight: normal;
   left: 0;

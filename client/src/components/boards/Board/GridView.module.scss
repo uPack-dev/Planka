@@ -5,12 +5,12 @@
 
 :global(#app) {
   .addCardButton {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid var(--glass-column-border);
-    border-radius: var(--glass-column-radius);
-    color: var(--glass-text-secondary);
+    background: rgba(0, 0, 0, 0.24);
+    border: none;
+    border-radius: 3px;
+    color: rgba(255, 255, 255, 0.72);
     cursor: pointer;
-    fill: var(--glass-text-secondary);
+    fill: rgba(255, 255, 255, 0.72);
     flex: 1;
     font-weight: normal;
     height: 42px;
@@ -18,27 +18,15 @@
     min-height: 42px;
     padding: 11px;
     text-align: left;
-    transition: all 0.2s ease;
-
-    @supports (backdrop-filter: blur(1px)) {
-      background: rgba(var(--glass-tint-rgb), 0.25);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
+    transition: background 85ms ease-in, opacity 40ms ease-in,
+      border-color 85ms ease-in;
 
     &:active {
       outline: none;
     }
 
     &:hover {
-      background: rgba(15, 23, 42, 0.90);
-      color: var(--glass-text-primary);
-      fill: var(--glass-text-primary);
-      border-color: rgba(255, 255, 255, 0.25);
-
-      @supports (backdrop-filter: blur(1px)) {
-        background: rgba(var(--glass-tint-rgb), 0.35);
-      }
+      background: rgba(0, 0, 0, 0.32);
     }
 
     &.paste {
@@ -65,17 +53,9 @@
   }
 
   .card {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid var(--glass-column-border);
-    border-radius: var(--glass-column-radius);
-    box-shadow: var(--glass-column-shadow);
+    background: rgba(223, 227, 230, 0.8);
+    border-radius: 3px;
     padding: 4px;
-
-    @supports (backdrop-filter: blur(1px)) {
-      background: var(--glass-column-bg);
-      backdrop-filter: blur(var(--glass-column-blur));
-      -webkit-backdrop-filter: blur(var(--glass-column-blur));
-    }
   }
 
   .loaderWrapper {
@@ -88,7 +68,7 @@
     width: 100%;
 
     @supports (-moz-appearance: none) {
-      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+      scrollbar-color: rgba(0, 0, 0, 0.32) rgba(0, 0, 0, 0.08);
     }
   }
 }

@@ -15,9 +15,9 @@
   }
 
   .wrapper {
-    background: rgba(255, 255, 255, 0.08);
+    background: #dce0e4;
     border-radius: 3px;
-    color: var(--glass-text-secondary);
+    color: #6a808b;
     display: inline-block;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -27,8 +27,8 @@
   }
 
   .wrapperHoverable:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: var(--glass-text-primary);
+    background: #d2d8dc;
+    color: #17394d;
   }
 
   /* Sizes */

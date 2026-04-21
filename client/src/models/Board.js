@@ -29,12 +29,6 @@ export default class extends BaseModel {
     name: attr(),
     defaultView: attr(),
     defaultCardType: attr(),
-    backgroundType: attr({
-      getDefault: () => null,
-    }),
-    backgroundGradient: attr({
-      getDefault: () => null,
-    }),
     limitCardTypesToDefaultOne: attr(),
     alwaysDisplayCardCreator: attr(),
     displayCardAges: attr(),

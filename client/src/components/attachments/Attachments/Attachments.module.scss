@@ -7,17 +7,17 @@
   .toggleButton {
     background: transparent;
     box-shadow: none;
-    color: var(--glass-text-secondary);
+    color: #6b808c;
     font-weight: normal;
     margin-top: 8px;
     padding: 6px 11px;
     text-align: left;
     text-decoration: underline;
-    transition: all 0.2s ease;
+    transition: none;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--glass-text-primary);
+      background: rgba(9, 30, 66, 0.08);
+      color: #092d42;
     }
   }
 }

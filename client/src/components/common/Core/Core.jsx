@@ -19,7 +19,6 @@ import AdministrationModal from '../AdministrationModal';
 import AboutModal from '../AboutModal';
 import UserSettingsModal from '../../users/UserSettingsModal';
 import ProjectBackground from '../../projects/ProjectBackground';
-import BoardBackground from '../../boards/BoardBackground';
 import AddProjectModal from '../../projects/AddProjectModal';
 
 const Core = React.memo(() => {
@@ -120,7 +119,6 @@ const Core = React.memo(() => {
         <>
           <Toaster />
           {project && project.backgroundType && <ProjectBackground />}
-          {board && board.backgroundType && <BoardBackground />}
           <Fixed />
           <Static />
           {modalNode}

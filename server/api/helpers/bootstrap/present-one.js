@@ -17,9 +17,6 @@ module.exports = {
     user: {
       type: 'ref',
     },
-    config: {
-      type: 'ref',
-    },
   },
 
   fn(inputs) {
@@ -38,14 +35,6 @@ module.exports = {
 
     if (sails.config.custom.demoMode) {
       data.isDemoMode = true;
-    }
-
-    if (inputs.config) {
-      data.loginLogoUrl = inputs.config.loginLogoUrl;
-      data.loginAppName = inputs.config.loginAppName;
-      data.hidePoweredBy = inputs.config.hidePoweredBy;
-      data.loginBackgroundUrl = inputs.config.loginBackgroundUrl;
-      data.registrationEnabled = inputs.config.registrationEnabled;
     }
 
     return data;
