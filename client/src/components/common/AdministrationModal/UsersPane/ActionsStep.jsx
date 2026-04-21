@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Icon, Menu } from 'semantic-ui-react';
-import { Popup } from '../../../../lib/custom-ui';
+import { FilePicker, Popup } from '../../../../lib/custom-ui';
 
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
@@ -90,6 +90,17 @@ const ActionsStep = React.memo(({ userId, onClose }) => {
 
     onClose();
   }, [userId, onClose, dispatch]);
+
+  const handleAvatarFileSelect = useCallback(
+    (file) => {
+      dispatch(
+        entryActions.updateUserAvatar(userId, {
+          file,
+        }),
+      );
+    },
+    [userId, dispatch],
+  );
 
   const handleDeleteConfirm = useCallback(() => {
     dispatch(entryActions.deleteUser(userId));
