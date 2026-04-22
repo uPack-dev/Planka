@@ -10,7 +10,7 @@ services:
     volumes:
       - ./server:/app
     ports:
-      - 1337:1337
+      - 1338:1337
     environment:
       - BASE_URL=http://localhost:1337
       - DATABASE_URL=postgresql://postgres@postgres/planka
@@ -38,10 +38,10 @@ services:
       # - DEFAULT_LANGUAGE=en-US
 
       # Do not comment out DEFAULT_ADMIN_EMAIL if you want to prevent this user from being edited/deleted
-      # - DEFAULT_ADMIN_EMAIL=demo@demo.demo
-      # - DEFAULT_ADMIN_PASSWORD=demo
-      # - DEFAULT_ADMIN_NAME=Demo Demo
-      # - DEFAULT_ADMIN_USERNAME=demo
+      - DEFAULT_ADMIN_EMAIL=demo@demo.demo
+      - DEFAULT_ADMIN_PASSWORD=demo
+      - DEFAULT_ADMIN_NAME=Demo Demo
+      - DEFAULT_ADMIN_USERNAME=demo
 
       # Set to true to show more detailed authentication error messages.
       # It should not be enabled without a rate limiter for security reasons.
@@ -111,7 +111,7 @@ services:
     volumes:
       - ./client:/app
     ports:
-      - 3000:3000
+      - 3001:3000
     environment:
       - PROXY_TARGET=http://planka-server:1337
 
