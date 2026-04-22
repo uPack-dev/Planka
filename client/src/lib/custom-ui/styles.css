@@ -849,13 +849,13 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  -webkit-transition: opacity 0.1s ease, background-color 0.1s ease,
+  -webkit-transition: opacity 0.1s ease, background-color 0.1s ease, border-color 0.1s ease,
     color 0.1s ease, background 0.1s ease, -webkit-box-shadow 0.1s ease;
-  transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease,
+  transition: opacity 0.1s ease, background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease,
     background 0.1s ease, -webkit-box-shadow 0.1s ease;
-  transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease,
+  transition: opacity 0.1s ease, background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease,
     box-shadow 0.1s ease, background 0.1s ease;
-  transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease,
+  transition: opacity 0.1s ease, background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease,
     box-shadow 0.1s ease, background 0.1s ease, -webkit-box-shadow 0.1s ease;
   will-change: "";
   -webkit-tap-highlight-color: transparent;
@@ -1821,8 +1821,14 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.labeled.icon.buttons > .button > .icon,
 .ui.labeled.icon.button > .icon {
-  top: 0em;
+  height: calc(100% - 8px);
+  rotate: -45deg;
+  top: 4px;
   left: 0em;
+  aspect-ratio: 1;
+  width: auto;
+  background-color: #275F88;
+  color: #fff;
 }
 
 /* Right Labeled */
@@ -1834,12 +1840,11 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui[class*="right labeled"].icon.button > .icon {
   left: auto;
-  right: 0em;
-  border-radius: 0px;
-  border-top-right-radius: inherit;
-  border-bottom-right-radius: inherit;
+  right: 4px;
+  border-radius: 50%;
   -webkit-box-shadow: 1px 0px 0px 0px transparent inset;
   box-shadow: 1px 0px 0px 0px transparent inset;
+  box-shadow: none !important;
 }
 
 .ui.labeled.icon.buttons > .button > .icon:before,
@@ -2805,21 +2810,21 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.blue.buttons .button:hover,
 .ui.blue.button:hover {
-  background-color: #1678c2;
+  background-color: #275F88;
   color: #ffffff;
   text-shadow: none;
 }
 
 .ui.blue.buttons .button:focus,
 .ui.blue.button:focus {
-  background-color: #0d71bb;
+  background-color: #275F88 ;
   color: #ffffff;
   text-shadow: none;
 }
 
 .ui.blue.buttons .button:active,
 .ui.blue.button:active {
-  background-color: #1a69a4;
+  background-color: #275F88;
   color: #ffffff;
   text-shadow: none;
 }
@@ -2845,17 +2850,17 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.basic.blue.buttons .button:hover,
 .ui.basic.blue.button:hover {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #1678c2 inset !important;
-  box-shadow: 0px 0px 0px 1px #1678c2 inset !important;
-  color: #1678c2 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #275F88 inset !important;
+  box-shadow: 0px 0px 0px 1px #275F88 inset !important;
+  color: #275F88 !important;
 }
 
 .ui.basic.blue.buttons .button:focus,
 .ui.basic.blue.button:focus {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #0d71bb inset !important;
-  box-shadow: 0px 0px 0px 1px #0d71bb inset !important;
-  color: #1678c2 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #275F88  inset !important;
+  box-shadow: 0px 0px 0px 1px #275F88  inset !important;
+  color: #275F88 !important;
 }
 
 .ui.basic.blue.buttons .active.button,
@@ -4546,8 +4551,10 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.primary.buttons .button,
 .ui.primary.button {
-  background-color: #2185d0;
-  color: #ffffff;
+  border: 2px solid transparent;
+  border-radius: 100vw;
+  background-color: #fff;
+  color: #275F88;
   text-shadow: none;
   background-image: none;
 }
@@ -4559,14 +4566,16 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.primary.buttons .button:hover,
 .ui.primary.button:hover {
-  background-color: #1678c2;
+  border-color: #fff;
+  background-color: #275F88;
   color: #ffffff;
   text-shadow: none;
 }
 
 .ui.primary.buttons .button:focus,
 .ui.primary.button:focus {
-  background-color: #0d71bb;
+  border-color: #fff;
+  background-color: #275F88 ;
   color: #ffffff;
   text-shadow: none;
 }
@@ -4599,17 +4608,17 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.basic.primary.buttons .button:hover,
 .ui.basic.primary.button:hover {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #1678c2 inset !important;
-  box-shadow: 0px 0px 0px 1px #1678c2 inset !important;
-  color: #1678c2 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #275F88 inset !important;
+  box-shadow: 0px 0px 0px 1px #275F88 inset !important;
+  color: #275F88 !important;
 }
 
 .ui.basic.primary.buttons .button:focus,
 .ui.basic.primary.button:focus {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #0d71bb inset !important;
-  box-shadow: 0px 0px 0px 1px #0d71bb inset !important;
-  color: #1678c2 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #275F88  inset !important;
+  box-shadow: 0px 0px 0px 1px #275F88  inset !important;
+  color: #275F88 !important;
 }
 
 .ui.basic.primary.buttons .active.button,
@@ -7407,7 +7416,7 @@ a.ui.inverted.teal.header:hover {
 }
 
 a.ui.blue.header:hover {
-  color: #1678c2 !important;
+  color: #275F88 !important;
 }
 
 .ui.blue.dividing.header {
@@ -14254,7 +14263,7 @@ img.ui.bordered.image {
   background: #ffffff;
   border: 1px solid rgba(34, 36, 38, 0.15);
   color: rgba(0, 0, 0, 0.87);
-  border-radius: 0.28571429rem;
+  border-radius: 100vw;
   -webkit-transition: border-color 0.1s ease, -webkit-box-shadow 0.1s ease;
   transition: border-color 0.1s ease, -webkit-box-shadow 0.1s ease;
   transition: box-shadow 0.1s ease, border-color 0.1s ease;
@@ -15621,8 +15630,8 @@ a.ui.basic.teal.label:hover {
 
 .ui.blue.labels .label:hover,
 a.ui.blue.label:hover {
-  background-color: #1678c2 !important;
-  border-color: #1678c2 !important;
+  background-color: #275F88 !important;
+  border-color: #275F88 !important;
   color: #ffffff !important;
 }
 
@@ -15650,8 +15659,8 @@ a.ui.blue.label:hover {
 .ui.basic.blue.labels a.label:hover,
 a.ui.basic.blue.label:hover {
   background-color: #ffffff !important;
-  color: #1678c2 !important;
-  border-color: #1678c2 !important;
+  color: #275F88 !important;
+  border-color: #275F88 !important;
 }
 
 /*--- Violet ---*/
@@ -28930,9 +28939,9 @@ a.ui.card:hover,
 .ui.blue.cards > .card:hover,
 .ui.cards > .blue.card:hover,
 .ui.blue.card:hover {
-  -webkit-box-shadow: 0px 0px 0px 1px #d4d4d5, 0px 2px 0px 0px #1678c2,
+  -webkit-box-shadow: 0px 0px 0px 1px #d4d4d5, 0px 2px 0px 0px #275F88,
     0px 1px 3px 0px #bcbdbd;
-  box-shadow: 0px 0px 0px 1px #d4d4d5, 0px 2px 0px 0px #1678c2,
+  box-shadow: 0px 0px 0px 1px #d4d4d5, 0px 2px 0px 0px #275F88,
     0px 1px 3px 0px #bcbdbd;
 }
 
@@ -32064,7 +32073,7 @@ to prevent manually triggering */
 
 .ui.toggle.checkbox input:focus:checked ~ .box:before,
 .ui.toggle.checkbox input:focus:checked ~ label:before {
-  background-color: #0d71bb !important;
+  background-color: #275F88  !important;
 }
 
 /*******************************
@@ -37072,8 +37081,8 @@ a.ui.nag {
   position: absolute;
   left: auto;
   opacity: 0;
-  color: "";
-  top: 0em;
+  color: #fff;
+  top: 2px;
   right: 0em;
   -webkit-transition: color 0.1s ease, opacity 0.1s ease;
   transition: color 0.1s ease, opacity 0.1s ease;
@@ -40701,14 +40710,14 @@ textarea {
 *******************************/
 
 .ui.input {
-  color: #17394d;
+  color: #275F88;
 }
 
 .ui.input > input {
   line-height: 20px !important;
   padding: 8px 12px !important;
-  color: #17394d !important;
-  border-radius: 3px !important;
+  color: #275F88 !important;
+  border-radius: 100vw !important;
 }
 
 /*******************************
@@ -40722,7 +40731,7 @@ textarea {
   line-height: 20px;
   min-height: 32px;
   padding: 5px 12px 3px;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 /*--------------

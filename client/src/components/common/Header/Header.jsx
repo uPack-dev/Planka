@@ -17,6 +17,7 @@ import { BoardMembershipRoles, BoardViews, UserRoles } from '../../../constants/
 import UserAvatar from '../../users/UserAvatar';
 import UserActionsStep from '../../users/UserActionsStep';
 import NotificationsStep from '../../notifications/NotificationsStep';
+import logo from '../../../assets/images/logo.svg';
 
 import styles from './Header.module.scss';
 
@@ -96,7 +97,7 @@ const Header = React.memo(() => {
     <div className={styles.wrapper}>
       {!project && (
         <Link to={Paths.ROOT} className={classNames(styles.logo, styles.title)}>
-          PLANKA
+          <img src={logo} alt="" className={styles.upack} />
         </Link>
       )}
       <Menu inverted size="large" className={styles.menu}>

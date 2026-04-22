@@ -20,7 +20,7 @@ import { isUsername } from '../../../utils/validator';
 import AccessTokenSteps from '../../../constants/AccessTokenSteps';
 import TermsModal from './TermsModal';
 
-import logo from '../../../assets/images/logo.png';
+import logo from '../../../assets/images/logo.svg';
 
 import styles from './Content.module.scss';
 
@@ -206,7 +206,7 @@ const Content = React.memo(() => {
               <Header
                 as="h1"
                 textAlign="center"
-                content={bootstrap.instanceName || 'PLANKA'}
+                content={bootstrap.instanceName || 'Workspace для управління проектами'}
                 className={styles.formTitle}
               />
               <Header
