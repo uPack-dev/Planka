@@ -103,6 +103,11 @@ const Calendar = React.memo(
 
     const requestEventMutation = useCallback(
       (info, getData) => {
+        if (info.event.extendedProps.canEditSchedule === false) {
+          info.revert();
+          return;
+        }
+
         if (!onEventUpdate) {
           info.revert();
           return;
@@ -125,6 +130,14 @@ const Calendar = React.memo(
       },
       [commitEventMutation, onEventUpdate],
     );
+
+    const handleEventAllow = useCallback((_, draggedEvent) => {
+      if (draggedEvent.extendedProps.canEditSchedule === false) {
+        return false;
+      }
+
+      return true;
+    }, []);
 
     const handleEventDrop = useCallback(
       (info) => {
@@ -166,6 +179,7 @@ const Calendar = React.memo(
               styles.event,
               extendedProps.isDueCompleted && styles.eventCompleted,
               extendedProps.isClosed && styles.eventClosed,
+              extendedProps.canEditSchedule === false && styles.eventReadOnly,
               meta && styles.eventWithMeta,
             )}
           >
@@ -236,6 +250,7 @@ const Calendar = React.memo(
           select={onSelect}
           eventDrop={handleEventDrop}
           eventResize={handleEventResize}
+          eventAllow={handleEventAllow}
           datesSet={onDatesSet}
         />
         <RecurringUpdateModal

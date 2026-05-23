@@ -115,6 +115,16 @@ const GlobalCalendarView = React.memo(() => {
     );
   }, [dispatch, filters, visibleRange]);
 
+  const boardsById = useMemo(() => {
+    const result = {};
+
+    boards.forEach((board) => {
+      result[board.id] = board;
+    });
+
+    return result;
+  }, [boards]);
+
   const events = useMemo(
     () =>
       cards
@@ -126,18 +136,26 @@ const GlobalCalendarView = React.memo(() => {
             return null;
           }
 
+          const board = boardsById[card.boardId] || card.board;
+          const canEditSchedule =
+            !!board && !!board.membership && board.membership.role === BoardMembershipRoles.EDITOR;
+
           return {
             ...event,
+            editable: canEditSchedule,
+            startEditable: canEditSchedule,
+            durationEditable: canEditSchedule,
             extendedProps: {
               ...event.extendedProps,
               project: card.project,
               board: card.board,
               list: card.list,
+              canEditSchedule,
             },
           };
         })
         .filter(Boolean),
-    [cards, filters.hideCompleted],
+    [cards, filters.hideCompleted, boardsById],
   );
 
   const projectOptions = useMemo(
@@ -254,6 +272,13 @@ const GlobalCalendarView = React.memo(() => {
   const handleCreateClose = useCallback(() => {
     setCreateDefaults(null);
   }, []);
+
+  const handleEventUpdate = useCallback(
+    (cardId, data) => {
+      dispatch(entryActions.updateCard(cardId, data));
+    },
+    [dispatch],
+  );
 
   const handleCreate = useCallback(
     (listId, data) => {
@@ -375,12 +400,14 @@ const GlobalCalendarView = React.memo(() => {
       <Calendar
         events={events}
         isFetching={calendar.isFetching}
+        isEditable
         isSelectable={canCreate}
         emptyMessage={t('common.noCardsFound')}
         onEventClick={handleEventClick}
         onDateClick={handleDateClick}
         onSelect={handleSelect}
         onDatesSet={handleDatesSet}
+        onEventUpdate={handleEventUpdate}
         renderEventMeta={renderEventMeta}
         dayMaxEvents={false}
       />
