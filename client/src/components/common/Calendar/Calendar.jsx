@@ -87,6 +87,11 @@ const Calendar = React.memo(
     const [t, i18n] = useTranslation();
     const [recurringMutation, setRecurringMutation] = useState(null);
 
+    const fixedMirrorParent = useMemo(
+      () => (typeof document !== 'undefined' ? document.body : undefined),
+      [],
+    );
+
     const locale = useMemo(
       () => LOCALE_BY_LANGUAGE[i18n.language] || LOCALE_BY_LANGUAGE[i18n.resolvedLanguage],
       [i18n.language, i18n.resolvedLanguage],
@@ -251,6 +256,7 @@ const Calendar = React.memo(
           eventDrop={handleEventDrop}
           eventResize={handleEventResize}
           eventAllow={handleEventAllow}
+          fixedMirrorParent={fixedMirrorParent}
           datesSet={onDatesSet}
         />
         <RecurringUpdateModal
