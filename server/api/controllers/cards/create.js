@@ -103,7 +103,14 @@
  *         $ref: '#/components/responses/UnprocessableEntity'
  */
 
-const { isDueDate, isStopwatch } = require('../../../utils/validators');
+const {
+  isCalendarDate,
+  isCalendarEndDate,
+  isDueDate,
+  isRecurrenceRule,
+  isStopwatch,
+  isTimezone,
+} = require('../../../utils/validators');
 const { idInput } = require('../../../utils/inputs');
 
 const Errors = {
@@ -115,6 +122,9 @@ const Errors = {
   },
   POSITION_MUST_BE_PRESENT: {
     positionMustBePresent: 'Position must be present',
+  },
+  END_DATE_MUST_BE_AFTER_START_DATE: {
+    endDateMustBeAfterStartDate: 'End date must be after start date',
   },
 };
 
@@ -149,6 +159,34 @@ module.exports = {
       type: 'string',
       custom: isDueDate,
     },
+    startDate: {
+      type: 'string',
+      custom: isCalendarDate,
+      allowNull: true,
+    },
+    endDate: {
+      type: 'string',
+      custom: isCalendarDate,
+      allowNull: true,
+    },
+    isAllDay: {
+      type: 'boolean',
+    },
+    recurrenceRule: {
+      type: 'string',
+      custom: isRecurrenceRule,
+      allowNull: true,
+    },
+    recurrenceUntil: {
+      type: 'string',
+      custom: isCalendarDate,
+      allowNull: true,
+    },
+    recurrenceTimezone: {
+      type: 'string',
+      custom: isTimezone,
+      allowNull: true,
+    },
     isDueCompleted: {
       type: 'boolean',
       allowNull: true,
@@ -167,6 +205,9 @@ module.exports = {
       responseType: 'notFound',
     },
     positionMustBePresent: {
+      responseType: 'unprocessableEntity',
+    },
+    endDateMustBeAfterStartDate: {
       responseType: 'unprocessableEntity',
     },
   },
@@ -197,9 +238,28 @@ module.exports = {
       'name',
       'description',
       'dueDate',
+      'startDate',
+      'endDate',
+      'isAllDay',
+      'recurrenceRule',
+      'recurrenceUntil',
+      'recurrenceTimezone',
       'isDueCompleted',
       'stopwatch',
     ]);
+
+    if (
+      values.startDate &&
+      values.endDate &&
+      !isCalendarEndDate(values.endDate, values.startDate)
+    ) {
+      throw Errors.END_DATE_MUST_BE_AFTER_START_DATE;
+    }
+
+    if ((_.has(values, 'startDate') || _.has(values, 'endDate')) && _.isUndefined(values.dueDate)) {
+      const isAllDay = _.isUndefined(values.isAllDay) ? true : values.isAllDay;
+      values.dueDate = isAllDay ? values.startDate : values.endDate || values.startDate;
+    }
 
     const card = await sails.helpers.cards.createOne
       .with({

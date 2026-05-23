@@ -47,6 +47,7 @@ export const ProjectTypeIcons = {
 
 export const BoardViewIcons = {
   [BoardViews.KANBAN]: 'columns',
+  [BoardViews.CALENDAR]: 'calendar alternate outline',
   [BoardViews.GRID]: 'th',
   [BoardViews.LIST]: 'unordered list',
 };

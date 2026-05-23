@@ -683,6 +683,8 @@ export function* goToAdjacentCard(direction) {
 
     if (view === BoardViews.KANBAN) {
       cardIds = yield select(selectors.selectFilteredCardIdsByListId, card.listId);
+    } else if (view === BoardViews.CALENDAR) {
+      cardIds = yield select(selectors.selectCalendarCardIdsForCurrentBoard);
     } else {
       cardIds = yield select(selectors.selectFilteredCardIdsForCurrentBoard);
     }

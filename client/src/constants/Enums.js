@@ -49,6 +49,7 @@ export const ProjectBackgroundTypes = {
 
 export const BoardViews = {
   KANBAN: 'kanban',
+  CALENDAR: 'calendar',
   GRID: 'grid',
   LIST: 'list',
 };

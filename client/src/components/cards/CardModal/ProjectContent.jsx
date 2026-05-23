@@ -314,6 +314,8 @@ const ProjectContent = React.memo(() => {
       <Grid.Row className={styles.modalPadding}>
         <Grid.Column width={12} className={styles.contentPadding}>
           {(card.dueDate ||
+            card.startDate ||
+            card.recurrenceRule ||
             card.stopwatch ||
             board.alwaysDisplayCardCreator ||
             userIds.length > 0 ||
@@ -411,17 +413,13 @@ const ProjectContent = React.memo(() => {
                   )}
                 </div>
               )}
-              {card.dueDate && (
+              {(card.dueDate || card.startDate || card.recurrenceRule) && (
                 <div className={styles.attachments}>
-                  <div className={styles.text}>
-                    {t('common.dueDate', {
-                      context: 'title',
-                    })}
-                  </div>
+                  <div className={styles.text}>{t('common.schedule')}</div>
                   <span className={classNames(styles.attachment, styles.attachmentDueDate)}>
                     {canEditDueDate ? (
                       <>
-                        {!card.isClosed && (
+                        {card.dueDate && !card.isClosed && (
                           <Checkbox
                             checked={card.isDueCompleted}
                             disabled={!canEditDueDate}
@@ -431,18 +429,21 @@ const ProjectContent = React.memo(() => {
                         <EditDueDatePopup cardId={card.id}>
                           <DueDateChip
                             withStatusIcon
-                            value={card.dueDate}
+                            value={card.dueDate || card.startDate}
                             isCompleted={card.isDueCompleted}
-                            withStatus={!card.isClosed}
+                            withStatus={!!card.dueDate && !card.isClosed}
                           />
                         </EditDueDatePopup>
+                        {card.recurrenceRule && (
+                          <span className={styles.recurrenceText}>{t('common.recurringCard')}</span>
+                        )}
                       </>
                     ) : (
                       <DueDateChip
                         withStatusIcon
-                        value={card.dueDate}
+                        value={card.dueDate || card.startDate}
                         isCompleted={card.isDueCompleted}
-                        withStatus={!card.isClosed}
+                        withStatus={!!card.dueDate && !card.isClosed}
                       />
                     )}
                   </span>
@@ -609,9 +610,7 @@ const ProjectContent = React.memo(() => {
                   <EditDueDatePopup cardId={card.id}>
                     <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
                       <Icon name="calendar check outline" className={styles.actionIcon} />
-                      {t('common.dueDate', {
-                        context: 'title',
-                      })}
+                      {t('common.schedule')}
                     </Button>
                   </EditDueDatePopup>
                 )}

@@ -354,6 +354,53 @@ export const selectFilteredCardIdsForCurrentBoard = createSelector(
   },
 );
 
+export const selectCalendarCardIdsForCurrentBoard = createSelector(
+  orm,
+  (state) => selectPath(state).boardId,
+  ({ Board }, id) => {
+    if (!id) {
+      return id;
+    }
+
+    const boardModel = Board.withId(id);
+
+    if (!boardModel) {
+      return boardModel;
+    }
+
+    return boardModel
+      .getFilteredCardsModelArray()
+      .filter((cardModel) => cardModel.startDate || cardModel.dueDate || cardModel.recurrenceRule)
+      .map((cardModel) => cardModel.id);
+  },
+);
+
+export const selectCalendarCardsForCurrentBoard = createSelector(
+  orm,
+  (state) => selectPath(state).boardId,
+  ({ Board }, id) => {
+    if (!id) {
+      return id;
+    }
+
+    const boardModel = Board.withId(id);
+
+    if (!boardModel) {
+      return boardModel;
+    }
+
+    return boardModel
+      .getFilteredCardsModelArray()
+      .filter((cardModel) => cardModel.startDate || cardModel.dueDate || cardModel.recurrenceRule)
+      .map((cardModel) => ({
+        ...cardModel.ref,
+        labels: cardModel.labels.toRefArray(),
+        users: cardModel.users.toRefArray(),
+        list: cardModel.list && cardModel.list.ref,
+      }));
+  },
+);
+
 export const selectCustomFieldGroupIdsForCurrentBoard = createSelector(
   orm,
   (state) => selectPath(state).boardId,
@@ -486,6 +533,8 @@ export default {
   selectAvailableListsForCurrentBoard,
   selectCardsExceptCurrentForCurrentBoard,
   selectFilteredCardIdsForCurrentBoard,
+  selectCalendarCardIdsForCurrentBoard,
+  selectCalendarCardsForCurrentBoard,
   selectCustomFieldGroupIdsForCurrentBoard,
   selectCustomFieldGroupsForCurrentBoard,
   selectActivityIdsForCurrentBoard,
