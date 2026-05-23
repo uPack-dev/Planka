@@ -30,10 +30,10 @@ const RightSide = React.memo(() => {
 
   const ActionsPopup = usePopup(ActionsStep);
 
-  const views = [BoardViews.GRID, BoardViews.LIST];
-  if (board.context === BoardContexts.BOARD) {
-    views.unshift(BoardViews.KANBAN);
-  }
+  const views =
+    board.context === BoardContexts.BOARD
+      ? [BoardViews.KANBAN, BoardViews.CALENDAR, BoardViews.GRID, BoardViews.LIST]
+      : [BoardViews.GRID, BoardViews.LIST];
 
   return (
     <>

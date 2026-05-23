@@ -12,11 +12,32 @@ import { transformNotification } from './notifications';
 
 /* Transformers */
 
+const DATE_FIELD_NAMES = ['dueDate', 'startDate', 'endDate', 'recurrenceUntil'];
+
+const transformDateFields = (record) =>
+  DATE_FIELD_NAMES.reduce(
+    (result, fieldName) => ({
+      ...result,
+      ...(record[fieldName] && {
+        [fieldName]: new Date(record[fieldName]),
+      }),
+    }),
+    record,
+  );
+
+const transformDateDataFields = (data) =>
+  DATE_FIELD_NAMES.reduce(
+    (result, fieldName) => ({
+      ...result,
+      ...(data[fieldName] instanceof Date && {
+        [fieldName]: data[fieldName].toISOString(),
+      }),
+    }),
+    data,
+  );
+
 export const transformCard = (card) => ({
-  ...card,
-  ...(card.dueDate && {
-    dueDate: new Date(card.dueDate),
-  }),
+  ...transformDateFields(card),
   ...(card.stopwatch && {
     stopwatch: {
       ...card.stopwatch,
@@ -34,10 +55,7 @@ export const transformCard = (card) => ({
 });
 
 export const transformCardData = (data) => ({
-  ...data,
-  ...(data.dueDate && {
-    dueDate: data.dueDate.toISOString(),
-  }),
+  ...transformDateDataFields(data),
   ...(data.stopwatch && {
     stopwatch: {
       ...data.stopwatch,

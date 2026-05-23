@@ -35,13 +35,15 @@ const Comments = React.memo(() => {
 
     let isMember = false;
     let isEditor = false;
+    let isEmployee = false;
 
     if (boardMembership) {
       isMember = true;
       isEditor = boardMembership.role === BoardMembershipRoles.EDITOR;
+      isEmployee = boardMembership.role === BoardMembershipRoles.EMPLOYEE;
     }
 
-    return isEditor || (isMember && boardMembership.canComment);
+    return isEditor || isEmployee || (isMember && boardMembership.canComment);
   });
 
   const dispatch = useDispatch();

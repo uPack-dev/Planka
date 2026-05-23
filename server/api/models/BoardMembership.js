@@ -44,7 +44,7 @@
  *           example: "1357158568008091267"
  *         role:
  *           type: string
- *           enum: [editor, viewer]
+ *           enum: [editor, employee, viewer]
  *           description: Role of the user in the board
  *           example: editor
  *         canComment:
@@ -68,6 +68,7 @@
 
 const Roles = {
   EDITOR: 'editor',
+  EMPLOYEE: 'employee',
   VIEWER: 'viewer',
 };
 
@@ -78,6 +79,9 @@ const SHARED_RULES = {
 
 const RULES_BY_ROLE = {
   [Roles.EDITOR]: {
+    canComment: { setTo: null },
+  },
+  [Roles.EMPLOYEE]: {
     canComment: { setTo: null },
   },
   [Roles.VIEWER]: {

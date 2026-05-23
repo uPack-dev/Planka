@@ -13,3 +13,8 @@ yarn.lock
 
 # Chart dependencies
 **/charts/*.tgz
+
+tmp/
+.tmp*
+
+.env

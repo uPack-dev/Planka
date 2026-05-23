@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 
 import selectors from '../../../selectors';
 import { HomeViews } from '../../../constants/Enums';
+import GlobalCalendarView from './GlobalCalendarView';
 import GridProjectsView from './GridProjectsView';
 import GroupedProjectsView from './GroupedProjectsView';
 
@@ -24,6 +25,10 @@ const Home = React.memo(() => {
       break;
     case HomeViews.GROUPED_PROJECTS:
       View = GroupedProjectsView;
+
+      break;
+    case HomeViews.CALENDAR:
+      View = GlobalCalendarView;
 
       break;
     default:

@@ -10,6 +10,30 @@ import BaseModel from './BaseModel';
 import ActionTypes from '../constants/ActionTypes';
 import Config from '../constants/Config';
 
+const addRelation = (relation, id) => {
+  try {
+    relation.add(id);
+  } catch {
+    /* empty */
+  }
+};
+
+const addCardMembership = (Card, cardId, userId) => {
+  const cardModel = Card.withId(cardId);
+
+  if (cardModel) {
+    addRelation(cardModel.users, userId);
+  }
+};
+
+const addCardLabel = (Card, cardId, labelId) => {
+  const cardModel = Card.withId(cardId);
+
+  if (cardModel) {
+    addRelation(cardModel.labels, labelId);
+  }
+};
+
 export default class extends BaseModel {
   static modelName = 'Card';
 
@@ -20,6 +44,15 @@ export default class extends BaseModel {
     name: attr(),
     description: attr(),
     dueDate: attr(),
+    startDate: attr(),
+    endDate: attr(),
+    isAllDay: attr(),
+    recurrenceRule: attr(),
+    recurrenceUntil: attr(),
+    recurrenceTimezone: attr(),
+    taskAssigneeUserIds: attr({
+      getDefault: () => [],
+    }),
     isDueCompleted: attr(),
     stopwatch: attr(),
     isClosed: attr(),
@@ -93,19 +126,27 @@ export default class extends BaseModel {
       case ActionTypes.LIST_UPDATE_HANDLE:
         if (payload.cards) {
           payload.cards.forEach((card) => {
-            Card.upsert(card);
+            const cardModel = Card.upsert(card);
+
+            if (payload.cardMemberships) {
+              cardModel.users.clear();
+            }
+
+            if (payload.cardLabels) {
+              cardModel.labels.clear();
+            }
           });
         }
 
         if (payload.cardMemberships) {
           payload.cardMemberships.forEach(({ cardId, userId }) => {
-            Card.withId(cardId).users.add(userId);
+            addCardMembership(Card, cardId, userId);
           });
         }
 
         if (payload.cardLabels) {
           payload.cardLabels.forEach(({ cardId, labelId }) => {
-            Card.withId(cardId).labels.add(labelId);
+            addCardLabel(Card, cardId, labelId);
           });
         }
 
@@ -125,20 +166,20 @@ export default class extends BaseModel {
 
         if (payload.cardMemberships) {
           payload.cardMemberships.forEach(({ cardId, userId }) => {
-            Card.withId(cardId).users.add(userId);
+            addCardMembership(Card, cardId, userId);
           });
         }
 
         if (payload.cardLabels) {
           payload.cardLabels.forEach(({ cardId, labelId }) => {
-            Card.withId(cardId).labels.add(labelId);
+            addCardLabel(Card, cardId, labelId);
           });
         }
 
         break;
       case ActionTypes.USER_TO_CARD_ADD: {
         const cardModel = Card.withId(payload.cardId);
-        cardModel.users.add(payload.id);
+        addRelation(cardModel.users, payload.id);
 
         if (payload.isCurrent) {
           cardModel.isSubscribed = true;
@@ -148,11 +189,7 @@ export default class extends BaseModel {
       }
       case ActionTypes.USER_TO_CARD_ADD__SUCCESS:
       case ActionTypes.USER_TO_CARD_ADD_HANDLE:
-        try {
-          Card.withId(payload.cardMembership.cardId).users.add(payload.cardMembership.userId);
-        } catch {
-          /* empty */
-        }
+        addCardMembership(Card, payload.cardMembership.cardId, payload.cardMembership.userId);
 
         break;
       case ActionTypes.USER_FROM_CARD_REMOVE:
@@ -170,27 +207,47 @@ export default class extends BaseModel {
         break;
       case ActionTypes.BOARD_FETCH__SUCCESS:
         payload.cards.forEach((card) => {
-          Card.upsert(card);
+          const cardModel = Card.upsert(card);
+
+          cardModel.users.clear();
+          cardModel.labels.clear();
         });
 
         payload.cardMemberships.forEach(({ cardId, userId }) => {
-          Card.withId(cardId).users.add(userId);
+          addCardMembership(Card, cardId, userId);
         });
 
         payload.cardLabels.forEach(({ cardId, labelId }) => {
-          Card.withId(cardId).labels.add(labelId);
+          addCardLabel(Card, cardId, labelId);
+        });
+
+        break;
+      case ActionTypes.GLOBAL_CALENDAR_CARDS_FETCH__SUCCESS:
+        payload.cards.forEach((card) => {
+          const cardModel = Card.upsert(card);
+
+          cardModel.users.clear();
+          cardModel.labels.clear();
+        });
+
+        payload.cardMemberships.forEach(({ cardId, userId }) => {
+          addCardMembership(Card, cardId, userId);
+        });
+
+        payload.cardLabels.forEach(({ cardId, labelId }) => {
+          addCardLabel(Card, cardId, labelId);
         });
 
         break;
       case ActionTypes.LABEL_FROM_CARD_CREATE:
-        Card.withId(payload.cardId).labels.add(payload.label.id);
+        addCardLabel(Card, payload.cardId, payload.label.id);
 
         break;
       case ActionTypes.LABEL_FROM_CARD_CREATE__SUCCESS: {
         const cardModel = Card.withId(payload.cardLabel.cardId);
 
         cardModel.labels.remove(payload.localId);
-        cardModel.labels.add(payload.label.id);
+        addRelation(cardModel.labels, payload.label.id);
 
         break;
       }
@@ -199,16 +256,12 @@ export default class extends BaseModel {
 
         break;
       case ActionTypes.LABEL_TO_CARD_ADD:
-        Card.withId(payload.cardId).labels.add(payload.id);
+        addCardLabel(Card, payload.cardId, payload.id);
 
         break;
       case ActionTypes.LABEL_TO_CARD_ADD__SUCCESS:
       case ActionTypes.LABEL_TO_CARD_ADD_HANDLE:
-        try {
-          Card.withId(payload.cardLabel.cardId).labels.add(payload.cardLabel.labelId);
-        } catch {
-          /* empty */
-        }
+        addCardLabel(Card, payload.cardLabel.cardId, payload.cardLabel.labelId);
 
         break;
       case ActionTypes.LABEL_FROM_CARD_REMOVE:
@@ -280,11 +333,11 @@ export default class extends BaseModel {
         });
 
         payload.cardMemberships.forEach(({ cardId, userId }) => {
-          Card.withId(cardId).users.add(userId);
+          addCardMembership(Card, cardId, userId);
         });
 
         payload.cardLabels.forEach(({ cardId, labelId }) => {
-          Card.withId(cardId).labels.add(labelId);
+          addCardLabel(Card, cardId, labelId);
         });
 
         break;
@@ -306,11 +359,11 @@ export default class extends BaseModel {
         Card.upsert(payload.card);
 
         payload.cardMemberships.forEach(({ cardId, userId }) => {
-          Card.withId(cardId).users.add(userId);
+          addCardMembership(Card, cardId, userId);
         });
 
         payload.cardLabels.forEach(({ cardId, labelId }) => {
-          Card.withId(cardId).labels.add(labelId);
+          addCardLabel(Card, cardId, labelId);
         });
 
         break;
@@ -362,13 +415,13 @@ export default class extends BaseModel {
 
         if (payload.cardMemberships) {
           payload.cardMemberships.forEach(({ cardId, userId }) => {
-            Card.withId(cardId).users.add(userId);
+            addCardMembership(Card, cardId, userId);
           });
         }
 
         if (payload.cardLabels) {
           payload.cardLabels.forEach(({ cardId, labelId }) => {
-            Card.withId(cardId).labels.add(labelId);
+            addCardLabel(Card, cardId, labelId);
           });
         }
 
@@ -395,13 +448,13 @@ export default class extends BaseModel {
 
         if (payload.cardMemberships) {
           payload.cardMemberships.forEach(({ cardId, userId }) => {
-            Card.withId(cardId).users.add(userId);
+            addCardMembership(Card, cardId, userId);
           });
         }
 
         if (payload.cardLabels) {
           payload.cardLabels.forEach(({ cardId, labelId }) => {
-            Card.withId(cardId).labels.add(labelId);
+            addCardLabel(Card, cardId, labelId);
           });
         }
 
@@ -420,13 +473,13 @@ export default class extends BaseModel {
 
         if (payload.cardMemberships) {
           payload.cardMemberships.forEach(({ cardId, userId }) => {
-            Card.withId(cardId).users.add(userId);
+            addCardMembership(Card, cardId, userId);
           });
         }
 
         if (payload.cardLabels) {
           payload.cardLabels.forEach(({ cardId, labelId }) => {
-            Card.withId(cardId).labels.add(labelId);
+            addCardLabel(Card, cardId, labelId);
           });
         }
 
@@ -456,11 +509,11 @@ export default class extends BaseModel {
         cardModel = Card.upsert(payload.card);
 
         payload.cardMemberships.forEach(({ userId }) => {
-          cardModel.users.add(userId);
+          addRelation(cardModel.users, userId);
         });
 
         payload.cardLabels.forEach(({ labelId }) => {
-          cardModel.labels.add(labelId);
+          addRelation(cardModel.labels, labelId);
         });
 
         break;
@@ -652,6 +705,12 @@ export default class extends BaseModel {
       name: this.name,
       description: this.description,
       dueDate: this.dueDate,
+      startDate: this.startDate,
+      endDate: this.endDate,
+      isAllDay: this.isAllDay,
+      recurrenceRule: this.recurrenceRule,
+      recurrenceUntil: this.recurrenceUntil,
+      recurrenceTimezone: this.recurrenceTimezone,
       isDueCompleted: this.isDueCompleted,
       stopwatch: this.stopwatch,
       isClosed: this.isClosed,
@@ -659,11 +718,11 @@ export default class extends BaseModel {
     });
 
     this.users.toRefArray().forEach((user) => {
-      cardModel.users.add(user.id);
+      addRelation(cardModel.users, user.id);
     });
 
     this.labels.toRefArray().forEach((label) => {
-      cardModel.labels.add(label.id);
+      addRelation(cardModel.labels, label.id);
     });
 
     this.taskLists.toModelArray().forEach((taskListModel) => {
@@ -747,7 +806,7 @@ export default class extends BaseModel {
       }
 
       this.labels.remove(label.id);
-      this.labels.add(labelByName[label.name].id);
+      addRelation(this.labels, labelByName[label.name].id);
     });
   }
 

@@ -16,6 +16,7 @@ export const EditorModes = {
 export const HomeViews = {
   GRID_PROJECTS: 'gridProjects',
   GROUPED_PROJECTS: 'groupedProjects',
+  CALENDAR: 'calendar',
 };
 
 export const UserRoles = {
@@ -49,6 +50,7 @@ export const ProjectBackgroundTypes = {
 
 export const BoardViews = {
   KANBAN: 'kanban',
+  CALENDAR: 'calendar',
   GRID: 'grid',
   LIST: 'list',
 };
@@ -61,6 +63,7 @@ export const BoardContexts = {
 
 export const BoardMembershipRoles = {
   EDITOR: 'editor',
+  EMPLOYEE: 'employee',
   VIEWER: 'viewer',
 };
 

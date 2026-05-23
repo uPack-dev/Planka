@@ -9,12 +9,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { BoardViews } from '../../../constants/Enums';
+import CalendarView from './CalendarView';
 import GridView from './GridView';
 import ListView from './ListView';
 
 const FiniteContent = React.memo(() => {
   const board = useSelector(selectors.selectCurrentBoard);
-  const cardIds = useSelector(selectors.selectFilteredCardIdsForCurrentBoard);
+  const cardIds = useSelector(
+    board.view === BoardViews.CALENDAR
+      ? selectors.selectCalendarCardIdsForCurrentBoard
+      : selectors.selectFilteredCardIdsForCurrentBoard,
+  );
   const canAddCard = useSelector((state) => !!selectors.selectFirstKanbanListId(state));
 
   const dispatch = useDispatch();
@@ -32,6 +37,10 @@ const FiniteContent = React.memo(() => {
 
   let View;
   switch (board.view) {
+    case BoardViews.CALENDAR:
+      View = CalendarView;
+
+      break;
     case BoardViews.GRID:
       View = GridView;
 

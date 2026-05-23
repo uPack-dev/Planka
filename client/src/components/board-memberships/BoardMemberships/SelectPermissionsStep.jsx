@@ -19,6 +19,7 @@ import styles from './SelectPermissionsStep.module.scss';
 
 const DESCRIPTION_BY_ROLE = {
   [BoardMembershipRoles.EDITOR]: 'common.canEditBoardLayoutAndAssignMembersToCards',
+  [BoardMembershipRoles.EMPLOYEE]: 'common.canCompleteTasksChangeLabelsAndComment',
   [BoardMembershipRoles.VIEWER]: 'common.canOnlyViewBoard',
 };
 
@@ -43,7 +44,7 @@ const SelectPermissionsStep = React.memo(
 
     const handleSubmit = useCallback(() => {
       if (!dequal(data, defaultData)) {
-        onSelect(data.role === BoardMembershipRoles.EDITOR ? omit(data, 'canComment') : data);
+        onSelect(data.role === BoardMembershipRoles.VIEWER ? data : omit(data, 'canComment'));
       }
 
       onClose();
@@ -54,7 +55,7 @@ const SelectPermissionsStep = React.memo(
         setData((prevData) => ({
           ...prevData,
           role,
-          canComment: role === BoardMembershipRoles.EDITOR ? null : !!prevData.canComment,
+          canComment: role === BoardMembershipRoles.VIEWER ? !!prevData.canComment : null,
         }));
       },
       [setData],
@@ -70,7 +71,11 @@ const SelectPermissionsStep = React.memo(
         <Popup.Content>
           <Form onSubmit={handleSubmit}>
             <Menu secondary vertical className={styles.menu}>
-              {[BoardMembershipRoles.EDITOR, BoardMembershipRoles.VIEWER].map((role) => (
+              {[
+                BoardMembershipRoles.EDITOR,
+                BoardMembershipRoles.EMPLOYEE,
+                BoardMembershipRoles.VIEWER,
+              ].map((role) => (
                 <Menu.Item
                   key={role}
                   value={role}
@@ -84,7 +89,7 @@ const SelectPermissionsStep = React.memo(
                 </Menu.Item>
               ))}
             </Menu>
-            {data.role !== BoardMembershipRoles.EDITOR && (
+            {data.role === BoardMembershipRoles.VIEWER && (
               <Segment basic className={styles.settings}>
                 <Radio
                   toggle

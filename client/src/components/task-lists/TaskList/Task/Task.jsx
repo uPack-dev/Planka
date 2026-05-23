@@ -7,7 +7,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router';
 import { Draggable } from 'react-beautiful-dnd';
 import { Button, Checkbox, Icon } from 'semantic-ui-react';
@@ -16,8 +16,6 @@ import { useDidUpdate } from '../../../../lib/hooks';
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import { usePopupInClosableContext } from '../../../../hooks';
-import { isListArchiveOrTrash } from '../../../../utils/record-helpers';
-import { BoardMembershipRoles } from '../../../../constants/Enums';
 import { ClosableContext } from '../../../../contexts';
 import Paths from '../../../../constants/Paths';
 import EditName from './EditName';
@@ -28,36 +26,15 @@ import UserAvatar from '../../../users/UserAvatar';
 
 import styles from './Task.module.scss';
 
-const Task = React.memo(({ id, index }) => {
+const Task = React.memo(({ id, index, canManageTasks, canCompleteTasks }) => {
   const selectTaskById = useMemo(() => selectors.makeSelectTaskById(), []);
   const selectLinkedCardById = useMemo(() => selectors.makeSelectCardById(), []);
-  const selectListById = useMemo(() => selectors.makeSelectListById(), []);
 
   const task = useSelector((state) => selectTaskById(state, id));
 
   const linkedCard = useSelector(
     (state) => task.linkedCardId && selectLinkedCardById(state, task.linkedCardId),
   );
-
-  const { canEdit, canToggle } = useSelector((state) => {
-    const { listId } = selectors.selectCurrentCard(state);
-    const list = selectListById(state, listId);
-
-    if (isListArchiveOrTrash(list)) {
-      return {
-        canEdit: false,
-        canToggle: false,
-      };
-    }
-
-    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
-    const isEditor = !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
-
-    return {
-      canEdit: isEditor,
-      canToggle: isEditor,
-    };
-  }, shallowEqual);
 
   const dispatch = useDispatch();
   const [isEditNameOpened, setIsEditNameOpened] = useState(false);
@@ -90,7 +67,7 @@ const Task = React.memo(({ id, index }) => {
     );
   }, [id, dispatch]);
 
-  const isEditable = task.isPersisted && canEdit;
+  const isEditable = task.isPersisted && canManageTasks;
 
   const handleClick = useCallback(() => {
     if (!task.linkedCardId && isEditable) {
@@ -134,7 +111,7 @@ const Task = React.memo(({ id, index }) => {
             <span className={styles.checkboxWrapper}>
               <Checkbox
                 checked={task.isCompleted}
-                disabled={!!task.linkedCardId || !task.isPersisted || !canToggle}
+                disabled={!!task.linkedCardId || !task.isPersisted || !canCompleteTasks}
                 className={styles.checkbox}
                 onChange={handleToggleChange}
               />
@@ -142,15 +119,15 @@ const Task = React.memo(({ id, index }) => {
             {isEditNameOpened ? (
               <EditName taskId={id} onClose={handleEditNameClose} />
             ) : (
-              <div className={classNames(canEdit && styles.contentHoverable)}>
+              <div className={classNames(canManageTasks && styles.contentHoverable)}>
                 {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                              jsx-a11y/no-static-element-interactions */}
                 <span
                   className={classNames(
                     styles.text,
                     task.linkedCardId && styles.textLinked,
-                    canEdit && styles.textEditable,
-                    canEdit && !task.linkedCardId && styles.textPointable,
+                    canManageTasks && styles.textEditable,
+                    canManageTasks && !task.linkedCardId && styles.textPointable,
                   )}
                   onClick={handleClick}
                 >
@@ -238,6 +215,8 @@ const Task = React.memo(({ id, index }) => {
 Task.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
+  canManageTasks: PropTypes.bool.isRequired,
+  canCompleteTasks: PropTypes.bool.isRequired,
 };
 
 export default Task;

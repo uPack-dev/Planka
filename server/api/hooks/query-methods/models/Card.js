@@ -163,6 +163,155 @@ const getByListIds = async (listIds, { sort = ['position', 'id'] } = {}) =>
     { sort },
   );
 
+const getByCalendarRange = async ({
+  start,
+  end,
+  boardIds,
+  userIds,
+  labelIds,
+  search,
+  onlyMyCardsUserId,
+}) => {
+  if (!boardIds || boardIds.length === 0) {
+    return [];
+  }
+
+  if (userIds && userIds.length === 0) {
+    return [];
+  }
+
+  if (labelIds && labelIds.length === 0) {
+    return [];
+  }
+
+  const queryValues = [];
+  let query = 'SELECT DISTINCT card.* FROM card';
+
+  query += ' INNER JOIN list ON card.list_id = list.id';
+
+  const boardInValues = boardIds.map((boardId) => {
+    queryValues.push(boardId);
+    return `$${queryValues.length}`;
+  });
+
+  query += ` WHERE card.board_id IN (${boardInValues.join(', ')})`;
+  query += ` AND list.type IN ('${List.Types.ACTIVE}', '${List.Types.CLOSED}')`;
+
+  queryValues.push(start);
+  const startIndex = queryValues.length;
+
+  queryValues.push(end);
+  const endIndex = queryValues.length;
+
+  query += ` AND (
+    (
+      card.start_date IS NOT NULL
+      AND COALESCE(card.end_date, card.start_date) >= $${startIndex}
+      AND card.start_date < $${endIndex}
+    )
+    OR (
+      card.start_date IS NULL
+      AND card.due_date IS NOT NULL
+      AND card.due_date >= $${startIndex}
+      AND card.due_date < $${endIndex}
+    )
+    OR (
+      card.recurrence_rule IS NOT NULL
+      AND COALESCE(card.recurrence_until, card.end_date, card.due_date, card.start_date, $${endIndex}) >= $${startIndex}
+      AND COALESCE(card.start_date, card.due_date, $${startIndex}) < $${endIndex}
+    )
+  )`;
+
+  if (search) {
+    if (search.startsWith('/')) {
+      queryValues.push(search.substring(1));
+      query += ` AND (card.name ~* $${queryValues.length} OR card.description ~* $${queryValues.length})`;
+    } else {
+      const searchParts = buildSearchParts(search);
+
+      if (searchParts.length > 0) {
+        const ilikeValues = searchParts.map((searchPart) => {
+          queryValues.push(searchPart);
+          return `'%' || $${queryValues.length} || '%'`;
+        });
+
+        query += ` AND ((card.name ILIKE ALL(ARRAY[${ilikeValues.join(', ')}])) OR (card.description ILIKE ALL(ARRAY[${ilikeValues.join(', ')}])))`;
+      }
+    }
+  }
+
+  if (userIds) {
+    const userInValues = userIds.map((userId) => {
+      queryValues.push(userId);
+      return `$${queryValues.length}`;
+    });
+
+    query += ` AND (
+      EXISTS (
+        SELECT NULL FROM card_membership
+        WHERE card_membership.card_id = card.id
+        AND card_membership.user_id IN (${userInValues.join(', ')})
+      )
+      OR EXISTS (
+        SELECT NULL FROM task_list
+        INNER JOIN task ON task_list.id = task.task_list_id
+        WHERE task_list.card_id = card.id
+        AND task.assignee_user_id IN (${userInValues.join(', ')})
+      )
+    )`;
+  }
+
+  if (onlyMyCardsUserId) {
+    queryValues.push(onlyMyCardsUserId);
+    const userIndex = queryValues.length;
+
+    query += ` AND (
+      EXISTS (
+        SELECT NULL FROM card_membership
+        WHERE card_membership.card_id = card.id
+        AND card_membership.user_id = $${userIndex}
+      )
+      OR EXISTS (
+        SELECT NULL FROM task_list
+        INNER JOIN task ON task_list.id = task.task_list_id
+        WHERE task_list.card_id = card.id
+        AND task.assignee_user_id = $${userIndex}
+      )
+    )`;
+  }
+
+  if (labelIds) {
+    const labelInValues = labelIds.map((labelId) => {
+      queryValues.push(labelId);
+      return `$${queryValues.length}`;
+    });
+
+    query += ` AND EXISTS (
+      SELECT NULL FROM card_label
+      WHERE card_label.card_id = card.id
+      AND card_label.label_id IN (${labelInValues.join(', ')})
+    )`;
+  }
+
+  query += ' ORDER BY card.id';
+
+  let queryResult;
+  try {
+    queryResult = await sails.sendNativeQuery(query, queryValues);
+  } catch (error) {
+    if (
+      error.code === 'E_QUERY_FAILED' &&
+      error.message.includes('Query failed: invalid regular expression')
+    ) {
+      return [];
+    }
+
+    throw error;
+  }
+
+  return queryResult.rows.map((row) => transformRowToModel(row));
+};
+
 const getOneById = (id, { listId } = {}) => {
   const criteria = {
     id,
@@ -239,6 +388,7 @@ module.exports = {
   getByListId,
   getByEndlessListId,
   getByListIds,
+  getByCalendarRange,
   getOneById,
   update,
   updateOne,

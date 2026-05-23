@@ -24,6 +24,7 @@ import CustomFieldGroups from './CustomFieldGroups';
 import Communication from './Communication';
 import CreationDetailsStep from './CreationDetailsStep';
 import MoreActionsStep from './MoreActionsStep';
+import EditDueDateStep from '../EditDueDateStep';
 import Markdown from '../../common/Markdown';
 import EditMarkdown from '../../common/EditMarkdown';
 import ConfirmationStep from '../../common/ConfirmationStep';
@@ -73,6 +74,7 @@ const StoryContent = React.memo(() => {
     canEditType,
     canEditName,
     canEditDescription,
+    canEditDueDate,
     canSubscribe,
     canJoin,
     canDuplicate,
@@ -90,10 +92,12 @@ const StoryContent = React.memo(() => {
 
     let isMember = false;
     let isEditor = false;
+    let isEmployee = false;
 
     if (boardMembership) {
       isMember = true;
       isEditor = boardMembership.role === BoardMembershipRoles.EDITOR;
+      isEmployee = boardMembership.role === BoardMembershipRoles.EMPLOYEE;
     }
 
     if (isInArchiveList || isInTrashList) {
@@ -101,6 +105,7 @@ const StoryContent = React.memo(() => {
         canEditType: false,
         canEditName: false,
         canEditDescription: false,
+        canEditDueDate: false,
         canSubscribe: isMember,
         canJoin: false,
         canDuplicate: false,
@@ -120,6 +125,7 @@ const StoryContent = React.memo(() => {
       canEditType: isEditor,
       canEditName: isEditor,
       canEditDescription: isEditor,
+      canEditDueDate: isEditor,
       canSubscribe: isMember,
       canJoin: isEditor,
       canDuplicate: isEditor,
@@ -129,7 +135,7 @@ const StoryContent = React.memo(() => {
       canDelete: isEditor,
       canUseLists: isEditor,
       canUseMembers: isEditor,
-      canUseLabels: isEditor,
+      canUseLabels: isEditor || isEmployee,
       canAddAttachment: isEditor,
       canAddCustomFieldGroup: isEditor,
     };
@@ -278,6 +284,7 @@ const StoryContent = React.memo(() => {
   const AddAttachmentPopup = usePopupInClosableContext(AddAttachmentStep);
   const AddCustomFieldGroupPopup = usePopupInClosableContext(AddCustomFieldGroupStep);
   const MoreActionsPopup = usePopupInClosableContext(MoreActionsStep);
+  const EditDueDatePopup = usePopupInClosableContext(EditDueDateStep);
   const ConfirmationPopup = usePopupInClosableContext(ConfirmationStep);
 
   return (
@@ -494,9 +501,21 @@ const StoryContent = React.memo(() => {
                 )}
               </div>
             </div>
-            {(canUseMembers || canUseLabels || canAddAttachment || canAddCustomFieldGroup) && (
+            {(canEditDueDate ||
+              canUseMembers ||
+              canUseLabels ||
+              canAddAttachment ||
+              canAddCustomFieldGroup) && (
               <div className={styles.actions}>
                 <span className={styles.actionsTitle}>{t('action.addToCard')}</span>
+                {canEditDueDate && (
+                  <EditDueDatePopup cardId={card.id}>
+                    <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
+                      <Icon name="calendar check outline" className={styles.actionIcon} />
+                      {t('common.schedule')}
+                    </Button>
+                  </EditDueDatePopup>
+                )}
                 {canUseLabels && (
                   <LabelsPopup
                     currentIds={labelIds}

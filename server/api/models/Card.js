@@ -28,6 +28,12 @@
  *         - name
  *         - description
  *         - dueDate
+ *         - startDate
+ *         - endDate
+ *         - isAllDay
+ *         - recurrenceRule
+ *         - recurrenceUntil
+ *         - recurrenceTimezone
  *         - isDueCompleted
  *         - stopwatch
  *         - commentsTotal
@@ -88,6 +94,39 @@
  *           nullable: true
  *           description: Due date for the card
  *           example: 2024-01-01T00:00:00.000Z
+ *         startDate:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: Calendar start date/time for the card
+ *           example: 2024-01-01T09:00:00.000Z
+ *         endDate:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: Calendar end date/time for the card
+ *           example: 2024-01-01T10:00:00.000Z
+ *         isAllDay:
+ *           type: boolean
+ *           default: true
+ *           description: Whether the calendar schedule is an all-day event
+ *           example: false
+ *         recurrenceRule:
+ *           type: string
+ *           nullable: true
+ *           description: RRULE recurrence definition for the whole card
+ *           example: FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE,FR
+ *         recurrenceUntil:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: Optional recurrence end date for filtering and UI
+ *           example: 2024-12-31T23:59:59.000Z
+ *         recurrenceTimezone:
+ *           type: string
+ *           nullable: true
+ *           description: IANA timezone used for recurring card display
+ *           example: Europe/Kyiv
  *         isDueCompleted:
  *           type: boolean
  *           nullable: true
@@ -174,6 +213,35 @@ module.exports = {
     dueDate: {
       type: 'ref',
       columnName: 'due_date',
+    },
+    startDate: {
+      type: 'ref',
+      columnName: 'start_date',
+    },
+    endDate: {
+      type: 'ref',
+      columnName: 'end_date',
+    },
+    isAllDay: {
+      type: 'boolean',
+      defaultsTo: true,
+      columnName: 'is_all_day',
+    },
+    recurrenceRule: {
+      type: 'string',
+      isNotEmptyString: true,
+      allowNull: true,
+      columnName: 'recurrence_rule',
+    },
+    recurrenceUntil: {
+      type: 'ref',
+      columnName: 'recurrence_until',
+    },
+    recurrenceTimezone: {
+      type: 'string',
+      isNotEmptyString: true,
+      allowNull: true,
+      columnName: 'recurrence_timezone',
     },
     isDueCompleted: {
       type: 'boolean',

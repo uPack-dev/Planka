@@ -423,9 +423,7 @@ const CardActionsStep = React.memo(({ cardId, defaultStep, onNameEdit, onClose }
           {card.type === CardTypes.PROJECT && canEditDueDate && (
             <Menu.Item className={styles.menuItem} onClick={handleEditDueDateClick}>
               <Icon name="calendar check outline" className={styles.menuItemIcon} />
-              {t('action.editDueDate', {
-                context: 'title',
-              })}
+              {t('common.schedule')}
             </Menu.Item>
           )}
           {card.type === CardTypes.PROJECT && canEditStopwatch && (

@@ -81,6 +81,7 @@ const ProjectContent = React.memo(() => {
     canUseLists,
     canUseMembers,
     canUseLabels,
+    canCompleteTasks,
     canAddTaskList,
     canAddAttachment,
     canAddCustomFieldGroup,
@@ -89,10 +90,12 @@ const ProjectContent = React.memo(() => {
 
     let isMember = false;
     let isEditor = false;
+    let isEmployee = false;
 
     if (boardMembership) {
       isMember = true;
       isEditor = boardMembership.role === BoardMembershipRoles.EDITOR;
+      isEmployee = boardMembership.role === BoardMembershipRoles.EMPLOYEE;
     }
 
     if (isInArchiveList || isInTrashList) {
@@ -112,6 +115,7 @@ const ProjectContent = React.memo(() => {
         canUseLists: isEditor,
         canUseMembers: false,
         canUseLabels: false,
+        canCompleteTasks: false,
         canAddTaskList: false,
         canAddAttachment: false,
         canAddCustomFieldGroup: false,
@@ -133,7 +137,8 @@ const ProjectContent = React.memo(() => {
       canDelete: isEditor,
       canUseLists: isEditor,
       canUseMembers: isEditor,
-      canUseLabels: isEditor,
+      canUseLabels: isEditor || isEmployee,
+      canCompleteTasks: isEditor || isEmployee,
       canAddTaskList: isEditor,
       canAddAttachment: isEditor,
       canAddCustomFieldGroup: isEditor,
@@ -314,6 +319,8 @@ const ProjectContent = React.memo(() => {
       <Grid.Row className={styles.modalPadding}>
         <Grid.Column width={12} className={styles.contentPadding}>
           {(card.dueDate ||
+            card.startDate ||
+            card.recurrenceRule ||
             card.stopwatch ||
             board.alwaysDisplayCardCreator ||
             userIds.length > 0 ||
@@ -411,17 +418,13 @@ const ProjectContent = React.memo(() => {
                   )}
                 </div>
               )}
-              {card.dueDate && (
+              {(card.dueDate || card.startDate || card.recurrenceRule) && (
                 <div className={styles.attachments}>
-                  <div className={styles.text}>
-                    {t('common.dueDate', {
-                      context: 'title',
-                    })}
-                  </div>
+                  <div className={styles.text}>{t('common.schedule')}</div>
                   <span className={classNames(styles.attachment, styles.attachmentDueDate)}>
                     {canEditDueDate ? (
                       <>
-                        {!card.isClosed && (
+                        {card.dueDate && !card.isClosed && (
                           <Checkbox
                             checked={card.isDueCompleted}
                             disabled={!canEditDueDate}
@@ -431,18 +434,21 @@ const ProjectContent = React.memo(() => {
                         <EditDueDatePopup cardId={card.id}>
                           <DueDateChip
                             withStatusIcon
-                            value={card.dueDate}
+                            value={card.dueDate || card.startDate}
                             isCompleted={card.isDueCompleted}
-                            withStatus={!card.isClosed}
+                            withStatus={!!card.dueDate && !card.isClosed}
                           />
                         </EditDueDatePopup>
+                        {card.recurrenceRule && (
+                          <span className={styles.recurrenceText}>{t('common.recurringCard')}</span>
+                        )}
                       </>
                     ) : (
                       <DueDateChip
                         withStatusIcon
-                        value={card.dueDate}
+                        value={card.dueDate || card.startDate}
                         isCompleted={card.isDueCompleted}
-                        withStatus={!card.isClosed}
+                        withStatus={!!card.dueDate && !card.isClosed}
                       />
                     )}
                   </span>
@@ -530,7 +536,7 @@ const ProjectContent = React.memo(() => {
             </div>
           )}
           <CustomFieldGroups />
-          <TaskLists />
+          <TaskLists canManageTasks={canAddTaskList} canCompleteTasks={canCompleteTasks} />
           {attachmentIds.length > 0 && (
             <div className={styles.contentModule}>
               <div className={styles.moduleWrapper}>
@@ -609,9 +615,7 @@ const ProjectContent = React.memo(() => {
                   <EditDueDatePopup cardId={card.id}>
                     <Button fluid className={classNames(styles.actionButton, styles.hidable)}>
                       <Icon name="calendar check outline" className={styles.actionIcon} />
-                      {t('common.dueDate', {
-                        context: 'title',
-                      })}
+                      {t('common.schedule')}
                     </Button>
                   </EditDueDatePopup>
                 )}

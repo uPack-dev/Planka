@@ -4,6 +4,7 @@
  */
 
 import React, { useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { closePopup } from '../../../../lib/popup';
@@ -16,7 +17,7 @@ import Item from './Item';
 
 import globalStyles from '../../../../styles.module.scss';
 
-const TaskLists = React.memo(() => {
+const TaskLists = React.memo(({ canManageTasks, canCompleteTasks }) => {
   const taskListIds = useSelector(selectors.selectTaskListIdsForCurrentCard);
 
   const dispatch = useDispatch();
@@ -42,10 +43,18 @@ const TaskLists = React.memo(() => {
 
       switch (type) {
         case DroppableTypes.TASK_LIST:
+          if (!canManageTasks) {
+            return;
+          }
+
           dispatch(entryActions.moveTaskList(id, destination.index));
 
           break;
         case DroppableTypes.TASK:
+          if (!canManageTasks) {
+            return;
+          }
+
           dispatch(
             entryActions.moveTask(id, parseDndId(destination.droppableId), destination.index),
           );
@@ -54,7 +63,7 @@ const TaskLists = React.memo(() => {
         default:
       }
     },
-    [dispatch],
+    [canManageTasks, dispatch],
   );
 
   return (
@@ -64,7 +73,13 @@ const TaskLists = React.memo(() => {
           // eslint-disable-next-line react/jsx-props-no-spreading
           <div {...droppableProps} ref={innerRef}>
             {taskListIds.map((taskListId, index) => (
-              <Item key={taskListId} id={taskListId} index={index} />
+              <Item
+                key={taskListId}
+                id={taskListId}
+                index={index}
+                canManageTasks={canManageTasks}
+                canCompleteTasks={canCompleteTasks}
+              />
             ))}
             {placeholder}
           </div>
@@ -73,5 +88,10 @@ const TaskLists = React.memo(() => {
     </DragDropContext>
   );
 });
+
+TaskLists.propTypes = {
+  canManageTasks: PropTypes.bool.isRequired,
+  canCompleteTasks: PropTypes.bool.isRequired,
+};
 
 export default TaskLists;

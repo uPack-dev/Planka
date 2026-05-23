@@ -11,6 +11,7 @@ import orm from './orm';
 import common from './common';
 import auth from './auth';
 import core from './core';
+import calendar from './calendar';
 import ui from './ui';
 
 export default combineReducers({
@@ -20,5 +21,6 @@ export default combineReducers({
   common,
   auth,
   core,
+  calendar,
   ui,
 });

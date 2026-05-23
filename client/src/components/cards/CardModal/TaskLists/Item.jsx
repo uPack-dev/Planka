@@ -14,21 +14,15 @@ import { useToggle } from '../../../../lib/hooks';
 
 import selectors from '../../../../selectors';
 import { usePopupInClosableContext } from '../../../../hooks';
-import { BoardMembershipRoles } from '../../../../constants/Enums';
 import EditStep from './EditStep';
 import TaskList from '../../../task-lists/TaskList';
 
 import styles from './Item.module.scss';
 
-const Item = React.memo(({ id, index }) => {
+const Item = React.memo(({ id, index, canManageTasks, canCompleteTasks }) => {
   const selectTaskListById = useMemo(() => selectors.makeSelectTaskListById(), []);
 
   const taskList = useSelector((state) => selectTaskListById(state, id));
-
-  const canEdit = useSelector((state) => {
-    const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
-    return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
-  });
 
   const [isCompletedVisible, toggleCompletedVisible] = useToggle();
 
@@ -38,13 +32,13 @@ const Item = React.memo(({ id, index }) => {
 
   const EditPopup = usePopupInClosableContext(EditStep);
 
-  const withActions = taskList.hideCompletedTasks || canEdit;
+  const withActions = taskList.hideCompletedTasks || canManageTasks;
 
   return (
     <Draggable
       draggableId={`task-list:${id}`}
       index={index}
-      isDragDisabled={!taskList.isPersisted || !canEdit}
+      isDragDisabled={!taskList.isPersisted || !canManageTasks}
     >
       {({ innerRef, draggableProps, dragHandleProps }, { isDragging }) => {
         const contentNode = (
@@ -61,7 +55,7 @@ const Item = React.memo(({ id, index }) => {
                   className={classNames(
                     styles.moduleHeader,
                     withActions && styles.moduleHeaderWithActions,
-                    taskList.hideCompletedTasks && canEdit && styles.both,
+                    taskList.hideCompletedTasks && canManageTasks && styles.both,
                   )}
                 >
                   {taskList.isPersisted && withActions && (
@@ -78,7 +72,7 @@ const Item = React.memo(({ id, index }) => {
                           />
                         </Button>
                       )}
-                      {canEdit && (
+                      {canManageTasks && (
                         <EditPopup taskListId={taskList.id}>
                           <Button className={styles.button}>
                             <Icon fitted name="pencil" size="small" />
@@ -90,7 +84,12 @@ const Item = React.memo(({ id, index }) => {
                   <span className={styles.moduleHeaderTitle}>{taskList.name}</span>
                 </div>
               </div>
-              <TaskList id={id} isCompletedVisible={isCompletedVisible} />
+              <TaskList
+                id={id}
+                isCompletedVisible={isCompletedVisible}
+                canManageTasks={canManageTasks}
+                canCompleteTasks={canCompleteTasks}
+              />
             </div>
           </div>
         );
@@ -104,6 +103,8 @@ const Item = React.memo(({ id, index }) => {
 Item.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
+  canManageTasks: PropTypes.bool.isRequired,
+  canCompleteTasks: PropTypes.bool.isRequired,
 };
 
 export default Item;

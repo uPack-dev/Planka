@@ -53,16 +53,18 @@ const Item = React.memo(({ id }) => {
 
     let isMember = false;
     let isEditor = false;
+    let isEmployee = false;
 
     if (boardMembership) {
       isMember = true;
       isEditor = boardMembership.role === BoardMembershipRoles.EDITOR;
+      isEmployee = boardMembership.role === BoardMembershipRoles.EMPLOYEE;
     }
 
     const canEditOrDeleteAsMember =
       isMember &&
       comment.userId === boardMembership.userId &&
-      (isEditor || boardMembership.canComment);
+      (isEditor || isEmployee || boardMembership.canComment);
 
     return {
       canEdit: canEditOrDeleteAsMember,
