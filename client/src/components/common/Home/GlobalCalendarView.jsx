@@ -177,9 +177,19 @@ const GlobalCalendarView = React.memo(() => {
   );
 
   const handleDatesSet = useCallback((info) => {
-    setVisibleRange({
-      visibleStart: info.startStr,
-      visibleEnd: info.endStr,
+    setVisibleRange((prevVisibleRange) => {
+      if (
+        prevVisibleRange &&
+        prevVisibleRange.visibleStart === info.startStr &&
+        prevVisibleRange.visibleEnd === info.endStr
+      ) {
+        return prevVisibleRange;
+      }
+
+      return {
+        visibleStart: info.startStr,
+        visibleEnd: info.endStr,
+      };
     });
   }, []);
 

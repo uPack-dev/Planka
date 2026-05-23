@@ -132,7 +132,7 @@
  *           example: wysiwyg
  *         defaultHomeView:
  *           type: string
- *           enum: [gridProjects, groupedProjects]
+ *           enum: [gridProjects, groupedProjects, calendar]
  *           default: groupedProjects
  *           description: Default view mode for the home page (personal field)
  *           example: groupedProjects
@@ -191,6 +191,7 @@ const EditorModes = {
 const HomeViews = {
   GRID_PROJECTS: 'gridProjects',
   GROUPED_PROJECTS: 'groupedProjects',
+  CALENDAR: 'calendar',
 };
 
 const ProjectOrders = {

@@ -87,7 +87,7 @@
  *                 example: wysiwyg
  *               defaultHomeView:
  *                 type: string
- *                 enum: [gridProjects, groupedProjects]
+ *                 enum: [gridProjects, groupedProjects, calendar]
  *                 description: Default view mode for the home page
  *                 example: groupedProjects
  *               defaultProjectsOrder:
