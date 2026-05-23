@@ -232,6 +232,7 @@ export default {
       gradients: 'Gradients',
       globalCalendar: 'Global calendar',
       grid: 'Grid',
+      hideCompletedCards: 'Hide completed',
       hideCompletedTasks: 'Hide completed tasks',
       hideFromProjectListAndFavorites: 'Hide from project list and favorites',
       host: 'Host',

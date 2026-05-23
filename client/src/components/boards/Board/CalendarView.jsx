@@ -7,7 +7,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Button, Form, Input, Message, Modal } from 'semantic-ui-react';
+import { Button, Checkbox, Form, Input, Message, Modal } from 'semantic-ui-react';
 import { push } from '../../../lib/redux-router';
 
 import selectors from '../../../selectors';
@@ -102,6 +102,7 @@ const CalendarView = React.memo(({ cardIds }) => {
   const [t] = useTranslation();
 
   const [createDefaults, setCreateDefaults] = useState(null);
+  const [isCompletedHidden, setIsCompletedHidden] = useState(true);
 
   const canEdit =
     board.context === BoardContexts.BOARD &&
@@ -116,9 +117,10 @@ const CalendarView = React.memo(({ cardIds }) => {
 
     return currentCards
       .filter((card) => cardIdSet.has(card.id))
+      .filter((card) => !isCompletedHidden || !card.isDueCompleted)
       .map(cardToCalendarEvent)
       .filter(Boolean);
-  }, [cardIdSet, cards]);
+  }, [cardIdSet, cards, isCompletedHidden]);
 
   const handleEventClick = useCallback(
     ({ event }) => {
@@ -165,6 +167,10 @@ const CalendarView = React.memo(({ cardIds }) => {
     [dispatch],
   );
 
+  const handleCompletedHiddenChange = useCallback((_, { checked }) => {
+    setIsCompletedHidden(checked);
+  }, []);
+
   const handleEventUpdate = useCallback(
     (cardId, data) => {
       dispatch(entryActions.updateCard(cardId, data));
@@ -177,6 +183,15 @@ const CalendarView = React.memo(({ cardIds }) => {
       {!hasKanbanList && (
         <Message className={styles.message} content={t('common.atLeastOneListMustBePresent')} />
       )}
+      <div className={styles.toolbar}>
+        <Checkbox
+          toggle
+          checked={isCompletedHidden}
+          label={t('common.hideCompletedCards')}
+          className={styles.checkbox}
+          onChange={handleCompletedHiddenChange}
+        />
+      </div>
       <Calendar
         events={events}
         isEditable={canEdit}

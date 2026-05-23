@@ -32,6 +32,7 @@ const DEFAULT_FILTERS = {
   labelIds: [],
   search: '',
   onlyMyCards: false,
+  hideCompleted: true,
 };
 
 const MAX_VISIBLE_EVENT_USERS = 5;
@@ -104,10 +105,12 @@ const GlobalCalendarView = React.memo(() => {
       return;
     }
 
+    const { hideCompleted, ...requestFilters } = filters;
+
     dispatch(
       entryActions.fetchGlobalCalendarCards({
         ...visibleRange,
-        ...filters,
+        ...requestFilters,
       }),
     );
   }, [dispatch, filters, visibleRange]);
@@ -115,6 +118,7 @@ const GlobalCalendarView = React.memo(() => {
   const events = useMemo(
     () =>
       cards
+        .filter((card) => !filters.hideCompleted || !card.isDueCompleted)
         .map((card) => {
           const event = cardToCalendarEvent(card);
 
@@ -133,7 +137,7 @@ const GlobalCalendarView = React.memo(() => {
           };
         })
         .filter(Boolean),
-    [cards],
+    [cards, filters.hideCompleted],
   );
 
   const projectOptions = useMemo(
@@ -184,7 +188,7 @@ const GlobalCalendarView = React.memo(() => {
   const handleFilterChange = useCallback((_, { name, value, checked }) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
-      [name]: name === 'onlyMyCards' ? checked : value,
+      [name]: name === 'onlyMyCards' || name === 'hideCompleted' ? checked : value,
     }));
   }, []);
 
@@ -343,14 +347,6 @@ const GlobalCalendarView = React.memo(() => {
           className={styles.filter}
           onChange={handleFilterChange}
         />
-        <Input
-          name="search"
-          value={searchDraft}
-          icon="search"
-          placeholder={t('common.searchCards')}
-          className={styles.search}
-          onChange={handleSearchChange}
-        />
         <Checkbox
           toggle
           name="onlyMyCards"
@@ -358,6 +354,22 @@ const GlobalCalendarView = React.memo(() => {
           label={t('common.onlyMyCards')}
           className={styles.checkbox}
           onChange={handleFilterChange}
+        />
+        <Checkbox
+          toggle
+          name="hideCompleted"
+          checked={filters.hideCompleted}
+          label={t('common.hideCompletedCards')}
+          className={styles.checkbox}
+          onChange={handleFilterChange}
+        />
+        <Input
+          name="search"
+          value={searchDraft}
+          icon="search"
+          placeholder={t('common.searchCards')}
+          className={styles.search}
+          onChange={handleSearchChange}
         />
       </div>
       <Calendar

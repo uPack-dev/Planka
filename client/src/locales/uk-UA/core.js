@@ -229,6 +229,7 @@ export default {
       gradients: 'Градієнти',
       globalCalendar: 'Загальний календар',
       grid: 'Сітка',
+      hideCompletedCards: 'Приховати виконані',
       hideCompletedTasks: 'Приховати виконані завдання',
       hideFromProjectListAndFavorites: 'Приховати зі списку проектів та обраного',
       host: 'Хост',

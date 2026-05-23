@@ -230,6 +230,7 @@ export default {
       gradients: 'Градиенты',
       globalCalendar: 'Общий календарь',
       grid: 'Сетка',
+      hideCompletedCards: 'Скрыть выполненные',
       hideCompletedTasks: 'Скрыть выполненные задачи',
       hideFromProjectListAndFavorites: 'Скрыть из списка проектов и избранного',
       host: 'Хост',
