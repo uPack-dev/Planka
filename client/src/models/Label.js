@@ -49,6 +49,7 @@ export default class extends BaseModel {
 
         break;
       case ActionTypes.BOARD_FETCH__SUCCESS:
+      case ActionTypes.GLOBAL_CALENDAR_CARDS_FETCH__SUCCESS:
         payload.labels.forEach((label) => {
           Label.upsert(label);
         });

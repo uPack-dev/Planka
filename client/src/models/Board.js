@@ -131,6 +131,12 @@ export default class extends BaseModel {
         });
 
         break;
+      case ActionTypes.GLOBAL_CALENDAR_CARDS_FETCH__SUCCESS:
+        payload.boards.forEach((board) => {
+          Board.upsert(board);
+        });
+
+        break;
       case ActionTypes.USER_UPDATE_HANDLE:
         Board.all()
           .toModelArray()

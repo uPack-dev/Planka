@@ -20,6 +20,7 @@ import boardMemberships from './board-memberships';
 import labels from './labels';
 import lists from './lists';
 import cards from './cards';
+import calendar from './calendar';
 import cardMemberships from './card-memberships';
 import cardLabels from './card-labels';
 import taskLists from './task-lists';
@@ -51,6 +52,7 @@ export default {
   ...labels,
   ...lists,
   ...cards,
+  ...calendar,
   ...cardMemberships,
   ...cardLabels,
   ...taskLists,

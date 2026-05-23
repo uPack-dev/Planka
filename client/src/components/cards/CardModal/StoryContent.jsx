@@ -92,10 +92,12 @@ const StoryContent = React.memo(() => {
 
     let isMember = false;
     let isEditor = false;
+    let isEmployee = false;
 
     if (boardMembership) {
       isMember = true;
       isEditor = boardMembership.role === BoardMembershipRoles.EDITOR;
+      isEmployee = boardMembership.role === BoardMembershipRoles.EMPLOYEE;
     }
 
     if (isInArchiveList || isInTrashList) {
@@ -133,7 +135,7 @@ const StoryContent = React.memo(() => {
       canDelete: isEditor,
       canUseLists: isEditor,
       canUseMembers: isEditor,
-      canUseLabels: isEditor,
+      canUseLabels: isEditor || isEmployee,
       canAddAttachment: isEditor,
       canAddCustomFieldGroup: isEditor,
     };

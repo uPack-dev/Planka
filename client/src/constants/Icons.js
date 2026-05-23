@@ -18,6 +18,7 @@ import {
 
 export const HomeViewIcons = {
   [HomeViews.GRID_PROJECTS]: 'th',
+  [HomeViews.CALENDAR]: 'calendar alternate outline',
   [HomeViews.GROUPED_PROJECTS]: 'th list',
 };
 
@@ -60,6 +61,7 @@ export const BoardContextIcons = {
 
 export const BoardMembershipRoleIcons = {
   [BoardMembershipRoles.EDITOR]: 'star',
+  [BoardMembershipRoles.EMPLOYEE]: 'id badge outline',
   [BoardMembershipRoles.VIEWER]: 'eye',
 };
 

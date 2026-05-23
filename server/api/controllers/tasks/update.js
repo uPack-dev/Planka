@@ -148,7 +148,13 @@ module.exports = {
       throw Errors.TASK_NOT_FOUND; // Forbidden
     }
 
-    if (boardMembership.role !== BoardMembership.Roles.EDITOR) {
+    if (boardMembership.role === BoardMembership.Roles.EMPLOYEE) {
+      const availableInputKeys = ['id', 'isCompleted'];
+
+      if (_.difference(Object.keys(inputs), availableInputKeys).length > 0 || task.linkedCardId) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+    } else if (boardMembership.role !== BoardMembership.Roles.EDITOR) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 

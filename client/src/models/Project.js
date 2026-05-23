@@ -59,6 +59,7 @@ export default class extends BaseModel {
         break;
       case ActionTypes.CORE_INITIALIZE:
       case ActionTypes.BOARD_FETCH__SUCCESS:
+      case ActionTypes.GLOBAL_CALENDAR_CARDS_FETCH__SUCCESS:
         payload.projects.forEach((project) => {
           Project.upsert(project);
         });

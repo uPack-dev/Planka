@@ -42,7 +42,11 @@ const BoardMemberships = React.memo(() => {
     <>
       {boardMemberships.length > 0 && (
         <div className={classNames(styles.segment, styles.groups)}>
-          {[BoardMembershipRoles.EDITOR, BoardMembershipRoles.VIEWER].map(
+          {[
+            BoardMembershipRoles.EDITOR,
+            BoardMembershipRoles.EMPLOYEE,
+            BoardMembershipRoles.VIEWER,
+          ].map(
             (role) =>
               boardMembershipsByRole[role] && (
                 <Group

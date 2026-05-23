@@ -31,6 +31,8 @@ const createOne = (values, { user } = {}) =>
     return { project, projectManager };
   });
 
+const getAll = () => defaultFind({});
+
 const getByIds = (ids) => defaultFind(ids);
 
 const getShared = ({ exceptIdOrIds } = {}) => {
@@ -58,6 +60,7 @@ const deleteOne = (criteria) => Project.destroyOne(criteria);
 
 module.exports = {
   createOne,
+  getAll,
   getByIds,
   getShared,
   getOneById,

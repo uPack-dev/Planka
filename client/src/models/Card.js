@@ -176,7 +176,27 @@ export default class extends BaseModel {
         break;
       case ActionTypes.BOARD_FETCH__SUCCESS:
         payload.cards.forEach((card) => {
-          Card.upsert(card);
+          const cardModel = Card.upsert(card);
+
+          cardModel.users.clear();
+          cardModel.labels.clear();
+        });
+
+        payload.cardMemberships.forEach(({ cardId, userId }) => {
+          Card.withId(cardId).users.add(userId);
+        });
+
+        payload.cardLabels.forEach(({ cardId, labelId }) => {
+          Card.withId(cardId).labels.add(labelId);
+        });
+
+        break;
+      case ActionTypes.GLOBAL_CALENDAR_CARDS_FETCH__SUCCESS:
+        payload.cards.forEach((card) => {
+          const cardModel = Card.upsert(card);
+
+          cardModel.users.clear();
+          cardModel.labels.clear();
         });
 
         payload.cardMemberships.forEach(({ cardId, userId }) => {

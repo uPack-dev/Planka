@@ -81,6 +81,7 @@ const ProjectContent = React.memo(() => {
     canUseLists,
     canUseMembers,
     canUseLabels,
+    canCompleteTasks,
     canAddTaskList,
     canAddAttachment,
     canAddCustomFieldGroup,
@@ -89,10 +90,12 @@ const ProjectContent = React.memo(() => {
 
     let isMember = false;
     let isEditor = false;
+    let isEmployee = false;
 
     if (boardMembership) {
       isMember = true;
       isEditor = boardMembership.role === BoardMembershipRoles.EDITOR;
+      isEmployee = boardMembership.role === BoardMembershipRoles.EMPLOYEE;
     }
 
     if (isInArchiveList || isInTrashList) {
@@ -112,6 +115,7 @@ const ProjectContent = React.memo(() => {
         canUseLists: isEditor,
         canUseMembers: false,
         canUseLabels: false,
+        canCompleteTasks: false,
         canAddTaskList: false,
         canAddAttachment: false,
         canAddCustomFieldGroup: false,
@@ -133,7 +137,8 @@ const ProjectContent = React.memo(() => {
       canDelete: isEditor,
       canUseLists: isEditor,
       canUseMembers: isEditor,
-      canUseLabels: isEditor,
+      canUseLabels: isEditor || isEmployee,
+      canCompleteTasks: isEditor || isEmployee,
       canAddTaskList: isEditor,
       canAddAttachment: isEditor,
       canAddCustomFieldGroup: isEditor,
@@ -531,7 +536,7 @@ const ProjectContent = React.memo(() => {
             </div>
           )}
           <CustomFieldGroups />
-          <TaskLists />
+          <TaskLists canManageTasks={canAddTaskList} canCompleteTasks={canCompleteTasks} />
           {attachmentIds.length > 0 && (
             <div className={styles.contentModule}>
               <div className={styles.moduleWrapper}>

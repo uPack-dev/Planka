@@ -29,7 +29,7 @@
  *             properties:
  *               role:
  *                 type: string
- *                 enum: [editor, viewer]
+ *                 enum: [editor, employee, viewer]
  *                 description: Role of the user in the board
  *                 example: editor
  *               canComment:

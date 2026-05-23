@@ -103,7 +103,9 @@ module.exports = {
       throw Errors.CARD_NOT_FOUND; // Forbidden
     }
 
-    if (boardMembership.role !== BoardMembership.Roles.EDITOR) {
+    if (
+      ![BoardMembership.Roles.EDITOR, BoardMembership.Roles.EMPLOYEE].includes(boardMembership.role)
+    ) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 

@@ -107,6 +107,8 @@ export default {
         'Can create own projects and be invited to work in others.',
       canEditBoardLayoutAndAssignMembersToCards:
         'Can edit the board layout and assign members to cards.',
+      canCompleteTasksChangeLabelsAndComment:
+        'Can complete tasks, change card labels, and write comments.',
       canManageSystemWideSettingsAndActAsProjectOwner:
         'Can manage the system wide settings and act as project owner.',
       canOnlyViewBoard: 'Can only view the board.',
@@ -205,6 +207,8 @@ export default {
       editor: 'Editor',
       editors: 'Editors',
       email: 'E-mail',
+      employee: 'Employee',
+      employees: 'Employees',
       emptyTrash_title: 'Empty Trash',
       enterCardTitle: 'Enter card title...',
       enterDescription: 'Enter description...',
@@ -215,7 +219,9 @@ export default {
       excludedEvents: 'Excluded events',
       expandTaskListsByDefault: 'Expand task lists by default',
       filterByLabels_title: 'Filter By Labels',
+      filterByBoards_title: 'Filter By Boards',
       filterByMembers_title: 'Filter By Members',
+      filterByProjects_title: 'Filter By Projects',
       forPersonalProjects: 'For personal projects.',
       forTeamBasedProjects: 'For team-based projects.',
       fromComputer_title: 'From Computer',
@@ -224,6 +230,7 @@ export default {
         'The full key is hidden for security reasons. Regenerate it to create a new one.',
       general: 'General',
       gradients: 'Gradients',
+      globalCalendar: 'Global calendar',
       grid: 'Grid',
       hideCompletedTasks: 'Hide completed tasks',
       hideFromProjectListAndFavorites: 'Hide from project list and favorites',
@@ -273,6 +280,7 @@ export default {
       oldestFirst: 'Oldest first',
       onlyOneManagerShouldRemainToMakeThisProjectPrivate:
         'Only one manager should remain to make this project private',
+      onlyMyCards: 'Only my cards',
       openBoard_title: 'Open Board',
       optional_inline: 'optional',
       organization: 'Organization',
