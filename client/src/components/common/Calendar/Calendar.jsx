@@ -82,6 +82,7 @@ const Calendar = React.memo(
     onDatesSet,
     onEventUpdate,
     renderEventMeta,
+    dayMaxEvents,
   }) => {
     const [t, i18n] = useTranslation();
     const [recurringMutation, setRecurringMutation] = useState(null);
@@ -227,7 +228,7 @@ const Calendar = React.memo(
           eventStartEditable={isEditable}
           eventDurationEditable={isEditable}
           nowIndicator
-          dayMaxEvents
+          dayMaxEvents={dayMaxEvents}
           expandRows
           eventContent={renderEventContent}
           eventClick={onEventClick}
@@ -260,6 +261,7 @@ Calendar.propTypes = {
   onDatesSet: PropTypes.func,
   onEventUpdate: PropTypes.func,
   renderEventMeta: PropTypes.func,
+  dayMaxEvents: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
 };
 
 Calendar.defaultProps = {
@@ -273,6 +275,7 @@ Calendar.defaultProps = {
   onDatesSet: undefined,
   onEventUpdate: undefined,
   renderEventMeta: undefined,
+  dayMaxEvents: true,
 };
 
 export default Calendar;

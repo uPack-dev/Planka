@@ -126,7 +126,7 @@ export const selectGlobalCalendarUsers = createSelector(
 export const selectGlobalCalendarCards = createSelector(
   orm,
   (state) => selectGlobalCalendar(state).cardIds,
-  ({ Card }, cardIds) =>
+  ({ Card, User }, cardIds) =>
     cardIds.flatMap((cardId) => {
       const cardModel = Card.withId(cardId);
 
@@ -134,13 +134,29 @@ export const selectGlobalCalendarCards = createSelector(
         return [];
       }
 
+      const users = cardModel.users.toRefArray();
+      const userIds = new Set(users.map((user) => user.id));
+
+      (cardModel.taskAssigneeUserIds || []).forEach((userId) => {
+        if (userIds.has(userId)) {
+          return;
+        }
+
+        const userModel = User.withId(userId);
+
+        if (userModel) {
+          userIds.add(userId);
+          users.push(userModel.ref);
+        }
+      });
+
       return {
         ...cardModel.ref,
         project: cardModel.board.project && cardModel.board.project.ref,
         board: cardModel.board.ref,
         list: cardModel.list.ref,
         labels: cardModel.labels.toRefArray(),
-        users: cardModel.users.toRefArray(),
+        users,
       };
     }),
 );

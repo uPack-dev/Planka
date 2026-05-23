@@ -170,6 +170,10 @@
       color: #061c2f;
     }
 
+    :global(.fc-daygrid-event) {
+      white-space: normal;
+    }
+
     :global(.fc-daygrid-more-link) {
       color: rgba(255, 255, 255, 0.92);
       font-size: 12px;
@@ -355,27 +359,30 @@
 
   .eventMeta {
     color: rgba(23, 57, 77, 0.68);
+    display: block;
     font-size: 10px;
     font-weight: 700;
     line-height: 1.15;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: visible;
+    white-space: normal;
   }
 
   .eventTitle {
+    display: -webkit-box;
     flex: 1 1 auto;
     font-size: 12px;
     font-weight: 700;
+    line-height: 1.15;
     min-width: 0;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .eventTop {
-    align-items: center;
+    align-items: flex-start;
     display: flex;
     gap: 6px;
     min-width: 0;

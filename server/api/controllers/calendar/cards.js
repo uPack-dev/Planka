@@ -122,7 +122,7 @@ module.exports = {
 
     const cardIds = sails.helpers.utils.mapRecords(cards);
 
-    const [lists, labels, boardMemberships, cardMemberships, cardLabels] =
+    const [lists, labels, boardMemberships, cardMemberships, cardLabels, taskLists] =
       visibleBoardIds.length > 0
         ? await Promise.all([
             List.qm.getByBoardIds(visibleBoardIds, {
@@ -132,19 +132,44 @@ module.exports = {
             BoardMembership.qm.getByBoardIds(visibleBoardIds),
             cardIds.length > 0 ? CardMembership.qm.getByCardIds(cardIds) : [],
             cardIds.length > 0 ? CardLabel.qm.getByCardIds(cardIds) : [],
+            cardIds.length > 0 ? TaskList.qm.getByCardIds(cardIds) : [],
           ])
-        : [[], [], [], [], []];
+        : [[], [], [], [], [], []];
+
+    const taskListIds = sails.helpers.utils.mapRecords(taskLists);
+    const tasks = taskListIds.length > 0 ? await Task.qm.getByTaskListIds(taskListIds) : [];
+    const cardIdByTaskListId = _.keyBy(taskLists, 'id');
+    const taskAssigneeUserIdsByCardId = tasks.reduce((result, task) => {
+      if (!task.assigneeUserId) {
+        return result;
+      }
+
+      const taskList = cardIdByTaskListId[task.taskListId];
+
+      if (!taskList) {
+        return result;
+      }
+
+      return {
+        ...result,
+        [taskList.cardId]: _.uniq([...(result[taskList.cardId] || []), task.assigneeUserId]),
+      };
+    }, {});
 
     const userIds = _.union(
       sails.helpers.utils.mapRecords(boardMemberships, 'userId'),
       sails.helpers.utils.mapRecords(cards, 'creatorUserId', true, true),
       sails.helpers.utils.mapRecords(cardMemberships, 'userId'),
+      sails.helpers.utils.mapRecords(tasks, 'assigneeUserId', true, true),
     );
 
     const users = userIds.length > 0 ? await User.qm.getByIds(userIds) : [];
 
     return {
-      items: cards,
+      items: cards.map((card) => ({
+        ...card,
+        taskAssigneeUserIds: taskAssigneeUserIdsByCardId[card.id] || [],
+      })),
       included: {
         projects: visibleProjects,
         boards: visibleBoards,

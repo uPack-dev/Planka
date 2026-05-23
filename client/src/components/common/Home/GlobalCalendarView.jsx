@@ -4,7 +4,7 @@
  */
 
 import debounce from 'lodash/debounce';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Checkbox, Dropdown, Input } from 'semantic-ui-react';
@@ -18,9 +18,10 @@ import {
   selectionToCardDefaults,
 } from '../../../utils/calendar-events';
 import Paths from '../../../constants/Paths';
-import { BoardMembershipRoles } from '../../../constants/Enums';
+import { BoardMembershipRoles, UserRoles } from '../../../constants/Enums';
 import Calendar from '../Calendar';
 import GlobalCalendarCreateCardModal from './GlobalCalendarCreateCardModal';
+import UserAvatar from '../../users/UserAvatar';
 
 import styles from './GlobalCalendarView.module.scss';
 
@@ -33,6 +34,8 @@ const DEFAULT_FILTERS = {
   onlyMyCards: false,
 };
 
+const MAX_VISIBLE_EVENT_USERS = 5;
+
 const GlobalCalendarView = React.memo(() => {
   const calendar = useSelector(selectors.selectGlobalCalendar);
   const projects = useSelector(selectors.selectGlobalCalendarProjects);
@@ -41,14 +44,19 @@ const GlobalCalendarView = React.memo(() => {
   const users = useSelector(selectors.selectGlobalCalendarUsers);
   const labels = useSelector(selectors.selectGlobalCalendarLabels);
   const cards = useSelector(selectors.selectGlobalCalendarCards);
+  const currentUser = useSelector(selectors.selectCurrentUser);
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
 
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState(() => ({
+    ...DEFAULT_FILTERS,
+    onlyMyCards: currentUser ? currentUser.role !== UserRoles.ADMIN : DEFAULT_FILTERS.onlyMyCards,
+  }));
   const [searchDraft, setSearchDraft] = useState(DEFAULT_FILTERS.search);
   const [visibleRange, setVisibleRange] = useState(null);
   const [createDefaults, setCreateDefaults] = useState(null);
+  const hasAppliedUserDefaultRef = useRef(!!currentUser);
 
   const canCreate = useMemo(
     () =>
@@ -78,6 +86,18 @@ const GlobalCalendarView = React.memo(() => {
     },
     [debouncedSearch],
   );
+
+  useEffect(() => {
+    if (!currentUser || hasAppliedUserDefaultRef.current) {
+      return;
+    }
+
+    hasAppliedUserDefaultRef.current = true;
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      onlyMyCards: currentUser.role !== UserRoles.ADMIN,
+    }));
+  }, [currentUser]);
 
   useEffect(() => {
     if (!visibleRange) {
@@ -241,11 +261,33 @@ const GlobalCalendarView = React.memo(() => {
 
   const renderEventMeta = useCallback(
     ({ event }) => {
-      const { project, board, list } = event.extendedProps;
+      const { project, board, list, users: eventUsers = [] } = event.extendedProps;
       const listName = list && (list.name || t(`common.${list.type}`));
-      const scopeName = board ? board.name : project && project.name;
+      const boardListName = [board && board.name, listName].filter(Boolean).join(' · ');
+      const visibleEventUsers = eventUsers.slice(0, MAX_VISIBLE_EVENT_USERS);
+      const hiddenEventUsersTotal = eventUsers.length - visibleEventUsers.length;
 
-      return [scopeName, listName].filter(Boolean).join(' · ');
+      return (
+        <span className={styles.eventMetaStack}>
+          {project && project.name && <span className={styles.eventMetaLine}>{project.name}</span>}
+          {boardListName && <span className={styles.eventMetaLine}>{boardListName}</span>}
+          {visibleEventUsers.length > 0 && (
+            <span className={styles.eventMetaAvatars}>
+              {visibleEventUsers.map((user) => (
+                <UserAvatar
+                  key={user.id}
+                  id={user.id}
+                  size="tiny"
+                  className={styles.eventMetaAvatar}
+                />
+              ))}
+              {hiddenEventUsersTotal > 0 && (
+                <span className={styles.eventMetaAvatarOverflow}>+{hiddenEventUsersTotal}</span>
+              )}
+            </span>
+          )}
+        </span>
+      );
     },
     [t],
   );
@@ -328,6 +370,7 @@ const GlobalCalendarView = React.memo(() => {
         onSelect={handleSelect}
         onDatesSet={handleDatesSet}
         renderEventMeta={renderEventMeta}
+        dayMaxEvents={false}
       />
       <GlobalCalendarCreateCardModal
         isOpened={!!createDefaults}

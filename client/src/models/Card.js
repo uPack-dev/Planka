@@ -50,6 +50,9 @@ export default class extends BaseModel {
     recurrenceRule: attr(),
     recurrenceUntil: attr(),
     recurrenceTimezone: attr(),
+    taskAssigneeUserIds: attr({
+      getDefault: () => [],
+    }),
     isDueCompleted: attr(),
     stopwatch: attr(),
     isClosed: attr(),
