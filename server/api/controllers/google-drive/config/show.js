@@ -9,21 +9,26 @@ module.exports = {
   async fn() {
     const config = await sails.helpers.googleDrive.getConfig();
     const redirectUri = `${sails.config.custom.baseUrl}/api/google-drive/callback`;
+    const hasClientId = !!config.clientId;
+    const hasClientSecret = !!config.clientSecret;
+    const hasPickerApiKey = !!config.pickerApiKey;
+    const hasPickerAppId = !!config.pickerAppId;
     const isConfigured = !!(
       config.enabled &&
-      config.clientId &&
-      config.clientSecret &&
-      config.pickerApiKey &&
-      config.pickerAppId
+      hasClientId &&
+      hasClientSecret &&
+      hasPickerApiKey &&
+      hasPickerAppId
     );
 
     return {
       item: {
         enabled: config.enabled,
         configured: isConfigured,
-        clientId: config.clientId,
-        pickerApiKey: config.pickerApiKey,
-        pickerAppId: config.pickerAppId,
+        hasClientId,
+        hasClientSecret,
+        hasPickerApiKey,
+        hasPickerAppId,
         scopes: config.scopes,
         redirectUri,
       },
