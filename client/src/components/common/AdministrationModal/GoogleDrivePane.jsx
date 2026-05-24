@@ -26,14 +26,15 @@ import { useForm } from '../../../hooks';
 import styles from './SmtpPane.module.scss';
 
 const DEFAULT_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const MASKED_VALUE = '●●●●●●●●';
 
 const buildFormData = (config) => ({
   enabled: config?.enabled ?? false,
   enableCheckbox: config?.enabled ?? false,
-  clientId: config?.clientId || '',
+  clientId: '',
   clientSecret: '',
-  pickerApiKey: config?.pickerApiKey || '',
-  pickerAppId: config?.pickerAppId || '',
+  pickerApiKey: '',
+  pickerAppId: '',
   scopes: config?.scopes || DEFAULT_SCOPES,
 });
 
@@ -48,7 +49,12 @@ const GoogleDrivePane = React.memo(() => {
   const [saveError, setSaveError] = useState(null);
   const [testError, setTestError] = useState(null);
 
-  const isSecretTouchedRef = useRef(false);
+  const touchedFieldsRef = useRef({
+    clientId: false,
+    clientSecret: false,
+    pickerApiKey: false,
+    pickerAppId: false,
+  });
 
   const [data, handleFieldChange, setData] = useForm(() => buildFormData(null));
 
@@ -78,7 +84,12 @@ const GoogleDrivePane = React.memo(() => {
       return;
     }
 
-    isSecretTouchedRef.current = false;
+    touchedFieldsRef.current = {
+      clientId: false,
+      clientSecret: false,
+      pickerApiKey: false,
+      pickerAppId: false,
+    };
     setData(buildFormData(config));
   }, [config, setData]);
 
@@ -113,19 +124,19 @@ const GoogleDrivePane = React.memo(() => {
   const isModified = useMemo(() => {
     const currentData = {
       enabled: data.enableCheckbox,
-      clientId: data.clientId,
-      pickerApiKey: data.pickerApiKey,
-      pickerAppId: data.pickerAppId,
       scopes: data.scopes,
     };
     const currentDefault = {
       enabled: defaultData.enableCheckbox,
-      clientId: defaultData.clientId,
-      pickerApiKey: defaultData.pickerApiKey,
-      pickerAppId: defaultData.pickerAppId,
       scopes: defaultData.scopes,
     };
-    return !dequal(currentData, currentDefault) || isSecretTouchedRef.current;
+    return (
+      !dequal(currentData, currentDefault) ||
+      touchedFieldsRef.current.clientId ||
+      touchedFieldsRef.current.clientSecret ||
+      touchedFieldsRef.current.pickerApiKey ||
+      touchedFieldsRef.current.pickerAppId
+    );
   }, [data, defaultData]);
 
   const handleSubmit = useCallback(async () => {
@@ -136,13 +147,19 @@ const GoogleDrivePane = React.memo(() => {
     try {
       const body = {
         enabled: cleanData.enabled,
-        clientId: cleanData.clientId,
-        pickerApiKey: cleanData.pickerApiKey,
-        pickerAppId: cleanData.pickerAppId,
         scopes: cleanData.scopes,
       };
-      if (isSecretTouchedRef.current && cleanData.clientSecret) {
+      if (touchedFieldsRef.current.clientId) {
+        body.clientId = cleanData.clientId;
+      }
+      if (touchedFieldsRef.current.clientSecret && cleanData.clientSecret) {
         body.clientSecret = cleanData.clientSecret;
+      }
+      if (touchedFieldsRef.current.pickerApiKey) {
+        body.pickerApiKey = cleanData.pickerApiKey;
+      }
+      if (touchedFieldsRef.current.pickerAppId) {
+        body.pickerAppId = cleanData.pickerAppId;
       }
 
       const response = await fetch(`${Config.BASE_PATH}/api/google-drive/config`, {
@@ -152,7 +169,12 @@ const GoogleDrivePane = React.memo(() => {
         body: JSON.stringify(body),
       });
       if (response.ok) {
-        isSecretTouchedRef.current = false;
+        touchedFieldsRef.current = {
+          clientId: false,
+          clientSecret: false,
+          pickerApiKey: false,
+          pickerAppId: false,
+        };
         await fetchConfig();
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -174,10 +196,10 @@ const GoogleDrivePane = React.memo(() => {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          clientId: cleanData.clientId || config?.clientId,
+          clientId: cleanData.clientId || undefined,
           clientSecret: cleanData.clientSecret || undefined,
-          pickerApiKey: cleanData.pickerApiKey || config?.pickerApiKey,
-          pickerAppId: cleanData.pickerAppId || config?.pickerAppId,
+          pickerApiKey: cleanData.pickerApiKey || undefined,
+          pickerAppId: cleanData.pickerAppId || undefined,
           scopes: cleanData.scopes || config?.scopes,
         }),
       });
@@ -196,7 +218,6 @@ const GoogleDrivePane = React.memo(() => {
   const handleCopyRedirectUri = useCallback(() => {
     if (config?.redirectUri) {
       navigator.clipboard.writeText(config.redirectUri).catch(() => {
-        // Fallback
         const textArea = document.createElement('textarea');
         textArea.value = config.redirectUri;
         document.body.appendChild(textArea);
@@ -207,10 +228,10 @@ const GoogleDrivePane = React.memo(() => {
     }
   }, [config]);
 
-  const handleSecretChange = useCallback(
-    (event, { value, ...props }) => {
-      isSecretTouchedRef.current = true;
-      handleFieldChange(event, { value, ...props });
+  const handleSensitiveFieldChange = useCallback(
+    (event, { name, value, ...props }) => {
+      touchedFieldsRef.current[name] = true;
+      handleFieldChange(event, { name, value, ...props });
     },
     [handleFieldChange],
   );
@@ -251,7 +272,8 @@ const GoogleDrivePane = React.memo(() => {
           value={data.clientId}
           maxLength={512}
           className={styles.field}
-          onChange={handleFieldChange}
+          placeholder={config?.hasClientId ? MASKED_VALUE : undefined}
+          onChange={handleSensitiveFieldChange}
         />
         <div className={styles.text}>{t('common.googleDriveClientSecret')}</div>
         <Input
@@ -260,8 +282,8 @@ const GoogleDrivePane = React.memo(() => {
           value={data.clientSecret}
           maxLength={512}
           className={styles.field}
-          placeholder={config?.configured && !isSecretTouchedRef.current ? '●●●●●●●●' : undefined}
-          onChange={handleSecretChange}
+          placeholder={config?.hasClientSecret ? MASKED_VALUE : undefined}
+          onChange={handleSensitiveFieldChange}
         />
         <div className={styles.text}>{t('common.googleDrivePickerApiKey')}</div>
         <Input
@@ -270,7 +292,8 @@ const GoogleDrivePane = React.memo(() => {
           value={data.pickerApiKey}
           maxLength={512}
           className={styles.field}
-          onChange={handleFieldChange}
+          placeholder={config?.hasPickerApiKey ? MASKED_VALUE : undefined}
+          onChange={handleSensitiveFieldChange}
         />
         <div className={styles.text}>{t('common.googleDrivePickerAppId')}</div>
         <Input
@@ -279,7 +302,8 @@ const GoogleDrivePane = React.memo(() => {
           value={data.pickerAppId}
           maxLength={128}
           className={styles.field}
-          onChange={handleFieldChange}
+          placeholder={config?.hasPickerAppId ? MASKED_VALUE : undefined}
+          onChange={handleSensitiveFieldChange}
         />
         <div className={styles.text}>{t('common.googleDriveRedirectUri')}</div>
         <Input
