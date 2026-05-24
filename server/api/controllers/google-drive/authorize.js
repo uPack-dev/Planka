@@ -36,10 +36,7 @@ module.exports = {
     });
 
     const signature = crypto
-      .createHmac(
-        'sha256',
-        sails.config.session.secret || process.env.SECRET_KEY || 'default-secret',
-      )
+      .createHmac('sha256', sails.helpers.googleDrive.getEncryptionKey())
       .update(state)
       .digest('hex');
 
