@@ -39,7 +39,7 @@ module.exports = {
       .intercept('fileNotFound', () => 'driveError')
       .intercept('driveError', () => 'driveError');
 
-    if (!file.capabilities || !file.capabilities.canShare) {
+    if (!file.ownedByMe || !file.capabilities || !file.capabilities.canShare) {
       throw 'cannotShare';
     }
 
