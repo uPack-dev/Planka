@@ -126,7 +126,7 @@ const openPicker = async (apiKey, appId, clientId, accessToken) =>
     window.gapi.load('picker', {
       callback: () => {
         const docsView = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS);
-        docsView.setIncludeFolders(true);
+        docsView.setIncludeFolders(false);
         docsView.setSelectFolderEnabled(false);
         docsView.setMode(window.google.picker.DocsViewMode.LIST);
 
