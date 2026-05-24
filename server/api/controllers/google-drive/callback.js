@@ -38,13 +38,8 @@ module.exports = {
       const { state, signature } = JSON.parse(
         Buffer.from(inputs.state, 'base64url').toString('utf8'),
       );
-      const expectedSignature = crypto
-        .createHmac(
-          'sha256',
-          sails.config.session.secret || process.env.SECRET_KEY || 'default-secret',
-        )
-        .update(state)
-        .digest('hex');
+      const key = sails.helpers.googleDrive.getEncryptionKey();
+      const expectedSignature = crypto.createHmac('sha256', key).update(state).digest('hex');
 
       if (signature !== expectedSignature) {
         throw new Error('Invalid state signature');
@@ -82,16 +77,9 @@ module.exports = {
       .exchangeCode(inputs.code)
       .intercept('tokenExchangeFailed', () => 'tokenExchangeFailed');
 
-    const secret = sails.config.session.secret || process.env.SECRET_KEY || 'default-secret';
-    const key =
-      process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY &&
-      process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY.length === 64
-        ? process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY
-        : crypto.createHash('sha256').update(secret).digest('hex');
-
     const encrypted = sails.helpers.utils.encrypt.with({
       value: tokens.refreshToken,
-      key,
+      key: sails.helpers.googleDrive.getEncryptionKey(),
     });
 
     await GoogleDriveCredential.qm.deleteOneByUserId(userId);
