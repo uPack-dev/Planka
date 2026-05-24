@@ -21,11 +21,14 @@ import TimeAgo from '../../common/TimeAgo';
 
 import styles from './ItemContent.module.scss';
 
+const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
+
 const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
   const selectAttachmentById = useMemo(() => selectors.makeSelectAttachmentById(), []);
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
 
   const attachment = useSelector((state) => selectAttachmentById(state, id));
+  const attachmentData = attachment?.data || {};
 
   const isCover = useSelector(
     (state) => id === selectors.selectCurrentCard(state).coverAttachmentId,
@@ -47,29 +50,30 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
   const [t] = useTranslation();
 
   const isGoogleDrive =
-    attachment.type === AttachmentTypes.LINK && attachment.data.provider === 'googleDrive';
+    attachment?.type === AttachmentTypes.LINK && attachmentData.provider === 'googleDrive';
+  const isGoogleDriveFolder = isGoogleDrive && attachmentData.mimeType === FOLDER_MIME_TYPE;
 
   const handleClick = useCallback(() => {
     if (onOpen) {
       onOpen();
     } else if (isGoogleDrive) {
-      window.open(attachment.data.webViewLink || attachment.data.url, '_blank');
-    } else {
-      window.open(attachment.data.url, '_blank');
+      window.open(attachmentData.webViewLink || attachmentData.url, '_blank');
+    } else if (attachmentData.url) {
+      window.open(attachmentData.url, '_blank');
     }
-  }, [onOpen, attachment.data, isGoogleDrive]);
+  }, [onOpen, attachmentData, isGoogleDrive]);
 
   const handleDownloadClick = useCallback(
     (event) => {
       event.stopPropagation();
 
       const linkElement = document.createElement('a');
-      linkElement.href = attachment.data.url;
-      linkElement.download = attachment.data.filename;
+      linkElement.href = attachmentData.url;
+      linkElement.download = attachmentData.filename;
       linkElement.target = '_blank';
       linkElement.click();
     },
-    [attachment.data],
+    [attachmentData],
   );
 
   const handleToggleCoverClick = useCallback(
@@ -88,14 +92,14 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
   const handleOpenInDriveClick = useCallback(
     (event) => {
       event.stopPropagation();
-      window.open(attachment.data.webViewLink || attachment.data.url, '_blank');
+      window.open(attachmentData.webViewLink || attachmentData.url, '_blank');
     },
-    [attachment.data],
+    [attachmentData],
   );
 
   const EditPopup = usePopupInClosableContext(EditStep);
 
-  if (!attachment.isPersisted) {
+  if (!attachment || !attachment.isPersisted) {
     return (
       <div className={classNames(styles.wrapper, styles.wrapperSubmitting)}>
         <Loader inverted />
@@ -105,9 +109,9 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
 
   const renderThumbnail = () => {
     if (attachment.type === AttachmentTypes.FILE) {
-      if (attachment.data.image) {
+      if (attachmentData.image) {
         return {
-          background: `url("${attachment.data.thumbnailUrls.outside360}") center / cover`,
+          background: `url("${attachmentData.thumbnailUrls.outside360}") center / cover`,
           children: isCover ? (
             <Label
               corner="left"
@@ -125,19 +129,25 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
 
       return {
         children: (
-          <span className={styles.thumbnailExtension}>{attachment.data.extension || '-'}</span>
+          <span className={styles.thumbnailExtension}>{attachmentData.extension || '-'}</span>
         ),
       };
     }
 
     if (isGoogleDrive) {
+      if (attachmentData.thumbnailUrl) {
+        return {
+          background: `url("${attachmentData.thumbnailUrl}") center / cover`,
+        };
+      }
+
       return {
-        children: <Icon name="cloud" size="big" color="grey" />,
+        children: <Icon name={isGoogleDriveFolder ? 'folder open' : 'cloud'} size="big" color="grey" />,
       };
     }
 
     return {
-      children: <Favicon url={attachment.data.faviconUrl} />,
+      children: <Favicon url={attachmentData.faviconUrl} />,
     };
   };
 
@@ -160,7 +170,9 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
         <span className={styles.information}>
           {isGoogleDrive && (
             <>
-              <span className={styles.providerLabel}>{t('common.googleDrive')}</span>
+              <span className={styles.providerLabel}>
+                {isGoogleDriveFolder ? t('common.googleDriveFolder') : t('common.googleDrive')}
+              </span>
               {' — '}
             </>
           )}
@@ -176,7 +188,7 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
                 })}
               </span>
             </button>
-            {attachment.data.image && canEdit && (
+            {attachmentData.image && canEdit && (
               <button type="button" className={styles.option} onClick={handleToggleCoverClick}>
                 <Icon
                   name="window maximize outline"
