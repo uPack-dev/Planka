@@ -39,13 +39,27 @@ module.exports = {
       request: this.req,
     });
 
+    const config = await sails.helpers.googleDrive.getConfig();
+    const hasClientId = !!config.clientId;
+    const hasClientSecret = !!config.clientSecret;
+    const hasPickerApiKey = !!config.pickerApiKey;
+    const hasPickerAppId = !!config.pickerAppId;
+
     return {
       item: {
-        enabled: inputs.enabled,
-        clientId: inputs.clientId,
-        pickerApiKey: inputs.pickerApiKey,
-        pickerAppId: inputs.pickerAppId,
-        scopes: inputs.scopes,
+        enabled: config.enabled,
+        configured: !!(
+          config.enabled &&
+          hasClientId &&
+          hasClientSecret &&
+          hasPickerApiKey &&
+          hasPickerAppId
+        ),
+        hasClientId,
+        hasClientSecret,
+        hasPickerApiKey,
+        hasPickerAppId,
+        scopes: config.scopes,
       },
     };
   },
