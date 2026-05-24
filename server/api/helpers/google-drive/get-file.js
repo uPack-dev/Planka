@@ -33,7 +33,7 @@ module.exports = {
     }
 
     const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${inputs.fileId}?fields=id,name,mimeType,webViewLink,thumbnailLink,iconLink,capabilities/canShare`,
+      `https://www.googleapis.com/drive/v3/files/${inputs.fileId}?fields=id,name,mimeType,webViewLink,thumbnailLink,iconLink,ownedByMe,capabilities/canShare`,
       {
         headers,
       },
