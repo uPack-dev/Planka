@@ -7,7 +7,7 @@ module.exports = {
   inputs: {
     clientId: {
       type: 'string',
-      required: true,
+      allowNull: true,
     },
     clientSecret: {
       type: 'string',
@@ -15,59 +15,56 @@ module.exports = {
     },
     pickerApiKey: {
       type: 'string',
-      required: true,
+      allowNull: true,
     },
     pickerAppId: {
       type: 'string',
-      required: true,
+      allowNull: true,
     },
     scopes: {
       type: 'string',
+      allowNull: true,
     },
   },
 
   async fn(inputs) {
-    const scopes = inputs.scopes || 'https://www.googleapis.com/auth/drive.file';
+    const savedConfig = await sails.helpers.googleDrive.getConfig();
+    const clientId = inputs.clientId || savedConfig.clientId;
+    const clientSecret = inputs.clientSecret || savedConfig.clientSecret;
+    const pickerApiKey = inputs.pickerApiKey || savedConfig.pickerApiKey;
+    const pickerAppId = inputs.pickerAppId || savedConfig.pickerAppId;
+    const scopes = inputs.scopes || savedConfig.scopes || 'https://www.googleapis.com/auth/drive.file';
     const redirectUri = `${sails.config.custom.baseUrl}/api/google-drive/callback`;
 
-    const results = {};
+    const missingFields = [];
 
-    try {
-      const oauthResponse = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: inputs.clientId,
-          client_secret: inputs.clientSecret,
-          redirect_uri: redirectUri,
-          grant_type: 'client_credentials',
-          scope: scopes,
-        }),
-      });
-
-      if (oauthResponse.ok) {
-        results.oauth = { success: true };
-      } else {
-        const errorData = await oauthResponse.json().catch(() => ({}));
-        results.oauth = {
-          success: false,
-          error: errorData.error_description || errorData.error || `HTTP ${oauthResponse.status}`,
-        };
-      }
-    } catch (error) {
-      results.oauth = { success: false, error: error.message };
+    if (!clientId) {
+      missingFields.push('clientId');
     }
-
-    try {
-      results.redirectUri = redirectUri;
-      results.redirectUriValid = !!sails.config.custom.baseUrl;
-    } catch (error) {
-      results.redirectUri = null;
-      results.redirectUriValid = false;
+    if (!clientSecret) {
+      missingFields.push('clientSecret');
+    }
+    if (!pickerApiKey) {
+      missingFields.push('pickerApiKey');
+    }
+    if (!pickerAppId) {
+      missingFields.push('pickerAppId');
+    }
+    if (!sails.config.custom.baseUrl) {
+      missingFields.push('baseUrl');
     }
 
     return {
-      item: results,
+      item: {
+        success: missingFields.length === 0,
+        missingFields,
+        redirectUri,
+        scopes,
+        note:
+          missingFields.length === 0
+            ? 'Configuration fields are present. Complete OAuth from the attachment picker to verify Google authorization.'
+            : 'Configuration is incomplete.',
+      },
     };
   },
 };
