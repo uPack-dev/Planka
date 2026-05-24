@@ -13,9 +13,25 @@ import { FilePicker, Popup } from '../../../lib/custom-ui';
 import entryActions from '../../../entry-actions';
 import selectors from '../../../selectors';
 import { AttachmentTypes, UserRoles } from '../../../constants/Enums';
+import Config from '../../../constants/Config';
 import googleDrivePicker, { ErrorCodes } from '../../../utils/google-drive-picker';
 
 import styles from './AddAttachmentStep.module.scss';
+
+const fetchGoogleDriveStatus = async () => {
+  const response = await fetch(`${Config.BASE_PATH}/api/google-drive/status`, {
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const error = new Error('Failed to get Google Drive status');
+    error.code = ErrorCodes.TOKEN_FAILED;
+    throw error;
+  }
+
+  return response.json();
+};
 
 const AddAttachmentStep = React.memo(({ onClose }) => {
   const dispatch = useDispatch();
@@ -24,8 +40,6 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
   const [googleDriveError, setGoogleDriveError] = useState(null);
   const [showSettingsLink, setShowSettingsLink] = useState(false);
 
-  const config = useSelector(selectors.selectConfig);
-  const googleDriveConfig = config && config.googleDrive;
   const currentUser = useSelector(selectors.selectCurrentUser);
   const isAdmin = currentUser && currentUser.role === UserRoles.ADMIN;
 
@@ -56,7 +70,17 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
     setIsGoogleDriveLoading(true);
 
     try {
-      const files = await googleDrivePicker.openGoogleDrivePicker(t, googleDriveConfig);
+      const status = await fetchGoogleDriveStatus();
+
+      if (!status.configured) {
+        const error = new Error(t('common.googleDriveIntegrationNotConfigured'));
+        error.code = ErrorCodes.NOT_CONFIGURED;
+        throw error;
+      }
+
+      const files = await googleDrivePicker.openGoogleDrivePicker(t, {
+        configured: true,
+      });
 
       if (files.length > 0) {
         files.forEach((file) => {
@@ -101,7 +125,7 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
     } finally {
       setIsGoogleDriveLoading(false);
     }
-  }, [isGoogleDriveLoading, onClose, dispatch, t, googleDriveConfig]);
+  }, [isGoogleDriveLoading, onClose, dispatch, t]);
 
   const handleConfigureClick = useCallback(() => {
     dispatch(entryActions.closeModal());
