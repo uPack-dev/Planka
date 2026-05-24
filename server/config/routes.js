@@ -198,6 +198,16 @@ module.exports.routes = {
   'PATCH /api/attachments/:id': 'attachments/update',
   'DELETE /api/attachments/:id': 'attachments/delete',
 
+  'GET /api/google-drive/status': 'google-drive/status',
+  'GET /api/google-drive/authorize': 'google-drive/authorize',
+  'GET /api/google-drive/callback': 'google-drive/callback',
+  'GET /api/google-drive/picker-token': 'google-drive/picker-token',
+  'DELETE /api/google-drive/connection': 'google-drive/delete-connection',
+
+  'GET /api/google-drive/config': 'google-drive/config/show',
+  'PATCH /api/google-drive/config': 'google-drive/config/update',
+  'POST /api/google-drive/config/test': 'google-drive/config/test',
+
   'POST /api/boards/:boardId/custom-field-groups': 'custom-field-groups/create-in-board',
   'POST /api/cards/:cardId/custom-field-groups': 'custom-field-groups/create-in-card',
   'GET /api/custom-field-groups/:id': 'custom-field-groups/show',

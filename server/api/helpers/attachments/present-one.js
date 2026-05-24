@@ -32,22 +32,32 @@ module.exports = {
         },
       };
     } else if (inputs.record.type === Attachment.Types.LINK) {
-      const faviconFilename = `${inputs.record.data.hostname}.png`;
-
-      let faviconUrl = null;
-      if (sails.helpers.utils.isPreloadedFaviconExists(inputs.record.data.hostname)) {
-        faviconUrl = `${sails.config.custom.baseUrl}/preloaded-favicons/${faviconFilename}`;
+      if (inputs.record.data.provider === 'googleDrive') {
+        data = {
+          ...inputs.record,
+          data: {
+            ..._.omit(inputs.record.data, ['hostname']),
+            faviconUrl: null,
+          },
+        };
       } else {
-        faviconUrl = `${sails.config.custom.baseUrl}/favicons/${faviconFilename}`;
-      }
+        const faviconFilename = `${inputs.record.data.hostname}.png`;
 
-      data = {
-        ...inputs.record,
-        data: {
-          ..._.omit(inputs.record.data, 'hostname'),
-          faviconUrl,
-        },
-      };
+        let faviconUrl = null;
+        if (sails.helpers.utils.isPreloadedFaviconExists(inputs.record.data.hostname)) {
+          faviconUrl = `${sails.config.custom.baseUrl}/preloaded-favicons/${faviconFilename}`;
+        } else {
+          faviconUrl = `${sails.config.custom.baseUrl}/favicons/${faviconFilename}`;
+        }
+
+        data = {
+          ...inputs.record,
+          data: {
+            ..._.omit(inputs.record.data, 'hostname'),
+            faviconUrl,
+          },
+        };
+      }
     }
 
     return data;

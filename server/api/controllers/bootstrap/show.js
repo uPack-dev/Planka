@@ -78,7 +78,7 @@ module.exports = {
     const oidc = await sails.hooks.oidc.getBootstrap();
 
     return {
-      item: sails.helpers.bootstrap.presentOne(internalConfig, oidc, currentUser),
+      item: await sails.helpers.bootstrap.presentOne(internalConfig, oidc, currentUser),
     };
   },
 };

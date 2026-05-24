@@ -4,7 +4,7 @@
  */
 
 module.exports = {
-  sync: true,
+  sync: false,
 
   inputs: {
     internalConfig: {
@@ -19,12 +19,32 @@ module.exports = {
     },
   },
 
-  fn(inputs) {
+  async fn(inputs) {
     const data = {
       oidc: inputs.oidc,
       termsLanguages: sails.hooks.terms.getLanguages(),
       version: sails.config.custom.version,
     };
+
+    const googleDriveConfig = await sails.helpers.googleDrive.getConfig();
+
+    Object.assign(data, {
+      googleDrive: {
+        enabled: googleDriveConfig.enabled,
+        configured: !!(
+          googleDriveConfig.enabled &&
+          googleDriveConfig.clientId &&
+          googleDriveConfig.clientSecret &&
+          googleDriveConfig.pickerApiKey &&
+          googleDriveConfig.pickerAppId
+        ),
+        clientId: googleDriveConfig.clientId,
+        pickerApiKey: googleDriveConfig.pickerApiKey,
+        pickerAppId: googleDriveConfig.pickerAppId,
+        scopes: googleDriveConfig.scopes,
+        redirectUri: `${sails.config.custom.baseUrl}/api/google-drive/callback`,
+      },
+    });
 
     if (inputs.user && inputs.user.role === User.Roles.ADMIN) {
       Object.assign(data, {

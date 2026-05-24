@@ -15,6 +15,7 @@ import { useClosableModal } from '../../../hooks';
 import UsersPane from './UsersPane';
 import SmtpPane from './SmtpPane';
 import WebhooksPane from './WebhooksPane';
+import GoogleDrivePane from './GoogleDrivePane';
 
 import styles from './AdministrationModal.module.scss';
 
@@ -51,6 +52,12 @@ const AdministrationModal = React.memo(() => {
       render: () => <SmtpPane />,
     });
   }
+  panes.push({
+    menuItem: t('common.googleDriveIntegrationSettings', {
+      context: 'title',
+    }),
+    render: () => <GoogleDrivePane />,
+  });
   panes.push({
     menuItem: t('common.webhooks', {
       context: 'title',
