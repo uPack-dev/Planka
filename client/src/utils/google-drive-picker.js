@@ -8,6 +8,8 @@ import Config from '../constants/Config';
 let scriptLoaded = false;
 let scriptLoading = null;
 
+const FOLDER_MIME_TYPE = 'application/vnd.google-apps.folder';
+
 const loadGoogleApiScript = () => {
   if (scriptLoaded) {
     return Promise.resolve();
@@ -35,6 +37,23 @@ const loadGoogleApiScript = () => {
 };
 
 let authWindow = null;
+
+const fetchStatus = async () => {
+  const response = await fetch(`${Config.BASE_PATH}/api/google-drive/status`, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const error = new Error('Failed to get Google Drive status');
+    error.code = 'GOOGLE_DRIVE_STATUS_FAILED';
+    throw error;
+  }
+
+  return response.json();
+};
 
 const openOAuthPopup = () =>
   new Promise((resolve, reject) => {
@@ -118,17 +137,40 @@ const fetchPickerToken = async () => {
   return response.json();
 };
 
+const normalizePickedDocument = (doc) => {
+  const isFolder = doc.type === 'folder' || doc.mimeType === FOLDER_MIME_TYPE;
+  const url =
+    doc.url ||
+    (isFolder
+      ? `https://drive.google.com/drive/folders/${doc.id}`
+      : `https://drive.google.com/file/d/${doc.id}/view`);
+
+  return {
+    fileId: doc.id,
+    name: doc.name,
+    mimeType: doc.mimeType || (isFolder ? FOLDER_MIME_TYPE : null),
+    webViewLink: url,
+    url,
+    embedUrl: isFolder ? null : doc.embedUrl || `https://drive.google.com/file/d/${doc.id}/preview`,
+    iconUrl: doc.iconUrl || null,
+    thumbnailUrl: doc.thumbnailUrl || null,
+    resourceKey: doc.resourceKey || null,
+    isFolder,
+  };
+};
+
 const openPicker = async (apiKey, appId, clientId, accessToken) =>
   new Promise((resolve, reject) => {
-    window.gapi.load('auth');
-    window.gapi.load('picker');
-
     window.gapi.load('picker', {
       callback: () => {
         const docsView = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS);
-        docsView.setIncludeFolders(false);
-        docsView.setSelectFolderEnabled(false);
+        docsView.setIncludeFolders(true);
+        docsView.setSelectFolderEnabled(true);
         docsView.setMode(window.google.picker.DocsViewMode.LIST);
+
+        if (typeof docsView.setOwnedByMe === 'function') {
+          docsView.setOwnedByMe(true);
+        }
 
         const picker = new window.google.picker.PickerBuilder()
           .enableFeature(window.google.picker.Feature.NAV_HIDDEN)
@@ -139,24 +181,7 @@ const openPicker = async (apiKey, appId, clientId, accessToken) =>
           .setDeveloperKey(apiKey)
           .setCallback((data) => {
             if (data.action === window.google.picker.Action.PICKED) {
-              const files = [];
-              data.docs.forEach((doc) => {
-                if (doc.type === 'folder') {
-                  return;
-                }
-                files.push({
-                  fileId: doc.id,
-                  name: doc.name,
-                  mimeType: doc.mimeType,
-                  webViewLink: doc.url || `https://drive.google.com/file/d/${doc.id}/view`,
-                  url: doc.url || `https://drive.google.com/file/d/${doc.id}/view`,
-                  embedUrl: doc.embedUrl || `https://drive.google.com/file/d/${doc.id}/preview`,
-                  iconUrl: doc.iconUrl || null,
-                  thumbnailUrl: doc.thumbnailUrl || null,
-                  resourceKey: doc.resourceKey || null,
-                });
-              });
-              resolve(files);
+              resolve(data.docs.map(normalizePickedDocument));
             } else if (data.action === window.google.picker.Action.CANCEL) {
               const error = new Error('Picker cancelled');
               error.code = 'GOOGLE_DRIVE_PICKER_CANCELLED';
@@ -185,19 +210,22 @@ export const ErrorCodes = {
   PICKER_CANCELLED: 'GOOGLE_DRIVE_PICKER_CANCELLED',
   PICKER_LOAD_FAILED: 'GOOGLE_DRIVE_PICKER_LOAD_FAILED',
   TOKEN_FAILED: 'GOOGLE_DRIVE_TOKEN_FAILED',
+  STATUS_FAILED: 'GOOGLE_DRIVE_STATUS_FAILED',
   CONNECTION_FAILED: 'GOOGLE_DRIVE_CONNECTION_FAILED',
 };
 
-const openGoogleDrivePicker = async (t, bootstrapConfig) => {
-  if (!bootstrapConfig) {
+const openGoogleDrivePicker = async (t) => {
+  const status = await fetchStatus();
+
+  if (!status.configured) {
     const error = new Error(t('common.googleDriveIntegrationNotConfigured'));
     error.code = ErrorCodes.NOT_CONFIGURED;
     throw error;
   }
 
-  if (!bootstrapConfig.configured) {
-    const error = new Error(t('common.googleDriveIntegrationNotConfigured'));
-    error.code = ErrorCodes.NOT_CONFIGURED;
+  if (status.enabled === false) {
+    const error = new Error(t('common.googleDriveIntegrationDisabled'));
+    error.code = ErrorCodes.DISABLED;
     throw error;
   }
 
