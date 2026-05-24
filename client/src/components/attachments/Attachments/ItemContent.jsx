@@ -46,13 +46,18 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
   const dispatch = useDispatch();
   const [t] = useTranslation();
 
+  const isGoogleDrive =
+    attachment.type === AttachmentTypes.LINK && attachment.data.provider === 'googleDrive';
+
   const handleClick = useCallback(() => {
     if (onOpen) {
       onOpen();
+    } else if (isGoogleDrive) {
+      window.open(attachment.data.webViewLink || attachment.data.url, '_blank');
     } else {
       window.open(attachment.data.url, '_blank');
     }
-  }, [onOpen, attachment.data]);
+  }, [onOpen, attachment.data, isGoogleDrive]);
 
   const handleDownloadClick = useCallback(
     (event) => {
@@ -80,6 +85,14 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
     [id, isCover, dispatch],
   );
 
+  const handleOpenInDriveClick = useCallback(
+    (event) => {
+      event.stopPropagation();
+      window.open(attachment.data.webViewLink || attachment.data.url, '_blank');
+    },
+    [attachment.data],
+  );
+
   const EditPopup = usePopupInClosableContext(EditStep);
 
   if (!attachment.isPersisted) {
@@ -90,6 +103,46 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
     );
   }
 
+  const renderThumbnail = () => {
+    if (attachment.type === AttachmentTypes.FILE) {
+      if (attachment.data.image) {
+        return {
+          background: `url("${attachment.data.thumbnailUrls.outside360}") center / cover`,
+          children: isCover ? (
+            <Label
+              corner="left"
+              size="mini"
+              icon={{
+                name: 'checkmark',
+                color: 'grey',
+                inverted: true,
+              }}
+              className={styles.thumbnailLabel}
+            />
+          ) : null,
+        };
+      }
+
+      return {
+        children: (
+          <span className={styles.thumbnailExtension}>{attachment.data.extension || '-'}</span>
+        ),
+      };
+    }
+
+    if (isGoogleDrive) {
+      return {
+        children: <Icon name="cloud" size="big" color="grey" />,
+      };
+    }
+
+    return {
+      children: <Favicon url={attachment.data.faviconUrl} />,
+    };
+  };
+
+  const thumbnail = renderThumbnail();
+
   return (
     /* eslint-disable-next-line jsx-a11y/click-events-have-key-events,
                                 jsx-a11y/no-static-element-interactions */
@@ -97,34 +150,20 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
       <div
         className={styles.thumbnail}
         style={{
-          background:
-            attachment.type === AttachmentTypes.FILE &&
-            attachment.data.image &&
-            `url("${attachment.data.thumbnailUrls.outside360}") center / cover`,
+          background: thumbnail.background,
         }}
       >
-        {attachment.type === AttachmentTypes.FILE &&
-          (attachment.data.image ? (
-            isCover && (
-              <Label
-                corner="left"
-                size="mini"
-                icon={{
-                  name: 'checkmark',
-                  color: 'grey',
-                  inverted: true,
-                }}
-                className={styles.thumbnailLabel}
-              />
-            )
-          ) : (
-            <span className={styles.thumbnailExtension}>{attachment.data.extension || '-'}</span>
-          ))}
-        {attachment.type === AttachmentTypes.LINK && <Favicon url={attachment.data.faviconUrl} />}
+        {thumbnail.children}
       </div>
       <div className={styles.details}>
         <span className={styles.name}>{attachment.name}</span>
         <span className={styles.information}>
+          {isGoogleDrive && (
+            <>
+              <span className={styles.providerLabel}>{t('common.googleDrive')}</span>
+              {' — '}
+            </>
+          )}
           <TimeAgo date={attachment.createdAt} />
         </span>
         {attachment.type === AttachmentTypes.FILE && (
@@ -156,6 +195,14 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
                 </span>
               </button>
             )}
+          </span>
+        )}
+        {isGoogleDrive && (
+          <span className={styles.options}>
+            <button type="button" className={styles.option} onClick={handleOpenInDriveClick}>
+              <Icon name="external" size="small" className={styles.optionIcon} />
+              <span className={styles.optionText}>{t('common.openInGoogleDrive')}</span>
+            </button>
           </span>
         )}
       </div>

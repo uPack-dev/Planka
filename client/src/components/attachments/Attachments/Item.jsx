@@ -18,6 +18,7 @@ import ItemContent from './ItemContent';
 import ContentViewer from './ContentViewer';
 import PdfViewer from './PdfViewer';
 import CsvViewer from './CsvViewer';
+import GoogleDriveViewer from './GoogleDriveViewer';
 
 import styles from './Item.module.scss';
 
@@ -109,13 +110,26 @@ const Item = React.memo(({ id, isVisible }) => {
       };
     }
   } else if (attachment.type === AttachmentTypes.LINK) {
-    galleryItemProps = {
-      content: (
-        <span className={classNames(styles.content, styles.contentError)}>
-          {t('common.thereIsNoPreviewAvailableForThisAttachment')}
-        </span>
-      ),
-    };
+    if (attachment.data.provider === 'googleDrive' && attachment.data.embedUrl) {
+      galleryItemProps = {
+        content: (
+          <GoogleDriveViewer
+            embedUrl={attachment.data.embedUrl}
+            name={attachment.name}
+            webViewLink={attachment.data.webViewLink || attachment.data.url}
+            className={classNames(styles.content, styles.contentViewer)}
+          />
+        ),
+      };
+    } else {
+      galleryItemProps = {
+        content: (
+          <span className={classNames(styles.content, styles.contentError)}>
+            {t('common.thereIsNoPreviewAvailableForThisAttachment')}
+          </span>
+        ),
+      };
+    }
   }
 
   return (
@@ -129,7 +143,14 @@ const Item = React.memo(({ id, isVisible }) => {
           <ItemContent
             ref={ref}
             id={id}
-            onOpen={attachment.type === AttachmentTypes.FILE ? open : undefined}
+            onOpen={
+              attachment.type === AttachmentTypes.FILE ||
+              (attachment.type === AttachmentTypes.LINK &&
+                attachment.data.provider === 'googleDrive' &&
+                attachment.data.embedUrl)
+                ? open
+                : undefined
+            }
           />
         ) : (
           <span ref={ref} />

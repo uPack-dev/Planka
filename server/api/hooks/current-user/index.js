@@ -157,6 +157,29 @@ module.exports = function defineCurrentUserHook(sails) {
             return next();
           },
         },
+        '/api/google-drive/*': {
+          async fn(req, res, next) {
+            const { accessToken, httpOnlyToken } = req.cookies;
+
+            if (accessToken) {
+              const sessionAndUser = await getSessionAndUserByAccessToken(
+                accessToken,
+                httpOnlyToken,
+              );
+
+              if (sessionAndUser) {
+                const { session, user } = sessionAndUser;
+
+                Object.assign(req, {
+                  currentSession: session,
+                  currentUser: user,
+                });
+              }
+            }
+
+            return next();
+          },
+        },
       },
     },
   };

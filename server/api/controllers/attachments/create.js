@@ -114,6 +114,18 @@ const Errors = {
   URL_MUST_BE_PRESENT: {
     urlMustBePresent: 'Url must be present',
   },
+  GOOGLE_DRIVE_FILE_ID_REQUIRED: {
+    googleDriveFileIdRequired: 'Google Drive fileId must be present in providerData',
+  },
+  GOOGLE_DRIVE_PERMISSION_FAILED: {
+    googleDrivePermissionFailed: 'Failed to update Google Drive sharing permissions',
+  },
+  GOOGLE_DRIVE_CREDENTIAL_NOT_FOUND: {
+    googleDriveCredentialNotFound: 'Google Drive is not connected',
+  },
+  GOOGLE_DRIVE_INTEGRATION_DISABLED: {
+    googleDriveIntegrationDisabled: 'Google Drive integration is disabled',
+  },
 };
 
 module.exports = {
@@ -142,6 +154,13 @@ module.exports = {
       isNotEmptyString: true,
       maxLength: 128,
     },
+    provider: {
+      type: 'string',
+      isIn: ['googleDrive'],
+    },
+    providerData: {
+      type: 'json',
+    },
   },
 
   exits: {
@@ -159,6 +178,18 @@ module.exports = {
     },
     urlMustBePresent: {
       responseType: 'unprocessableEntity',
+    },
+    googleDriveFileIdRequired: {
+      responseType: 'unprocessableEntity',
+    },
+    googleDrivePermissionFailed: {
+      responseType: 'unprocessableEntity',
+    },
+    googleDriveCredentialNotFound: {
+      responseType: 'unprocessableEntity',
+    },
+    googleDriveIntegrationDisabled: {
+      responseType: 'forbidden',
     },
   },
 
@@ -198,11 +229,45 @@ module.exports = {
       const file = _.last(files);
       data = await sails.helpers.attachments.processUploadedFile(file);
     } else if (inputs.type === Attachment.Types.LINK) {
-      if (!inputs.url) {
-        throw Errors.URL_MUST_BE_PRESENT;
-      }
+      if (inputs.provider === 'googleDrive') {
+        if (!sails.config.custom.googleDriveIntegrationEnabled) {
+          throw Errors.GOOGLE_DRIVE_INTEGRATION_DISABLED;
+        }
 
-      data = await sails.helpers.attachments.processLink(inputs.url);
+        if (!inputs.providerData || !inputs.providerData.fileId) {
+          throw Errors.GOOGLE_DRIVE_FILE_ID_REQUIRED;
+        }
+
+        if (!inputs.url) {
+          throw Errors.URL_MUST_BE_PRESENT;
+        }
+
+        const permission = await sails.helpers.googleDrive.ensureLinkPermission
+          .with({
+            userId: currentUser.id,
+            fileId: inputs.providerData.fileId,
+          })
+          .intercept('credentialNotFound', () => Errors.GOOGLE_DRIVE_CREDENTIAL_NOT_FOUND)
+          .intercept('cannotShare', () => Errors.GOOGLE_DRIVE_PERMISSION_FAILED)
+          .intercept('driveError', () => Errors.GOOGLE_DRIVE_PERMISSION_FAILED);
+
+        data = await sails.helpers.attachments.processLink.with({
+          url: inputs.url,
+          provider: 'googleDrive',
+          providerData: {
+            ...inputs.providerData,
+            permissionId: permission.permissionId,
+            permissionCreatedByPlanka: permission.permissionCreatedByPlanka,
+            originalPermissionExisted: permission.originalPermissionExisted,
+          },
+        });
+      } else {
+        if (!inputs.url) {
+          throw Errors.URL_MUST_BE_PRESENT;
+        }
+
+        data = await sails.helpers.attachments.processLink(inputs.url);
+      }
     }
 
     const values = {

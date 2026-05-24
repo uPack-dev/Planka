@@ -1,0 +1,97 @@
+/*!
+ * Copyright (c) 2024 PLANKA Software GmbH
+ * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
+ */
+
+module.exports = {
+  inputs: {
+    userId: {
+      type: 'string',
+      required: true,
+    },
+    fileId: {
+      type: 'string',
+      required: true,
+    },
+  },
+
+  exits: {
+    credentialNotFound: {},
+    cannotShare: {},
+    driveError: {},
+  },
+
+  async fn(inputs) {
+    const accessToken = await sails.helpers.googleDrive
+      .getAccessTokenForUser(inputs.userId)
+      .intercept('credentialNotFound', () => 'credentialNotFound');
+
+    const file = await sails.helpers.googleDrive.getFile
+      .with({
+        accessToken,
+        fileId: inputs.fileId,
+      })
+      .intercept('fileNotFound', () => 'driveError')
+      .intercept('driveError', () => 'driveError');
+
+    if (!file.capabilities || !file.capabilities.canShare) {
+      throw 'cannotShare';
+    }
+
+    const permResponse = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${inputs.fileId}/permissions?fields=permissions(id,type,role,allowFileDiscovery)`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    if (!permResponse.ok) {
+      throw 'driveError';
+    }
+
+    const permData = await permResponse.json();
+    const permissions = permData.permissions || [];
+
+    const existingAnyoneReader = permissions.find(
+      (p) => p.type === 'anyone' && p.role === 'reader',
+    );
+
+    if (existingAnyoneReader) {
+      return {
+        permissionId: existingAnyoneReader.id,
+        permissionCreatedByPlanka: false,
+        originalPermissionExisted: true,
+      };
+    }
+
+    const createResponse = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${inputs.fileId}/permissions?sendNotificationEmail=false`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'anyone',
+          role: 'reader',
+          allowFileDiscovery: false,
+        }),
+      },
+    );
+
+    if (!createResponse.ok) {
+      throw 'driveError';
+    }
+
+    const created = await createResponse.json();
+
+    return {
+      permissionId: created.id,
+      permissionCreatedByPlanka: true,
+      originalPermissionExisted: false,
+    };
+  },
+};

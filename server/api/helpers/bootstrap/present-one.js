@@ -26,6 +26,16 @@ module.exports = {
       version: sails.config.custom.version,
     };
 
+    if (sails.config.custom.googleDriveIntegrationEnabled) {
+      Object.assign(data, {
+        googleDrive: {
+          clientId: sails.config.custom.googleDriveClientId,
+          pickerApiKey: sails.config.custom.googleDrivePickerApiKey,
+          pickerAppId: sails.config.custom.googleDrivePickerAppId,
+        },
+      });
+    }
+
     if (inputs.user && inputs.user.role === User.Roles.ADMIN) {
       Object.assign(data, {
         activeUsersLimit: inputs.internalConfig.activeUsersLimit,

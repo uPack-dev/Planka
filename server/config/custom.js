@@ -119,4 +119,14 @@ module.exports.custom = {
   termsType: process.env.TERMS_TYPE || 'custom',
   customerPanelUrl: process.env.CUSTOMER_PANEL_URL,
   demoMode: process.env.DEMO_MODE === 'true',
+
+  googleDriveIntegrationEnabled: process.env.GOOGLE_DRIVE_INTEGRATION_ENABLED === 'true',
+  googleDriveClientId: process.env.GOOGLE_DRIVE_CLIENT_ID,
+  googleDriveClientSecret: process.env.GOOGLE_DRIVE_CLIENT_SECRET,
+  googleDriveRedirectUri: process.env.GOOGLE_DRIVE_REDIRECT_URI,
+  googleDrivePickerApiKey: process.env.GOOGLE_DRIVE_PICKER_API_KEY,
+  googleDrivePickerAppId: process.env.GOOGLE_DRIVE_PICKER_APP_ID,
+  googleDriveScopes:
+    process.env.GOOGLE_DRIVE_SCOPES || 'https://www.googleapis.com/auth/drive.file',
+  googleDriveTokenEncryptionKey: process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY,
 };
