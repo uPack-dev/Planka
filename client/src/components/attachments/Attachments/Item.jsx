@@ -26,24 +26,29 @@ const Item = React.memo(({ id, isVisible }) => {
   const selectAttachmentById = useMemo(() => selectors.makeSelectAttachmentById(), []);
 
   const attachment = useSelector((state) => selectAttachmentById(state, id));
+  const attachmentData = attachment?.data || {};
 
   const [t] = useTranslation();
 
-  if (!attachment.isPersisted) {
+  if (!attachment || !attachment.isPersisted) {
     return <ItemContent id={id} />;
   }
 
+  const isGoogleDrive =
+    attachment.type === AttachmentTypes.LINK && attachmentData.provider === 'googleDrive';
+  const canPreviewGoogleDrive = isGoogleDrive && !!attachmentData.embedUrl;
+
   let galleryItemProps;
   if (attachment.type === AttachmentTypes.FILE) {
-    if (attachment.data.image) {
-      galleryItemProps = attachment.data.image;
+    if (attachmentData.image) {
+      galleryItemProps = attachmentData.image;
     } else {
       let content;
-      switch (attachment.data.mimeType) {
+      switch (attachmentData.mimeType) {
         case 'application/pdf':
           content = (
             <PdfViewer
-              src={attachment.data.url}
+              src={attachmentData.url}
               className={classNames(styles.content, styles.contentViewer)}
             />
           );
@@ -57,14 +62,14 @@ const Item = React.memo(({ id, isVisible }) => {
         case 'audio/x-aac':
           content = (
             // eslint-disable-next-line jsx-a11y/media-has-caption
-            <audio controls src={attachment.data.url} className={styles.content} />
+            <audio controls src={attachmentData.url} className={styles.content} />
           );
 
           break;
         case 'text/csv':
           content = (
             <CsvViewer
-              src={attachment.data.url}
+              src={attachmentData.url}
               className={classNames(styles.content, styles.contentViewer)}
             />
           );
@@ -75,17 +80,17 @@ const Item = React.memo(({ id, isVisible }) => {
         case 'video/webm':
           content = (
             // eslint-disable-next-line jsx-a11y/media-has-caption
-            <video controls src={attachment.data.url} className={styles.content} />
+            <video controls src={attachmentData.url} className={styles.content} />
           );
 
           break;
         default:
-          if (attachment.data.encoding === Encodings.UTF8) {
-            if (attachment.data.size <= Config.MAX_SIZE_TO_DISPLAY_CONTENT) {
+          if (attachmentData.encoding === Encodings.UTF8) {
+            if (attachmentData.size <= Config.MAX_SIZE_TO_DISPLAY_CONTENT) {
               content = (
                 <ContentViewer
-                  src={attachment.data.url}
-                  filename={attachment.data.filename}
+                  src={attachmentData.url}
+                  filename={attachmentData.filename}
                   className={classNames(styles.content, styles.contentViewer)}
                 />
               );
@@ -109,33 +114,31 @@ const Item = React.memo(({ id, isVisible }) => {
         content,
       };
     }
-  } else if (attachment.type === AttachmentTypes.LINK) {
-    if (attachment.data.provider === 'googleDrive' && attachment.data.embedUrl) {
-      galleryItemProps = {
-        content: (
-          <GoogleDriveViewer
-            embedUrl={attachment.data.embedUrl}
-            name={attachment.name}
-            webViewLink={attachment.data.webViewLink || attachment.data.url}
-            className={classNames(styles.content, styles.contentViewer)}
-          />
-        ),
-      };
-    } else {
-      galleryItemProps = {
-        content: (
-          <span className={classNames(styles.content, styles.contentError)}>
-            {t('common.thereIsNoPreviewAvailableForThisAttachment')}
-          </span>
-        ),
-      };
-    }
+  } else if (canPreviewGoogleDrive) {
+    galleryItemProps = {
+      content: (
+        <GoogleDriveViewer
+          embedUrl={attachmentData.embedUrl}
+          name={attachment.name}
+          webViewLink={attachmentData.webViewLink || attachmentData.url}
+          className={classNames(styles.content, styles.contentViewer)}
+        />
+      ),
+    };
+  } else {
+    galleryItemProps = {
+      content: (
+        <span className={classNames(styles.content, styles.contentError)}>
+          {t('common.thereIsNoPreviewAvailableForThisAttachment')}
+        </span>
+      ),
+    };
   }
 
   return (
     <GalleryItem
       {...galleryItemProps} // eslint-disable-line react/jsx-props-no-spreading
-      original={attachment.data.url}
+      original={attachmentData.url}
       caption={attachment.name}
     >
       {({ ref, open }) =>
@@ -143,14 +146,7 @@ const Item = React.memo(({ id, isVisible }) => {
           <ItemContent
             ref={ref}
             id={id}
-            onOpen={
-              attachment.type === AttachmentTypes.FILE ||
-              (attachment.type === AttachmentTypes.LINK &&
-                attachment.data.provider === 'googleDrive' &&
-                attachment.data.embedUrl)
-                ? open
-                : undefined
-            }
+            onOpen={attachment.type === AttachmentTypes.FILE || canPreviewGoogleDrive ? open : undefined}
           />
         ) : (
           <span ref={ref} />
