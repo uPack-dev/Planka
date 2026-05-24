@@ -13,6 +13,10 @@ module.exports = {
       type: 'string',
       required: true,
     },
+    resourceKey: {
+      type: 'string',
+      allowNull: true,
+    },
   },
 
   exits: {
@@ -21,12 +25,17 @@ module.exports = {
   },
 
   async fn(inputs) {
+    const headers = {
+      Authorization: `Bearer ${inputs.accessToken}`,
+    };
+    if (inputs.resourceKey) {
+      headers['X-Goog-Drive-Resource-Keys'] = `${inputs.fileId}=${inputs.resourceKey}`;
+    }
+
     const response = await fetch(
       `https://www.googleapis.com/drive/v3/files/${inputs.fileId}?fields=id,name,mimeType,webViewLink,thumbnailLink,iconLink,capabilities/canShare`,
       {
-        headers: {
-          Authorization: `Bearer ${inputs.accessToken}`,
-        },
+        headers,
       },
     );
 

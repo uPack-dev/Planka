@@ -10,12 +10,13 @@ module.exports = {
     },
   },
 
-  sync: true,
+  sync: false,
 
-  fn(inputs) {
-    const clientId = sails.config.custom.googleDriveClientId;
-    const redirectUri = sails.config.custom.googleDriveRedirectUri;
-    const scopes = sails.config.custom.googleDriveScopes;
+  async fn(inputs) {
+    const config = await sails.helpers.googleDrive.getConfig();
+    const { clientId } = config;
+    const redirectUri = `${sails.config.custom.baseUrl}/api/google-drive/callback`;
+    const { scopes } = config;
 
     const params = new URLSearchParams({
       client_id: clientId,

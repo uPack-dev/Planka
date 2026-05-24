@@ -13,6 +13,10 @@ module.exports = {
       type: 'string',
       required: true,
     },
+    resourceKey: {
+      type: 'string',
+      allowNull: true,
+    },
   },
 
   exits: {
@@ -30,6 +34,7 @@ module.exports = {
       .with({
         accessToken,
         fileId: inputs.fileId,
+        resourceKey: inputs.resourceKey,
       })
       .intercept('fileNotFound', () => 'driveError')
       .intercept('driveError', () => 'driveError');
@@ -38,12 +43,17 @@ module.exports = {
       throw 'cannotShare';
     }
 
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+    };
+    if (inputs.resourceKey) {
+      headers['X-Goog-Drive-Resource-Keys'] = `${inputs.fileId}=${inputs.resourceKey}`;
+    }
+
     const permResponse = await fetch(
       `https://www.googleapis.com/drive/v3/files/${inputs.fileId}/permissions?fields=permissions(id,type,role,allowFileDiscovery)`,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
       },
     );
 
@@ -66,14 +76,16 @@ module.exports = {
       };
     }
 
+    const createHeaders = {
+      ...headers,
+      'Content-Type': 'application/json',
+    };
+
     const createResponse = await fetch(
       `https://www.googleapis.com/drive/v3/files/${inputs.fileId}/permissions?sendNotificationEmail=false`,
       {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: createHeaders,
         body: JSON.stringify({
           type: 'anyone',
           role: 'reader',

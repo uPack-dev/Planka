@@ -7,9 +7,12 @@ module.exports = {
   async fn() {
     const { currentUser } = this.req;
 
-    if (!sails.config.custom.googleDriveIntegrationEnabled) {
+    const config = await sails.helpers.googleDrive.getConfig();
+
+    if (!config.enabled) {
       return {
         connected: false,
+        configured: false,
       };
     }
 
@@ -17,6 +20,7 @@ module.exports = {
 
     return {
       connected: !!credential,
+      configured: true,
     };
   },
 };

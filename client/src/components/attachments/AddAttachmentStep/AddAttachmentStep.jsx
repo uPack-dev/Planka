@@ -7,13 +7,13 @@ import React, { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Icon, Menu } from 'semantic-ui-react';
+import { Icon, Menu, Message } from 'semantic-ui-react';
 import { FilePicker, Popup } from '../../../lib/custom-ui';
 
 import entryActions from '../../../entry-actions';
-import { AttachmentTypes } from '../../../constants/Enums';
-import { selectConfig } from '../../../selectors/core';
-import googleDrivePicker from '../../../utils/google-drive-picker';
+import selectors from '../../../selectors';
+import { AttachmentTypes, UserRoles } from '../../../constants/Enums';
+import googleDrivePicker, { ErrorCodes } from '../../../utils/google-drive-picker';
 
 import styles from './AddAttachmentStep.module.scss';
 
@@ -21,9 +21,13 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
   const dispatch = useDispatch();
   const [t] = useTranslation();
   const [isGoogleDriveLoading, setIsGoogleDriveLoading] = useState(false);
+  const [googleDriveError, setGoogleDriveError] = useState(null);
+  const [showSettingsLink, setShowSettingsLink] = useState(false);
 
-  const config = useSelector(selectConfig);
-  const googleDriveEnabled = !!(config && config.googleDrive);
+  const bootstrap = useSelector(selectors.selectBootstrap);
+  const googleDriveConfig = bootstrap && bootstrap.googleDrive;
+  const currentUser = useSelector(selectors.selectCurrentUser);
+  const isAdmin = currentUser && currentUser.role === UserRoles.ADMIN;
 
   const handleFilesSelect = useCallback(
     (files) => {
@@ -47,10 +51,12 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
       return;
     }
 
+    setGoogleDriveError(null);
+    setShowSettingsLink(false);
     setIsGoogleDriveLoading(true);
 
     try {
-      const files = await googleDrivePicker.openGoogleDrivePicker(t);
+      const files = await googleDrivePicker.openGoogleDrivePicker(t, googleDriveConfig);
 
       if (files.length > 0) {
         files.forEach((file) => {
@@ -78,11 +84,29 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
         onClose();
       }
     } catch (error) {
-      // Picker cancelled or error — just ignore silently
+      if (error.code === ErrorCodes.PICKER_CANCELLED) {
+        return;
+      }
+
+      if (error.code === ErrorCodes.NOT_CONFIGURED || error.code === ErrorCodes.DISABLED) {
+        setShowSettingsLink(true);
+        setGoogleDriveError(error.message);
+      } else if (error.code === ErrorCodes.OAUTH_CANCELLED) {
+        setGoogleDriveError(t('common.googleDriveConnectionFailed'));
+      } else if (error.code === ErrorCodes.POPUP_BLOCKED) {
+        setGoogleDriveError(t('common.popupWasBlocked'));
+      } else {
+        setGoogleDriveError(error.message || t('common.googleDrivePickerFailed'));
+      }
     } finally {
       setIsGoogleDriveLoading(false);
     }
-  }, [isGoogleDriveLoading, onClose, dispatch, t]);
+  }, [isGoogleDriveLoading, onClose, dispatch, t, googleDriveConfig]);
+
+  const handleConfigureClick = useCallback(() => {
+    dispatch(entryActions.closeModal());
+    dispatch(entryActions.openAdministrationModal());
+  }, [dispatch]);
 
   return (
     <>
@@ -92,6 +116,32 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
         })}
       </Popup.Header>
       <Popup.Content>
+        {googleDriveError && (
+          <Message visible warning className={styles.errorMessage}>
+            <Message.Content>
+              {googleDriveError}
+              {showSettingsLink && isAdmin && (
+                <>
+                  {' '}
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={handleConfigureClick}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleConfigureClick();
+                    }}
+                    style={{ cursor: 'pointer', textDecoration: 'underline', color: '#4183C4' }}
+                  >
+                    {t('action.configureGoogleDrive')}
+                  </span>
+                </>
+              )}
+              {showSettingsLink &&
+                !isAdmin &&
+                ` ${t('common.askAdministratorToConfigureGoogleDrive')}`}
+            </Message.Content>
+          </Message>
+        )}
         <Menu secondary vertical className={styles.menu}>
           <FilePicker multiple onSelect={handleFilesSelect}>
             <Menu.Item className={styles.menuItem}>
@@ -101,16 +151,14 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
               })}
             </Menu.Item>
           </FilePicker>
-          {googleDriveEnabled && (
-            <Menu.Item
-              className={styles.menuItem}
-              onClick={handleGoogleDriveSelect}
-              disabled={isGoogleDriveLoading}
-            >
-              <Icon name="cloud" className={styles.menuItemIcon} />
-              {isGoogleDriveLoading ? t('common.loading') : t('common.fromGoogleDrive')}
-            </Menu.Item>
-          )}
+          <Menu.Item
+            className={styles.menuItem}
+            onClick={handleGoogleDriveSelect}
+            disabled={isGoogleDriveLoading}
+          >
+            <Icon name="cloud" className={styles.menuItemIcon} />
+            {isGoogleDriveLoading ? t('common.loading') : t('common.fromGoogleDrive')}
+          </Menu.Item>
         </Menu>
         <hr className={styles.divider} />
         <div className={styles.tip}>

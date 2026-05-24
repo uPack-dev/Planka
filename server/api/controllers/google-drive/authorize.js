@@ -6,8 +6,9 @@
 const crypto = require('crypto');
 
 module.exports = {
-  fn() {
-    if (!sails.config.custom.googleDriveIntegrationEnabled) {
+  async fn() {
+    const config = await sails.helpers.googleDrive.getConfig();
+    if (!config.enabled) {
       return this.res.forbidden();
     }
 
@@ -19,18 +20,33 @@ module.exports = {
         const payload = sails.helpers.utils.verifyJwtToken(accessToken);
         userId = payload.subject;
       } catch (error) {
-        // Not authenticated — will redirect anyway, callback will fail
+        // Not authenticated
       }
+    }
+
+    if (!userId) {
+      return this.res.forbidden();
     }
 
     const state = JSON.stringify({
       userId,
       nonce: crypto.randomBytes(16).toString('hex'),
+      issuedAt: Date.now(),
+      purpose: 'googleDriveOAuth',
     });
 
-    const stateEncoded = Buffer.from(state).toString('base64url');
+    const signature = crypto
+      .createHmac(
+        'sha256',
+        sails.config.session.secret || process.env.SECRET_KEY || 'default-secret',
+      )
+      .update(state)
+      .digest('hex');
 
-    const url = sails.helpers.googleDrive.getAuthUrl(stateEncoded);
+    const statePayload = JSON.stringify({ state, signature });
+    const stateEncoded = Buffer.from(statePayload).toString('base64url');
+
+    const url = await sails.helpers.googleDrive.getAuthUrl(stateEncoded);
 
     return this.res.redirect(url);
   },

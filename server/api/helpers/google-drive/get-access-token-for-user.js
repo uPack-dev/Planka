@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const crypto = require('crypto');
+
 module.exports = {
   inputs: {
     userId: {
@@ -22,13 +24,18 @@ module.exports = {
       throw 'credentialNotFound';
     }
 
-    const refreshToken = sails.helpers.utils.decrypt(
-      credential.refreshTokenEncrypted,
-      sails.config.custom.googleDriveTokenEncryptionKey,
-    );
+    const secret = sails.config.session.secret || process.env.SECRET_KEY || 'default-secret';
+    const key =
+      process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY &&
+      process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY.length === 64
+        ? process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY
+        : crypto.createHash('sha256').update(secret).digest('hex');
 
-    const clientId = sails.config.custom.googleDriveClientId;
-    const clientSecret = sails.config.custom.googleDriveClientSecret;
+    const refreshToken = sails.helpers.utils.decrypt(credential.refreshTokenEncrypted, key);
+
+    const config = await sails.helpers.googleDrive.getConfig();
+    const { clientId } = config;
+    const { clientSecret } = config;
 
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',

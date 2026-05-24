@@ -16,9 +16,10 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const clientId = sails.config.custom.googleDriveClientId;
-    const clientSecret = sails.config.custom.googleDriveClientSecret;
-    const redirectUri = sails.config.custom.googleDriveRedirectUri;
+    const config = await sails.helpers.googleDrive.getConfig();
+    const { clientId } = config;
+    const { clientSecret } = config;
+    const redirectUri = `${sails.config.custom.baseUrl}/api/google-drive/callback`;
 
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',

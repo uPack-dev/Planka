@@ -230,7 +230,8 @@ module.exports = {
       data = await sails.helpers.attachments.processUploadedFile(file);
     } else if (inputs.type === Attachment.Types.LINK) {
       if (inputs.provider === 'googleDrive') {
-        if (!sails.config.custom.googleDriveIntegrationEnabled) {
+        const googleDriveConfig = await sails.helpers.googleDrive.getConfig();
+        if (!googleDriveConfig.enabled) {
           throw Errors.GOOGLE_DRIVE_INTEGRATION_DISABLED;
         }
 
@@ -246,6 +247,7 @@ module.exports = {
           .with({
             userId: currentUser.id,
             fileId: inputs.providerData.fileId,
+            resourceKey: inputs.providerData.resourceKey || null,
           })
           .intercept('credentialNotFound', () => Errors.GOOGLE_DRIVE_CREDENTIAL_NOT_FOUND)
           .intercept('cannotShare', () => Errors.GOOGLE_DRIVE_PERMISSION_FAILED)

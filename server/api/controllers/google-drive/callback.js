@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const crypto = require('crypto');
+
 module.exports = {
   inputs: {
     code: {
@@ -21,19 +23,40 @@ module.exports = {
   },
 
   async fn(inputs) {
-    if (!sails.config.custom.googleDriveIntegrationEnabled) {
+    const config = await sails.helpers.googleDrive.getConfig();
+    if (!config.enabled) {
       return this.res.forbidden();
     }
 
     let userId = null;
 
-    if (inputs.state) {
-      try {
-        const stateData = JSON.parse(Buffer.from(inputs.state, 'base64url').toString('utf8'));
-        userId = stateData.userId;
-      } catch (error) {
-        // Invalid state
+    if (!inputs.state) {
+      return this.res.forbidden();
+    }
+
+    try {
+      const { state, signature } = JSON.parse(
+        Buffer.from(inputs.state, 'base64url').toString('utf8'),
+      );
+      const expectedSignature = crypto
+        .createHmac(
+          'sha256',
+          sails.config.session.secret || process.env.SECRET_KEY || 'default-secret',
+        )
+        .update(state)
+        .digest('hex');
+
+      if (signature !== expectedSignature) {
+        throw new Error('Invalid state signature');
       }
+
+      const stateData = JSON.parse(state);
+      if (stateData.purpose !== 'googleDriveOAuth' || Date.now() - stateData.issuedAt > 300000) {
+        throw new Error('Invalid state');
+      }
+      userId = stateData.userId;
+    } catch (error) {
+      sails.log.error('OAuth callback state error:', error);
     }
 
     if (!userId) {
@@ -44,7 +67,7 @@ module.exports = {
         <body>
         <script>
           if (window.opener) {
-            window.opener.postMessage({ type: 'google-drive-error', error: 'Not authenticated' }, '*');
+            window.opener.postMessage({ type: 'google-drive-error', error: 'Not authenticated' }, '${sails.config.custom.baseUrl}');
             window.close();
           } else {
             document.body.innerText = 'Authentication failed. Please try again.';
@@ -59,9 +82,16 @@ module.exports = {
       .exchangeCode(inputs.code)
       .intercept('tokenExchangeFailed', () => 'tokenExchangeFailed');
 
+    const secret = sails.config.session.secret || process.env.SECRET_KEY || 'default-secret';
+    const key =
+      process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY &&
+      process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY.length === 64
+        ? process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY
+        : crypto.createHash('sha256').update(secret).digest('hex');
+
     const encrypted = sails.helpers.utils.encrypt.with({
       value: tokens.refreshToken,
-      key: sails.config.custom.googleDriveTokenEncryptionKey,
+      key,
     });
 
     await GoogleDriveCredential.qm.deleteOneByUserId(userId);
@@ -81,7 +111,7 @@ module.exports = {
       <body>
       <script>
         if (window.opener) {
-          window.opener.postMessage({ type: 'google-drive-connected' }, '*');
+          window.opener.postMessage({ type: 'google-drive-connected' }, '${sails.config.custom.baseUrl}');
           window.close();
         } else {
           document.body.innerText = 'Google Drive account connected. You can close this window.';

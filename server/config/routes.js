@@ -204,6 +204,10 @@ module.exports.routes = {
   'GET /api/google-drive/picker-token': 'google-drive/picker-token',
   'DELETE /api/google-drive/connection': 'google-drive/delete-connection',
 
+  'GET /api/google-drive/config': 'google-drive/config/show',
+  'PATCH /api/google-drive/config': 'google-drive/config/update',
+  'POST /api/google-drive/config/test': 'google-drive/config/test',
+
   'POST /api/boards/:boardId/custom-field-groups': 'custom-field-groups/create-in-board',
   'POST /api/cards/:cardId/custom-field-groups': 'custom-field-groups/create-in-card',
   'GET /api/custom-field-groups/:id': 'custom-field-groups/show',

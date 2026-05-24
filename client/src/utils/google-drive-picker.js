@@ -43,24 +43,38 @@ const openOAuthPopup = () =>
     const left = window.screenX + (window.outerWidth - width) / 2;
     const top = window.screenY + (window.outerHeight - height) / 2;
 
+    const baseUrl = `${window.location.origin}${Config.BASE_PATH}`;
+
     authWindow = window.open(
-      `${window.location.origin}${Config.BASE_PATH}/api/google-drive/authorize`,
+      `${baseUrl}/api/google-drive/authorize`,
       'google-drive-auth',
       `width=${width},height=${height},left=${left},top=${top}`,
     );
 
     if (!authWindow) {
-      reject(new Error('Popup was blocked'));
+      const error = new Error('Popup was blocked');
+      error.code = 'GOOGLE_DRIVE_POPUP_BLOCKED';
+      reject(error);
       return;
     }
 
     let checkClosed;
 
     const handleMessage = (event) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
       if (event.data && event.data.type === 'google-drive-connected') {
         window.removeEventListener('message', handleMessage);
         clearInterval(checkClosed);
         resolve();
+      }
+      if (event.data && event.data.type === 'google-drive-error') {
+        window.removeEventListener('message', handleMessage);
+        clearInterval(checkClosed);
+        const error = new Error(event.data.error || 'OAuth failed');
+        error.code = 'GOOGLE_DRIVE_OAUTH_FAILED';
+        reject(error);
       }
     };
 
@@ -70,7 +84,9 @@ const openOAuthPopup = () =>
       if (authWindow.closed) {
         clearInterval(checkClosed);
         window.removeEventListener('message', handleMessage);
-        reject(new Error('OAuth window was closed'));
+        const error = new Error('OAuth window was closed');
+        error.code = 'GOOGLE_DRIVE_OAUTH_CANCELLED';
+        reject(error);
       }
     }, 500);
   });
@@ -84,7 +100,19 @@ const fetchPickerToken = async () => {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to get picker token');
+    if (response.status === 422) {
+      const error = new Error('Google Drive is not connected');
+      error.code = 'GOOGLE_DRIVE_NOT_CONNECTED';
+      throw error;
+    }
+    if (response.status === 403) {
+      const error = new Error('Google Drive integration is disabled');
+      error.code = 'GOOGLE_DRIVE_DISABLED';
+      throw error;
+    }
+    const error = new Error('Failed to get picker token');
+    error.code = 'GOOGLE_DRIVE_TOKEN_FAILED';
+    throw error;
   }
 
   return response.json();
@@ -97,34 +125,42 @@ const openPicker = async (apiKey, appId, clientId, accessToken) =>
 
     window.gapi.load('picker', {
       callback: () => {
-        const view = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS);
-        view.setIncludeFolders(false);
-        view.setSelectFolderEnabled(false);
-        view.setMode(window.google.picker.DocsViewMode.LIST);
+        const docsView = new window.google.picker.DocsView(window.google.picker.ViewId.DOCS);
+        docsView.setIncludeFolders(true);
+        docsView.setSelectFolderEnabled(false);
+        docsView.setMode(window.google.picker.DocsViewMode.LIST);
 
         const picker = new window.google.picker.PickerBuilder()
           .enableFeature(window.google.picker.Feature.NAV_HIDDEN)
           .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
           .setAppId(appId)
           .setOAuthToken(accessToken)
-          .addView(view)
+          .addView(docsView)
           .setDeveloperKey(apiKey)
           .setCallback((data) => {
             if (data.action === window.google.picker.Action.PICKED) {
-              const files = data.docs.map((doc) => ({
-                fileId: doc.id,
-                name: doc.name,
-                mimeType: doc.mimeType,
-                webViewLink: doc.url || `https://drive.google.com/file/d/${doc.id}/view`,
-                url: doc.url || `https://drive.google.com/file/d/${doc.id}/view`,
-                embedUrl: doc.embedUrl || `https://drive.google.com/file/d/${doc.id}/preview`,
-                iconUrl: doc.iconUrl,
-                thumbnailUrl: doc.thumbnailUrl,
-                resourceKey: null,
-              }));
+              const files = [];
+              data.docs.forEach((doc) => {
+                if (doc.type === 'folder') {
+                  return;
+                }
+                files.push({
+                  fileId: doc.id,
+                  name: doc.name,
+                  mimeType: doc.mimeType,
+                  webViewLink: doc.url || `https://drive.google.com/file/d/${doc.id}/view`,
+                  url: doc.url || `https://drive.google.com/file/d/${doc.id}/view`,
+                  embedUrl: doc.embedUrl || `https://drive.google.com/file/d/${doc.id}/preview`,
+                  iconUrl: doc.iconUrl || null,
+                  thumbnailUrl: doc.thumbnailUrl || null,
+                  resourceKey: doc.resourceKey || null,
+                });
+              });
               resolve(files);
             } else if (data.action === window.google.picker.Action.CANCEL) {
-              resolve([]);
+              const error = new Error('Picker cancelled');
+              error.code = 'GOOGLE_DRIVE_PICKER_CANCELLED';
+              reject(error);
             }
           })
           .build();
@@ -132,31 +168,80 @@ const openPicker = async (apiKey, appId, clientId, accessToken) =>
         picker.setVisible(true);
       },
       onerror: () => {
-        reject(new Error('Failed to load Google Picker'));
+        const error = new Error('Failed to load Google Picker');
+        error.code = 'GOOGLE_DRIVE_PICKER_LOAD_FAILED';
+        reject(error);
       },
     });
   });
 
-const openGoogleDrivePicker = async (t) => {
+export const ErrorCodes = {
+  NOT_CONFIGURED: 'GOOGLE_DRIVE_NOT_CONFIGURED',
+  DISABLED: 'GOOGLE_DRIVE_DISABLED',
+  NOT_CONNECTED: 'GOOGLE_DRIVE_NOT_CONNECTED',
+  POPUP_BLOCKED: 'GOOGLE_DRIVE_POPUP_BLOCKED',
+  OAUTH_FAILED: 'GOOGLE_DRIVE_OAUTH_FAILED',
+  OAUTH_CANCELLED: 'GOOGLE_DRIVE_OAUTH_CANCELLED',
+  PICKER_CANCELLED: 'GOOGLE_DRIVE_PICKER_CANCELLED',
+  PICKER_LOAD_FAILED: 'GOOGLE_DRIVE_PICKER_LOAD_FAILED',
+  TOKEN_FAILED: 'GOOGLE_DRIVE_TOKEN_FAILED',
+  CONNECTION_FAILED: 'GOOGLE_DRIVE_CONNECTION_FAILED',
+};
+
+const openGoogleDrivePicker = async (t, bootstrapConfig) => {
+  if (!bootstrapConfig) {
+    const error = new Error(t('common.googleDriveIntegrationNotConfigured'));
+    error.code = ErrorCodes.NOT_CONFIGURED;
+    throw error;
+  }
+
+  if (!bootstrapConfig.configured) {
+    const error = new Error(t('common.googleDriveIntegrationNotConfigured'));
+    error.code = ErrorCodes.NOT_CONFIGURED;
+    throw error;
+  }
+
   try {
     await loadGoogleApiScript();
   } catch (error) {
-    throw new Error(t('common.googleDrivePickerFailed'));
+    const err = new Error(t('common.googleDrivePickerFailed'));
+    err.code = ErrorCodes.PICKER_LOAD_FAILED;
+    throw err;
   }
 
   let pickerConfig;
   try {
     pickerConfig = await fetchPickerToken();
   } catch (error) {
-    if (error.message === 'Failed to get picker token') {
+    if (error.code === ErrorCodes.NOT_CONNECTED || error.code === ErrorCodes.DISABLED) {
+      if (error.code === ErrorCodes.DISABLED) {
+        const err = new Error(t('common.googleDriveIntegrationDisabled'));
+        err.code = ErrorCodes.DISABLED;
+        throw err;
+      }
+
       try {
         await openOAuthPopup();
         pickerConfig = await fetchPickerToken();
       } catch (authError) {
-        throw new Error(t('common.googleDriveConnectionFailed'));
+        if (authError.code === ErrorCodes.POPUP_BLOCKED) {
+          const err = new Error(t('common.popupWasBlocked'));
+          err.code = ErrorCodes.POPUP_BLOCKED;
+          throw err;
+        }
+        if (authError.code === ErrorCodes.OAUTH_CANCELLED) {
+          const err = new Error(t('common.googleDriveConnectionFailed'));
+          err.code = ErrorCodes.OAUTH_CANCELLED;
+          throw err;
+        }
+        const err = new Error(t('common.googleDriveConnectionFailed'));
+        err.code = ErrorCodes.CONNECTION_FAILED;
+        throw err;
       }
     } else {
-      throw new Error(t('common.googleDrivePickerFailed'));
+      const err = new Error(t('common.googleDrivePickerFailed'));
+      err.code = ErrorCodes.TOKEN_FAILED;
+      throw err;
     }
   }
 
@@ -170,4 +255,5 @@ const openGoogleDrivePicker = async (t) => {
 
 export default {
   openGoogleDrivePicker,
+  ErrorCodes,
 };
