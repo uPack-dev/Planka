@@ -3,8 +3,6 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-const crypto = require('crypto');
-
 module.exports = {
   sync: false,
 
@@ -60,13 +58,7 @@ module.exports = {
     }
 
     if (inputs.clientSecret) {
-      const secret = sails.config.session.secret || process.env.SECRET_KEY || 'default-secret';
-      const key =
-        process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY &&
-        process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY.length === 64
-          ? process.env.GOOGLE_DRIVE_TOKEN_ENCRYPTION_KEY
-          : crypto.createHash('sha256').update(secret).digest('hex');
-
+      const key = sails.helpers.googleDrive.getEncryptionKey();
       updateValues.googleDriveClientSecretEncrypted = sails.helpers.utils.encrypt(
         inputs.clientSecret,
         key,
