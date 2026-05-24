@@ -53,4 +53,9 @@ module.exports.policies = {
   'access-tokens/debug-oidc': true,
   'access-tokens/accept-terms': true,
   'access-tokens/revoke-pending-token': true,
+  'google-drive/authorize': true,
+  'google-drive/callback': true,
+  'google-drive/config/show': ['is-authenticated', 'is-admin'],
+  'google-drive/config/update': ['is-authenticated', 'is-admin'],
+  'google-drive/config/test': ['is-authenticated', 'is-admin'],
 };

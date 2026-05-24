@@ -119,4 +119,7 @@ module.exports.custom = {
   termsType: process.env.TERMS_TYPE || 'custom',
   customerPanelUrl: process.env.CUSTOMER_PANEL_URL,
   demoMode: process.env.DEMO_MODE === 'true',
+
+  // Google Drive integration is configured via admin UI and stored in DB.
+  // Backward-compatible env fallback is handled in the google-drive/get-config helper.
 };

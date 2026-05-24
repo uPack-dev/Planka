@@ -29,4 +29,19 @@
   .tip {
     opacity: 0.5;
   }
+
+  .errorMessage {
+    margin-bottom: 8px;
+  }
+
+  .configureLink {
+    color: #4183c4;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+:global(.picker-dialog-bg),
+:global(.picker-dialog) {
+  z-index: 100000 !important;
 }

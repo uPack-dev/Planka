@@ -51,6 +51,13 @@ module.exports = {
       });
     }
 
+    if (inputs.record.creatorUserId) {
+      await sails.helpers.googleDrive.deletePermissionIfOwned.with({
+        attachment: inputs.record,
+        userId: inputs.record.creatorUserId,
+      });
+    }
+
     const { attachment, uploadedFile } = await Attachment.qm.deleteOne(inputs.record.id);
 
     if (attachment) {

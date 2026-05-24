@@ -1,0 +1,190 @@
+name: Release Version
+
+on:
+  workflow_run:
+    workflows:
+      - Build and Test
+    branches:
+      - master
+    types:
+      - completed
+  workflow_dispatch:
+
+concurrency:
+  group: release-version-master
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    name: Prepare release
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'master')
+    outputs:
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      release_exists: ${{ steps.release.outputs.exists }}
+      tag: ${{ steps.version.outputs.tag }}
+      target_sha: ${{ steps.target.outputs.sha }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Resolve target SHA
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.target.outputs.sha }}
+
+      - name: Read package version
+        id: version
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.+][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::package.json version '$VERSION' is not a valid release version"
+            exit 1
+          fi
+
+          if [[ "$VERSION" == *-* ]]; then
+            PRERELEASE=true
+          else
+            PRERELEASE=false
+          fi
+
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check existing release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release '$TAG' already exists. Skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check existing tag target
+        if: steps.release.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          TARGET_SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            TAG_SHA="$(git rev-list -n 1 "$TAG")"
+
+            if [ "$TAG_SHA" != "$TARGET_SHA" ]; then
+              echo "::error::Tag '$TAG' already exists at $TAG_SHA, expected $TARGET_SHA"
+              exit 1
+            fi
+          fi
+
+  release:
+    name: Build package and publish release
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    needs: prepare
+    if: needs.prepare.outputs.release_exists == 'false'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.target_sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+          node-version: "22"
+
+      - name: Install server dependencies
+        run: npm ci --ignore-scripts
+        working-directory: ./server
+
+      - name: Build server
+        run: npm run build
+        working-directory: ./server
+
+      - name: Install client dependencies
+        run: npm ci
+        working-directory: ./client
+
+      - name: Build client
+        run: INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true npm run build
+        working-directory: ./client
+
+      - name: Create release package
+        run: |
+          mv LICENSE.md server/dist
+          mv "LICENSES/PLANKA Community License DE.md" server/dist/LICENSE_DE.md
+          mv client/dist/* server/dist/public
+          mv server/dist/public/index.ejs server/dist/views
+          mv server/dist server/planka
+          cd server
+          zip -r ../planka-prebuild.zip planka
+
+      - name: Prepare release notes
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          awk -v version="$VERSION" '
+            $0 ~ "^#{1,2} \\[" version "\\]" {
+              capture = 1
+              print
+              next
+            }
+
+            capture && $0 ~ "^#{1,2} \\[[^]]+\\]" {
+              exit
+            }
+
+            capture {
+              print
+            }
+          ' client/src/assets/docs/whats-new.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "Release $VERSION" > release-notes.md
+          fi
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          TARGET_SHA: ${{ needs.prepare.outputs.target_sha }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          ARGS=()
+
+          if [ "$PRERELEASE" = "true" ]; then
+            ARGS+=(--prerelease)
+          fi
+
+          gh release create "$TAG" planka-prebuild.zip \
+            --target "$TARGET_SHA" \
+            --title "v$VERSION" \
+            --notes-file release-notes.md \
+            "${ARGS[@]}"

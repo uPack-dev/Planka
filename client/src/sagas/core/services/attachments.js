@@ -16,6 +16,27 @@ import { createLocalId } from '../../../utils/local-id';
 import { AttachmentTypes } from '../../../constants/Enums';
 import ToastTypes from '../../../constants/ToastTypes';
 
+const buildOptimisticLinkData = (data) => {
+  if (data.type !== AttachmentTypes.LINK) {
+    return undefined;
+  }
+
+  if (data.provider === 'googleDrive') {
+    return {
+      provider: 'googleDrive',
+      hostname: 'drive.google.com',
+      url: data.url,
+      ...(data.providerData || {}),
+    };
+  }
+
+  return data.url
+    ? {
+        url: data.url,
+      }
+    : undefined;
+};
+
 export function* createAttachment(cardId, data) {
   const localId = yield call(createLocalId);
   const currentUserId = yield select(selectors.selectCurrentUserId);
@@ -29,7 +50,8 @@ export function* createAttachment(cardId, data) {
 
   yield put(
     actions.createAttachment({
-      ...omit(nextData, ['file', 'url']),
+      ...omit(nextData, ['file', 'url', 'providerData']),
+      data: buildOptimisticLinkData(nextData),
       cardId,
       id: localId,
       creatorUserId: currentUserId,

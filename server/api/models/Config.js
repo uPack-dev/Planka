@@ -88,9 +88,19 @@ const SMTP_FIELD_NAMES = [
   'smtpFrom',
 ];
 
+const GOOGLE_DRIVE_FIELD_NAMES = [
+  'googleDriveEnabled',
+  'googleDriveClientId',
+  'googleDriveClientSecretEncrypted',
+  'googleDrivePickerApiKey',
+  'googleDrivePickerAppId',
+  'googleDriveScopes',
+];
+
 module.exports = {
   MAIN_ID,
   SMTP_FIELD_NAMES,
+  GOOGLE_DRIVE_FIELD_NAMES,
 
   attributes: {
     //  ╔═╗╦═╗╦╔╦╗╦╔╦╗╦╦  ╦╔═╗╔═╗
@@ -136,6 +146,37 @@ module.exports = {
       type: 'string',
       allowNull: true,
       columnName: 'smtp_from',
+    },
+
+    googleDriveEnabled: {
+      type: 'boolean',
+      required: true,
+      columnName: 'google_drive_enabled',
+    },
+    googleDriveClientId: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'google_drive_client_id',
+    },
+    googleDriveClientSecretEncrypted: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'google_drive_client_secret_encrypted',
+    },
+    googleDrivePickerApiKey: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'google_drive_picker_api_key',
+    },
+    googleDrivePickerAppId: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'google_drive_picker_app_id',
+    },
+    googleDriveScopes: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'google_drive_scopes',
     },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
