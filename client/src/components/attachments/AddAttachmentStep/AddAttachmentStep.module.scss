@@ -40,3 +40,8 @@
     text-decoration: underline;
   }
 }
+
+:global(.picker-dialog-bg),
+:global(.picker-dialog) {
+  z-index: 100000 !important;
+}
