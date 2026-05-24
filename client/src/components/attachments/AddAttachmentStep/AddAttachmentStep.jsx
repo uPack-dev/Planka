@@ -24,8 +24,8 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
   const [googleDriveError, setGoogleDriveError] = useState(null);
   const [showSettingsLink, setShowSettingsLink] = useState(false);
 
-  const bootstrap = useSelector(selectors.selectBootstrap);
-  const googleDriveConfig = bootstrap && bootstrap.googleDrive;
+  const config = useSelector(selectors.selectConfig);
+  const googleDriveConfig = config && config.googleDrive;
   const currentUser = useSelector(selectors.selectCurrentUser);
   const isAdmin = currentUser && currentUser.role === UserRoles.ADMIN;
 
@@ -130,7 +130,7 @@ const AddAttachmentStep = React.memo(({ onClose }) => {
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleConfigureClick();
                     }}
-                    style={{ cursor: 'pointer', textDecoration: 'underline', color: '#4183C4' }}
+                    className={styles.configureLink}
                   >
                     {t('action.configureGoogleDrive')}
                   </span>
