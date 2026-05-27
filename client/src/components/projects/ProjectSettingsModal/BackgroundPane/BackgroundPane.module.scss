@@ -4,8 +4,50 @@
  */
 
 :global(#app) {
+  .actionsRow {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .activeTargetButtonGroup {
+    margin-bottom: 8px;
+  }
+
   .activeTypeButtonGroup {
     margin-bottom: 12px;
+  }
+
+  .colorButton {
+    flex: 0 0 auto;
+  }
+
+  .colorFields {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+  }
+
+  .colorMessage {
+    margin: 8px 0 0 !important;
+  }
+
+  .colorPicker {
+    flex: 0 0 56px;
+
+    input {
+      cursor: pointer;
+      height: 36px;
+      padding: 3px;
+    }
+  }
+
+  .colorWrapper {
+    margin-bottom: 8px;
+  }
+
+  .hexInput {
+    flex: 1 1 auto;
   }
 
   .wrapper {

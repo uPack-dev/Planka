@@ -39,6 +39,9 @@ export default class extends BaseModel {
     isSubscribed: attr({
       getDefault: () => false,
     }),
+    cardsTotal: attr({
+      getDefault: () => null,
+    }),
     isFetching: attr({
       getDefault: () => null,
     }),

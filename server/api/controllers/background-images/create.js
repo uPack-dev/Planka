@@ -38,6 +38,11 @@
  *                 maxLength: 128
  *                 description: Request ID for tracking
  *                 example: req_123456
+ *               target:
+ *                 type: string
+ *                 enum: [background, cover, both]
+ *                 description: Background target to select after upload
+ *                 example: background
  *     responses:
  *       200:
  *         description: Background image uploaded successfully
@@ -106,6 +111,10 @@ module.exports = {
       isNotEmptyString: true,
       maxLength: 128,
     },
+    target: {
+      type: 'string',
+      isIn: ['background', 'cover', 'both'],
+    },
   },
 
   exits: {
@@ -159,6 +168,7 @@ module.exports = {
       values: {
         ...values,
         project,
+        target: inputs.target,
       },
       actorUser: currentUser,
       requestId: inputs.requestId,

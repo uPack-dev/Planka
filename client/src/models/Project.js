@@ -18,6 +18,10 @@ export default class extends BaseModel {
     description: attr(),
     backgroundType: attr(),
     backgroundGradient: attr(),
+    backgroundColor: attr(),
+    coverBackgroundType: attr(),
+    coverBackgroundGradient: attr(),
+    coverBackgroundColor: attr(),
     isHidden: attr(),
     isFavorite: attr({
       getDefault: () => false,
@@ -31,6 +35,11 @@ export default class extends BaseModel {
       to: 'BackgroundImage',
       as: 'backgroundImage',
       relatedName: 'backgroundedProject', // TODO: rename?
+    }),
+    coverBackgroundImageId: oneToOne({
+      to: 'BackgroundImage',
+      as: 'coverBackgroundImage',
+      relatedName: 'coverBackgroundedProject',
     }),
     managerUsers: many({
       to: 'User',

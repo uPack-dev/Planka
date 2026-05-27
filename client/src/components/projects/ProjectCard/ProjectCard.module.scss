@@ -20,7 +20,7 @@
     &::after {
       background: #000;
       bottom: 0;
-      content: "";
+      content: '';
       left: 0;
       opacity: 0.3;
       position: absolute;
@@ -31,7 +31,10 @@
 
   .description {
     border-left: 1px solid;
-    display: -webkit-box;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
     font-weight: lighter;
     hyphens: auto;
     left: 0;
@@ -39,12 +42,34 @@
     opacity: 0;
     overflow: hidden;
     position: absolute;
+    right: 0;
     top: 0;
-    transition: opacity 0.3s, transform 0.3s;
+    transition:
+      opacity 0.3s,
+      transform 0.3s;
     transform: translate(-40px, 0);
-    white-space: pre-line;
     word-break: break-word;
-    -webkit-box-orient: vertical;
+  }
+
+  .descriptionText {
+    flex: 0 1 auto;
+    max-width: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    white-space: pre-line;
+  }
+
+  .cardsTotal {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    display: inline-flex;
+    flex: 0 0 auto;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 16px;
+    padding: 2px 6px;
   }
 
   .favoriteButton {
@@ -96,6 +121,7 @@
     line-height: 1.1;
     overflow: hidden;
     position: absolute;
+    right: 0;
     word-break: break-word;
     -webkit-box-orient: vertical;
   }
@@ -171,9 +197,8 @@
 
   .wrapperLarge {
     .description {
-      line-clamp: 3;
-      -webkit-line-clamp: 3;
       margin: 24px 20px 0 20px;
+      max-height: calc(100% - 100px);
       padding-left: 10px;
     }
 

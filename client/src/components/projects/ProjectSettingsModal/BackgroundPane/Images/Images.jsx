@@ -4,6 +4,7 @@
  */
 
 import React, { useCallback, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'semantic-ui-react';
@@ -15,7 +16,7 @@ import Item from './Item';
 
 import styles from './Images.module.scss';
 
-const Images = React.memo(() => {
+const Images = React.memo(({ target }) => {
   const backgroundImageIds = useSelector(selectors.selectBackgroundImageIdsForCurrentProject);
 
   const dispatch = useDispatch();
@@ -28,10 +29,11 @@ const Images = React.memo(() => {
       dispatch(
         entryActions.createBackgroundImageInCurrentProject({
           file,
+          target,
         }),
       );
     },
-    [dispatch],
+    [target, dispatch],
   );
 
   useEffect(() => {
@@ -42,7 +44,7 @@ const Images = React.memo(() => {
     <>
       <div className={styles.images}>
         {backgroundImageIds.map((backgroundImageId) => (
-          <Item key={backgroundImageId} id={backgroundImageId} />
+          <Item key={backgroundImageId} id={backgroundImageId} target={target} />
         ))}
       </div>
       <div className={styles.actions}>
@@ -61,5 +63,9 @@ const Images = React.memo(() => {
     </>
   );
 });
+
+Images.propTypes = {
+  target: PropTypes.oneOf(['background', 'cover']).isRequired,
+};
 
 export default Images;

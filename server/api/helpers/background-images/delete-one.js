@@ -29,18 +29,30 @@ module.exports = {
 
     const webhooks = await Webhook.qm.getAll();
 
-    if (inputs.project.backgroundType === Project.BackgroundTypes.IMAGE) {
-      if (inputs.record.id === inputs.project.backgroundImageId) {
-        await sails.helpers.projects.updateOne.with({
-          scoper,
-          webhooks,
-          record: inputs.project,
-          values: {
-            backgroundType: null,
-          },
-          actorUser: inputs.actorUser,
-        });
-      }
+    const projectValues = {};
+
+    if (
+      inputs.project.backgroundType === Project.BackgroundTypes.IMAGE &&
+      inputs.record.id === inputs.project.backgroundImageId
+    ) {
+      projectValues.backgroundType = null;
+    }
+
+    if (
+      inputs.project.coverBackgroundType === Project.BackgroundTypes.IMAGE &&
+      inputs.record.id === inputs.project.coverBackgroundImageId
+    ) {
+      projectValues.coverBackgroundType = null;
+    }
+
+    if (!_.isEmpty(projectValues)) {
+      await sails.helpers.projects.updateOne.with({
+        scoper,
+        webhooks,
+        record: inputs.project,
+        values: projectValues,
+        actorUser: inputs.actorUser,
+      });
     }
 
     const { backgroundImage, uploadedFile } = await BackgroundImage.qm.deleteOne(inputs.record.id);

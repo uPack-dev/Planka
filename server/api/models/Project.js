@@ -20,10 +20,15 @@
  *         - id
  *         - ownerProjectManagerId
  *         - backgroundImageId
+ *         - coverBackgroundImageId
  *         - name
  *         - description
  *         - backgroundType
  *         - backgroundGradient
+ *         - backgroundColor
+ *         - coverBackgroundType
+ *         - coverBackgroundGradient
+ *         - coverBackgroundColor
  *         - isHidden
  *         - createdAt
  *         - updatedAt
@@ -42,6 +47,11 @@
  *           nullable: true
  *           description: ID of the background image used as background
  *           example: "1357158568008091266"
+ *         coverBackgroundImageId:
+ *           type: string
+ *           nullable: true
+ *           description: ID of the background image used as project cover
+ *           example: "1357158568008091266"
  *         name:
  *           type: string
  *           description: Name/title of the project
@@ -53,7 +63,7 @@
  *           example: A project for developing new features...
  *         backgroundType:
  *           type: string
- *           enum: [gradient, image]
+ *           enum: [gradient, image, color]
  *           nullable: true
  *           description: Type of background for the project
  *           example: gradient
@@ -63,6 +73,28 @@
  *           nullable: true
  *           description: Gradient background for the project
  *           example: ocean-dive
+ *         backgroundColor:
+ *           type: string
+ *           nullable: true
+ *           description: Hex color background for the project
+ *           example: "#1E88E5"
+ *         coverBackgroundType:
+ *           type: string
+ *           enum: [gradient, image, color]
+ *           nullable: true
+ *           description: Type of background for the project cover
+ *           example: color
+ *         coverBackgroundGradient:
+ *           type: string
+ *           enum: [old-lime, ocean-dive, tzepesch-style, jungle-mesh, strawberry-dust, purple-rose, sun-scream, warm-rust, sky-change, green-eyes, blue-xchange, blood-orange, sour-peel, green-ninja, algae-green, coral-reef, steel-grey, heat-waves, velvet-lounge, purple-rain, blue-steel, blueish-curve, prism-light, green-mist, red-curtain]
+ *           nullable: true
+ *           description: Gradient background for the project cover
+ *           example: ocean-dive
+ *         coverBackgroundColor:
+ *           type: string
+ *           nullable: true
+ *           description: Hex color background for the project cover
+ *           example: "#1E88E5"
  *         isHidden:
  *           type: boolean
  *           default: false
@@ -90,6 +122,7 @@ const Types = {
 const BackgroundTypes = {
   GRADIENT: 'gradient',
   IMAGE: 'image',
+  COLOR: 'color',
 };
 
 const BACKGROUND_GRADIENTS = [
@@ -151,6 +184,28 @@ module.exports = {
       allowNull: true,
       columnName: 'background_gradient',
     },
+    backgroundColor: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'background_color',
+    },
+    coverBackgroundType: {
+      type: 'string',
+      isIn: Object.values(BackgroundTypes),
+      allowNull: true,
+      columnName: 'cover_background_type',
+    },
+    coverBackgroundGradient: {
+      type: 'string',
+      isIn: BACKGROUND_GRADIENTS,
+      allowNull: true,
+      columnName: 'cover_background_gradient',
+    },
+    coverBackgroundColor: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'cover_background_color',
+    },
     isHidden: {
       type: 'boolean',
       defaultsTo: false, // TODO: implement via normalizeValues?
@@ -172,6 +227,10 @@ module.exports = {
     backgroundImageId: {
       model: 'BackgroundImage',
       columnName: 'background_image_id',
+    },
+    coverBackgroundImageId: {
+      model: 'BackgroundImage',
+      columnName: 'cover_background_image_id',
     },
     managerUsers: {
       collection: 'User',

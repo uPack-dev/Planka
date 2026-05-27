@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Button, Icon } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
@@ -40,11 +41,17 @@ const ProjectCard = React.memo(
       [],
     );
 
+    const selectCardsTotalByProjectId = useMemo(
+      () => selectors.makeSelectCardsTotalByProjectId(),
+      [],
+    );
+
     const selectProjectManagerById = useMemo(() => selectors.makeSelectProjectManagerById(), []);
     const selectBackgroundImageById = useMemo(() => selectors.makeSelectBackgroundImageById(), []);
 
     const project = useSelector((state) => selectProjectById(state, id));
     const firstBoardId = useSelector((state) => selectFirstBoardIdByProjectId(state, id));
+    const cardsTotal = useSelector((state) => selectCardsTotalByProjectId(state, id));
 
     const notificationsTotal = useSelector((state) =>
       selectNotificationsTotalByProjectId(state, id),
@@ -56,12 +63,32 @@ const ProjectCard = React.memo(
         selectProjectManagerById(state, project.ownerProjectManagerId),
     );
 
+    const hasCoverBackground = [
+      project.coverBackgroundType,
+      project.coverBackgroundGradient,
+      project.coverBackgroundImageId,
+      project.coverBackgroundColor,
+    ].some((value) => value !== null && value !== undefined);
+
+    const backgroundType = hasCoverBackground
+      ? project.coverBackgroundType
+      : project.backgroundType;
+    const backgroundGradient = hasCoverBackground
+      ? project.coverBackgroundGradient
+      : project.backgroundGradient;
+    const backgroundImageId = hasCoverBackground
+      ? project.coverBackgroundImageId
+      : project.backgroundImageId;
+    const backgroundColor = hasCoverBackground
+      ? project.coverBackgroundColor
+      : project.backgroundColor;
+
     const backgroundImageUrl = useSelector((state) => {
-      if (!project.backgroundType || project.backgroundType !== ProjectBackgroundTypes.IMAGE) {
+      if (!backgroundType || backgroundType !== ProjectBackgroundTypes.IMAGE) {
         return null;
       }
 
-      const backgroundImage = selectBackgroundImageById(state, project.backgroundImageId);
+      const backgroundImage = selectBackgroundImageById(state, backgroundImageId);
 
       if (!backgroundImage) {
         return null;
@@ -71,6 +98,7 @@ const ProjectCard = React.memo(
     });
 
     const dispatch = useDispatch();
+    const [t] = useTranslation();
 
     const handleToggleFavoriteClick = useCallback(() => {
       dispatch(
@@ -102,11 +130,14 @@ const ProjectCard = React.memo(
           <div
             className={classNames(
               styles.cover,
-              project.backgroundType === ProjectBackgroundTypes.GRADIENT &&
-                globalStyles[`background${upperFirst(camelCase(project.backgroundGradient))}`],
+              backgroundType === ProjectBackgroundTypes.GRADIENT &&
+                globalStyles[`background${upperFirst(camelCase(backgroundGradient))}`],
             )}
             style={{
-              background: backgroundImageUrl && `url("${backgroundImageUrl}") center / cover`,
+              background:
+                (backgroundImageUrl && `url("${backgroundImageUrl}") center / cover`) ||
+                (backgroundType === ProjectBackgroundTypes.COLOR && backgroundColor) ||
+                undefined,
             }}
           />
           {notificationsTotal > 0 && (
@@ -124,8 +155,17 @@ const ProjectCard = React.memo(
             >
               {project.name}
             </div>
-            {withDescription && project.description && (
-              <div className={styles.description}>{project.description}</div>
+            {withDescription && (
+              <div className={styles.description}>
+                {project.description && (
+                  <div className={styles.descriptionText}>{project.description}</div>
+                )}
+                <div className={styles.cardsTotal}>
+                  {t('common.tasksCount', {
+                    count: cardsTotal || 0,
+                  })}
+                </div>
+              </div>
             )}
           </div>
           {withTypeIndicator && (

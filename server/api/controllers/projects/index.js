@@ -134,6 +134,9 @@ module.exports = {
 
     const fullyVisibleBoards = await Board.qm.getByProjectIds(fullyVisibleProjectIds);
     const boards = [...fullyVisibleBoards, ...membershipBoards];
+    const cardsTotalByBoardId = await Card.qm.countByBoardIds(
+      sails.helpers.utils.mapRecords(boards),
+    );
 
     const projectFavorites = await ProjectFavorite.qm.getByProjectIdsAndUserId(
       projectIds,
@@ -175,6 +178,11 @@ module.exports = {
     projects.forEach((project) => {
       // eslint-disable-next-line no-param-reassign
       project.isFavorite = isFavoriteByProjectId[project.id] || false;
+    });
+
+    boards.forEach((board) => {
+      // eslint-disable-next-line no-param-reassign
+      board.cardsTotal = cardsTotalByBoardId[board.id] || 0;
     });
 
     return {

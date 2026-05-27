@@ -9,6 +9,7 @@ import { attr, fk, many, oneToOne } from 'redux-orm';
 import BaseModel from './BaseModel';
 import ActionTypes from '../constants/ActionTypes';
 import Config from '../constants/Config';
+import { isListKanban } from '../utils/record-helpers';
 
 const addRelation = (relation, id) => {
   try {
@@ -31,6 +32,55 @@ const addCardLabel = (Card, cardId, labelId) => {
 
   if (cardModel) {
     addRelation(cardModel.labels, labelId);
+  }
+};
+
+const isCardCounted = (Card, card) => {
+  if (!card || !card.boardId) {
+    return false;
+  }
+
+  if (!card.listId) {
+    return true;
+  }
+
+  const listModel = Card.session.List.withId(card.listId);
+
+  return !listModel || isListKanban(listModel);
+};
+
+const updateBoardCardsTotal = (Card, boardId, delta) => {
+  if (!boardId || delta === 0) {
+    return;
+  }
+
+  const boardModel = Card.session.Board.withId(boardId);
+
+  if (!boardModel || !Number.isFinite(boardModel.cardsTotal)) {
+    return;
+  }
+
+  boardModel.update({
+    cardsTotal: Math.max(boardModel.cardsTotal + delta, 0),
+  });
+};
+
+const updateCardsTotalForCard = (Card, card, delta) => {
+  if (isCardCounted(Card, card)) {
+    updateBoardCardsTotal(Card, card.boardId, delta);
+  }
+};
+
+const updateCardsTotalForTransition = (Card, prevCard, nextCard) => {
+  const wasCounted = isCardCounted(Card, prevCard);
+  const isCounted = isCardCounted(Card, nextCard);
+
+  if (wasCounted && (!isCounted || prevCard.boardId !== nextCard.boardId)) {
+    updateBoardCardsTotal(Card, prevCard.boardId, -1);
+  }
+
+  if (isCounted && (!wasCounted || prevCard.boardId !== nextCard.boardId)) {
+    updateBoardCardsTotal(Card, nextCard.boardId, 1);
   }
 };
 
@@ -342,6 +392,10 @@ export default class extends BaseModel {
 
         break;
       case ActionTypes.CARD_CREATE:
+        updateCardsTotalForCard(Card, payload.card, 1);
+        Card.upsert(payload.card);
+
+        break;
       case ActionTypes.CARD_UPDATE__SUCCESS:
         Card.upsert(payload.card);
 
@@ -351,11 +405,23 @@ export default class extends BaseModel {
         Card.upsert(payload.card);
 
         break;
-      case ActionTypes.CARD_CREATE__FAILURE:
-        Card.withId(payload.localId).deleteWithClearable();
+      case ActionTypes.CARD_CREATE__FAILURE: {
+        const cardModel = Card.withId(payload.localId);
+
+        if (cardModel) {
+          updateCardsTotalForCard(Card, cardModel, -1);
+          cardModel.deleteWithClearable();
+        }
 
         break;
-      case ActionTypes.CARD_CREATE_HANDLE:
+      }
+      case ActionTypes.CARD_CREATE_HANDLE: {
+        const cardModel = Card.withId(payload.card.id);
+
+        if (!cardModel) {
+          updateCardsTotalForCard(Card, payload.card, 1);
+        }
+
         Card.upsert(payload.card);
 
         payload.cardMemberships.forEach(({ cardId, userId }) => {
@@ -367,8 +433,15 @@ export default class extends BaseModel {
         });
 
         break;
+      }
       case ActionTypes.CARD_UPDATE: {
         const cardModel = Card.withId(payload.id);
+        const nextCard = {
+          ...cardModel.ref,
+          ...payload.data,
+        };
+
+        updateCardsTotalForTransition(Card, cardModel, nextCard);
 
         if (payload.data.listId && payload.data.listId !== cardModel.listId) {
           payload.data.listChangedAt = new Date(); // eslint-disable-line no-param-reassign
@@ -396,6 +469,10 @@ export default class extends BaseModel {
       }
       case ActionTypes.CARD_UPDATE_HANDLE: {
         const cardModel = Card.withId(payload.card.id);
+
+        if (cardModel) {
+          updateCardsTotalForTransition(Card, cardModel, payload.card);
+        }
 
         if (payload.card.boardId === null || payload.isFetched) {
           if (cardModel) {
@@ -431,6 +508,11 @@ export default class extends BaseModel {
         const cardModel = Card.withId(payload.id);
 
         if (cardModel) {
+          updateCardsTotalForTransition(Card, cardModel, {
+            ...cardModel.ref,
+            ...payload.data,
+          });
+
           cardModel.update(payload.data);
           cardModel.syncAfterBoardChange();
         }
@@ -464,6 +546,12 @@ export default class extends BaseModel {
         const cardModel = Card.withId(payload.id);
 
         if (cardModel) {
+          if (payload.card) {
+            updateCardsTotalForTransition(Card, cardModel, payload.card);
+          } else {
+            updateCardsTotalForCard(Card, cardModel, -1);
+          }
+
           cardModel.deleteWithRelated(true);
         }
 
@@ -494,6 +582,7 @@ export default class extends BaseModel {
             listChangedAt: new Date(),
           });
 
+          updateCardsTotalForCard(Card, cardModel, 1);
           cardModel.syncAfterBoardChange();
         }
 
@@ -522,21 +611,29 @@ export default class extends BaseModel {
         const cardModel = Card.withId(payload.localId);
 
         if (cardModel) {
+          updateCardsTotalForCard(Card, cardModel, -1);
           cardModel.deleteWithRelated();
         }
 
         break;
       }
-      case ActionTypes.CARD_DELETE:
-        Card.withId(payload.id).deleteWithRelated();
+      case ActionTypes.CARD_DELETE: {
+        const cardModel = Card.withId(payload.id);
+
+        updateCardsTotalForCard(Card, cardModel, -1);
+        cardModel.deleteWithRelated();
 
         break;
+      }
       case ActionTypes.CARD_DELETE__SUCCESS:
       case ActionTypes.CARD_DELETE_HANDLE: {
         const cardModel = Card.withId(payload.card.id);
 
         if (cardModel) {
+          updateCardsTotalForCard(Card, cardModel, -1);
           cardModel.deleteWithRelated();
+        } else if (type === ActionTypes.CARD_DELETE_HANDLE) {
+          updateCardsTotalForCard(Card, payload.card, -1);
         }
 
         break;

@@ -3,6 +3,125 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const HEX_COLOR_REGEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+const normalizeHexColor = (value) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const color = value.trim();
+
+  if (!HEX_COLOR_REGEX.test(color)) {
+    return null;
+  }
+
+  const hex = color.slice(1);
+
+  if (hex.length === 3) {
+    return `#${hex
+      .split('')
+      .map((character) => `${character}${character}`)
+      .join('')
+      .toUpperCase()}`;
+  }
+
+  return color.toUpperCase();
+};
+
+const BACKGROUND_FIELD_SETS = [
+  {
+    type: 'backgroundType',
+    gradient: 'backgroundGradient',
+    image: 'backgroundImage',
+    imageId: 'backgroundImageId',
+    color: 'backgroundColor',
+  },
+  {
+    type: 'coverBackgroundType',
+    gradient: 'coverBackgroundGradient',
+    image: 'coverBackgroundImage',
+    imageId: 'coverBackgroundImageId',
+    color: 'coverBackgroundColor',
+  },
+];
+
+const normalizeBackgroundValues = (record, values, fields) => {
+  if (values[fields.image]) {
+    values[fields.imageId] = values[fields.image].id; // eslint-disable-line no-param-reassign
+  }
+
+  const backgroundType = _.isUndefined(values[fields.type])
+    ? record[fields.type]
+    : values[fields.type];
+
+  if (_.isNull(backgroundType)) {
+    Object.assign(values, {
+      [fields.imageId]: null,
+      [fields.gradient]: null,
+      [fields.color]: null,
+    });
+
+    return;
+  }
+
+  if (backgroundType === Project.BackgroundTypes.GRADIENT) {
+    const backgroundGradient = _.isUndefined(values[fields.gradient])
+      ? record[fields.gradient]
+      : values[fields.gradient];
+
+    if (!backgroundGradient) {
+      throw 'backgroundGradientInValuesMustBePresent';
+    }
+
+    Object.assign(values, {
+      [fields.imageId]: null,
+      [fields.color]: null,
+    });
+
+    return;
+  }
+
+  if (backgroundType === Project.BackgroundTypes.IMAGE) {
+    const backgroundImageId = _.isUndefined(values[fields.imageId])
+      ? record[fields.imageId]
+      : values[fields.imageId];
+
+    if (!backgroundImageId) {
+      throw 'backgroundImageInValuesMustBePresent';
+    }
+
+    Object.assign(values, {
+      [fields.gradient]: null,
+      [fields.color]: null,
+    });
+
+    return;
+  }
+
+  if (backgroundType === Project.BackgroundTypes.COLOR) {
+    const backgroundColor = _.isUndefined(values[fields.color])
+      ? record[fields.color]
+      : values[fields.color];
+
+    if (!backgroundColor) {
+      throw 'backgroundColorInValuesMustBePresent';
+    }
+
+    const normalizedBackgroundColor = normalizeHexColor(backgroundColor);
+
+    if (!normalizedBackgroundColor) {
+      throw 'backgroundColorInValuesMustBeValid';
+    }
+
+    Object.assign(values, {
+      [fields.imageId]: null,
+      [fields.gradient]: null,
+      [fields.color]: normalizedBackgroundColor,
+    });
+  }
+};
+
 module.exports = {
   inputs: {
     record: {
@@ -32,16 +151,14 @@ module.exports = {
     ownerProjectManagerInValuesMustBeLastManager: {},
     backgroundImageInValuesMustBePresent: {},
     backgroundGradientInValuesMustBePresent: {},
+    backgroundColorInValuesMustBePresent: {},
+    backgroundColorInValuesMustBeValid: {},
     alreadyHasOwnerProjectManager: {},
   },
 
   // TODO: use normalizeValues
   async fn(inputs) {
     const { isFavorite, ...values } = inputs.values;
-
-    if (values.backgroundImage) {
-      values.backgroundImageId = values.backgroundImage.id;
-    }
 
     if (values.ownerProjectManager) {
       if (inputs.record.ownerProjectManagerId) {
@@ -64,36 +181,9 @@ module.exports = {
       }
     }
 
-    const backgroundType = _.isUndefined(values.backgroundType)
-      ? inputs.record.backgroundType
-      : values.backgroundType;
-
-    if (_.isNull(backgroundType)) {
-      Object.assign(values, {
-        backgroundImageId: null,
-        backgroundGradient: null,
-      });
-    } else if (backgroundType === Project.BackgroundTypes.GRADIENT) {
-      const backgroundGradient = _.isUndefined(values.backgroundGradient)
-        ? inputs.record.backgroundGradient
-        : values.backgroundGradient;
-
-      if (!backgroundGradient) {
-        throw 'backgroundGradientInValuesMustBePresent';
-      }
-
-      values.backgroundImageId = null;
-    } else if (backgroundType === Project.BackgroundTypes.IMAGE) {
-      const backgroundImageId = _.isUndefined(values.backgroundImageId)
-        ? inputs.record.backgroundImageId
-        : values.backgroundImageId;
-
-      if (!backgroundImageId) {
-        throw 'backgroundImageInValuesMustBePresent';
-      }
-
-      values.backgroundGradient = null;
-    }
+    BACKGROUND_FIELD_SETS.forEach((fields) => {
+      normalizeBackgroundValues(inputs.record, values, fields);
+    });
 
     let project;
     if (_.isEmpty(values)) {

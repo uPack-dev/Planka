@@ -11,39 +11,34 @@ import { Loader } from 'semantic-ui-react';
 import selectors from '../../../../../selectors';
 import entryActions from '../../../../../entry-actions';
 import { ProjectBackgroundTypes } from '../../../../../constants/Enums';
+import { buildBackgroundData, buildClearBackgroundData, getBackgroundForTarget } from '../utils';
 import Image from '../Image';
 
 import styles from './Item.module.scss';
 
-const Item = React.memo(({ id }) => {
+const Item = React.memo(({ id, target }) => {
   const selectBackgroundImageById = useMemo(() => selectors.makeSelectBackgroundImageById(), []);
 
   const backgroundImage = useSelector((state) => selectBackgroundImageById(state, id));
 
   const isActive = useSelector((state) => {
-    const { backgroundType, backgroundImageId } = selectors.selectCurrentProject(state);
-    return backgroundType === ProjectBackgroundTypes.IMAGE && id === backgroundImageId;
+    const background = getBackgroundForTarget(selectors.selectCurrentProject(state), target);
+    return background.type === ProjectBackgroundTypes.IMAGE && id === background.imageId;
   });
 
   const dispatch = useDispatch();
 
   const handleSelect = useCallback(() => {
     dispatch(
-      entryActions.updateCurrentProject({
-        backgroundType: ProjectBackgroundTypes.IMAGE,
-        backgroundImageId: id,
-      }),
+      entryActions.updateCurrentProject(
+        buildBackgroundData(target, ProjectBackgroundTypes.IMAGE, id),
+      ),
     );
-  }, [id, dispatch]);
+  }, [id, target, dispatch]);
 
   const handleDeselect = useCallback(() => {
-    dispatch(
-      entryActions.updateCurrentProject({
-        backgroundType: null,
-        backgroundImageId: null,
-      }),
-    );
-  }, [dispatch]);
+    dispatch(entryActions.updateCurrentProject(buildClearBackgroundData(target)));
+  }, [target, dispatch]);
 
   const handleDelete = useCallback(() => {
     dispatch(entryActions.deleteBackgroundImage(id));
@@ -70,6 +65,7 @@ const Item = React.memo(({ id }) => {
 
 Item.propTypes = {
   id: PropTypes.string.isRequired,
+  target: PropTypes.oneOf(['background', 'cover']).isRequired,
 };
 
 export default Item;
