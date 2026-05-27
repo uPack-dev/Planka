@@ -21,8 +21,135 @@ import AccessTokenSteps from '../../../constants/AccessTokenSteps';
 import TermsModal from './TermsModal';
 
 import logo from '../../../assets/images/logo.svg';
+import upackCoverAvif from '../../../assets/images/login-upack-cover.avif';
+import upackCoverJpg from '../../../assets/images/login-upack-cover.jpg';
+import upackCoverWebp from '../../../assets/images/login-upack-cover.webp';
 
 import styles from './Content.module.scss';
+
+const coverKeywords = [
+  {
+    text: 'розвиток',
+    left: '12%',
+    top: '8%',
+    rotate: '15deg',
+    duration: '7.2s',
+    delay: '0s',
+    floatX: '10px',
+    floatY: '12px',
+  },
+  {
+    text: '↗',
+    left: '43%',
+    top: '7%',
+    rotate: '-7deg',
+    duration: '6.4s',
+    delay: '-1.6s',
+    floatX: '8px',
+    floatY: '14px',
+    isIcon: true,
+  },
+  {
+    text: 'партнерство',
+    left: '84%',
+    top: '7%',
+    rotate: '-12deg',
+    duration: '7.8s',
+    delay: '-0.8s',
+    floatX: '12px',
+    floatY: '10px',
+  },
+  {
+    text: 'сайти',
+    left: '8%',
+    top: '25%',
+    rotate: '13deg',
+    duration: '6.9s',
+    delay: '-2.2s',
+    floatX: '7px',
+    floatY: '16px',
+  },
+  {
+    text: '&',
+    left: '91%',
+    top: '24%',
+    rotate: '19deg',
+    duration: '6.2s',
+    delay: '-1.1s',
+    floatX: '8px',
+    floatY: '10px',
+  },
+  {
+    text: 'бренд',
+    left: '88%',
+    top: '39%',
+    rotate: '0deg',
+    duration: '7.3s',
+    delay: '-3.1s',
+    floatX: '12px',
+    floatY: '8px',
+  },
+  {
+    text: 'автоматизація',
+    left: '12%',
+    top: '57%',
+    rotate: '-13deg',
+    duration: '8s',
+    delay: '-1.9s',
+    floatX: '14px',
+    floatY: '12px',
+  },
+  {
+    text: '#',
+    left: '24%',
+    top: '74%',
+    rotate: '20deg',
+    duration: '6.5s',
+    delay: '-0.6s',
+    floatX: '9px',
+    floatY: '12px',
+  },
+  {
+    text: 'дизайн',
+    left: '72%',
+    top: '70%',
+    rotate: '-22deg',
+    duration: '7.4s',
+    delay: '-2.7s',
+    floatX: '12px',
+    floatY: '9px',
+  },
+  {
+    text: 'SMM',
+    left: '45%',
+    top: '88%',
+    rotate: '-22deg',
+    duration: '6.8s',
+    delay: '-3.4s',
+    floatX: '10px',
+    floatY: '11px',
+  },
+  {
+    text: 'аналіз',
+    left: '10%',
+    top: '92%',
+    rotate: '7deg',
+    duration: '7.6s',
+    delay: '-2.9s',
+    floatX: '10px',
+    floatY: '8px',
+  },
+  {
+    text: 'креатив',
+    left: '88%',
+    top: '90%',
+    rotate: '15deg',
+    duration: '7.1s',
+    delay: '-0.3s',
+    floatX: '13px',
+    floatY: '12px',
+  },
+];
 
 const createMessage = (error, isDebug) => {
   if (!error) {
@@ -312,7 +439,36 @@ const Content = React.memo(() => {
           only="computer"
           className={classNames(styles.gridItem, styles.cover)}
         >
-          <div className={styles.coverOverlay} />
+          <div className={styles.coverScene} aria-hidden="true">
+            <div className={styles.coverStage}>
+              <div className={styles.coverImage}>
+                <picture>
+                  <source srcSet={upackCoverAvif} type="image/avif" />
+                  <source srcSet={upackCoverWebp} type="image/webp" />
+                  <img src={upackCoverJpg} alt="" />
+                </picture>
+              </div>
+              {coverKeywords.map((keyword) => (
+                <div
+                  key={keyword.text}
+                  className={classNames(styles.keywordBadge, {
+                    [styles.keywordBadgeIcon]: keyword.isIcon,
+                  })}
+                  style={{
+                    '--keyword-left': keyword.left,
+                    '--keyword-top': keyword.top,
+                    '--keyword-rotate': keyword.rotate,
+                    '--keyword-duration': keyword.duration,
+                    '--keyword-delay': keyword.delay,
+                    '--keyword-float-x': keyword.floatX,
+                    '--keyword-float-y': keyword.floatY,
+                  }}
+                >
+                  <span className={styles.keywordBadgeInner}>{keyword.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </Grid.Column>
       </Grid>
       {step === AccessTokenSteps.ACCEPT_TERMS && <TermsModal />}
