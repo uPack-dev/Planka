@@ -146,7 +146,9 @@ const Item = React.memo(({ id, isVisible }) => {
           <ItemContent
             ref={ref}
             id={id}
-            onOpen={attachment.type === AttachmentTypes.FILE || canPreviewGoogleDrive ? open : undefined}
+            onOpen={
+              attachment.type === AttachmentTypes.FILE || canPreviewGoogleDrive ? open : undefined
+            }
           />
         ) : (
           <span ref={ref} />

@@ -28,7 +28,7 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
   const selectListById = useMemo(() => selectors.makeSelectListById(), []);
 
   const attachment = useSelector((state) => selectAttachmentById(state, id));
-  const attachmentData = attachment?.data || {};
+  const attachmentData = useMemo(() => attachment?.data || {}, [attachment?.data]);
 
   const isCover = useSelector(
     (state) => id === selectors.selectCurrentCard(state).coverAttachmentId,
@@ -142,7 +142,9 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
       }
 
       return {
-        children: <Icon name={isGoogleDriveFolder ? 'folder open' : 'cloud'} size="big" color="grey" />,
+        children: (
+          <Icon name={isGoogleDriveFolder ? 'folder open' : 'cloud'} size="big" color="grey" />
+        ),
       };
     }
 

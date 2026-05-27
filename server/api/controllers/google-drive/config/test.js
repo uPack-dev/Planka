@@ -33,7 +33,8 @@ module.exports = {
     const clientSecret = inputs.clientSecret || savedConfig.clientSecret;
     const pickerApiKey = inputs.pickerApiKey || savedConfig.pickerApiKey;
     const pickerAppId = inputs.pickerAppId || savedConfig.pickerAppId;
-    const scopes = inputs.scopes || savedConfig.scopes || 'https://www.googleapis.com/auth/drive.file';
+    const scopes =
+      inputs.scopes || savedConfig.scopes || 'https://www.googleapis.com/auth/drive.file';
     const redirectUri = `${sails.config.custom.baseUrl}/api/google-drive/callback`;
 
     const missingFields = [];
