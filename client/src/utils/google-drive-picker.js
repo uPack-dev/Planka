@@ -179,6 +179,7 @@ const openPicker = async (apiKey, appId, clientId, accessToken) =>
           .setOAuthToken(accessToken)
           .addView(docsView)
           .setDeveloperKey(apiKey)
+          .setOrigin(window.location.origin)
           .setCallback((data) => {
             if (data.action === window.google.picker.Action.PICKED) {
               resolve(data.docs.map(normalizePickedDocument));
