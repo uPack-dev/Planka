@@ -145,6 +145,8 @@ module.exports.routes = {
   'POST /api/projects/:projectId/project-managers': 'project-managers/create',
   'DELETE /api/project-managers/:id': 'project-managers/delete',
 
+  'GET /api/projects/:projectId/background-images/search': 'background-images/search',
+  'POST /api/projects/:projectId/background-images/import': 'background-images/import',
   'POST /api/projects/:projectId/background-images': 'background-images/create',
   'DELETE /api/background-images/:id': 'background-images/delete',
 

@@ -53,6 +53,10 @@
  *               format: uri
  *               description: URL for 360px thumbnail version
  *               example: https://storage.example.com/background-images/1357158568008091264/outside-360.jpg
+ *         source:
+ *           type: object
+ *           nullable: true
+ *           description: Optional external source metadata for imported online images
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -80,6 +84,9 @@ module.exports = {
     size: {
       type: 'string',
       required: true,
+    },
+    source: {
+      type: 'json',
     },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗

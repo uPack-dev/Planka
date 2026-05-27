@@ -26,7 +26,16 @@ const envToNumber = (value) => {
 
 const envToBytes = (value) => bytes(value);
 
-const envToArray = (value) => (value ? value.split(',') : []);
+const envToArray = (value) =>
+  value
+    ? value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
+const envToArrayWithDefault = (value, defaultValue) =>
+  value === undefined ? defaultValue : envToArray(value);
 
 const baseUrl = envToArray(process.env.BASE_URL)[0];
 const parsedBasedUrl = new URL(baseUrl);
@@ -112,6 +121,26 @@ module.exports.custom = {
   smtpFrom: process.env.SMTP_FROM,
 
   gravatarBaseUrl: process.env.GRAVATAR_BASE_URL,
+
+  backgroundImageSearch: {
+    providers: envToArrayWithDefault(process.env.BACKGROUND_IMAGE_SEARCH_PROVIDERS, [
+      'pexels',
+      'openverse',
+      'wikimedia',
+    ]),
+    defaultProvider: process.env.BACKGROUND_IMAGE_SEARCH_DEFAULT_PROVIDER || 'pexels',
+    minWidth: envToNumber(process.env.BACKGROUND_IMAGE_SEARCH_MIN_WIDTH) || 1920,
+    minHeight: envToNumber(process.env.BACKGROUND_IMAGE_SEARCH_MIN_HEIGHT) || 1080,
+    requireMinSize: process.env.BACKGROUND_IMAGE_SEARCH_REQUIRE_MIN_SIZE !== 'false',
+    timeoutMs: envToNumber(process.env.BACKGROUND_IMAGE_SEARCH_TIMEOUT_MS) || 10000,
+    maxDownloadBytes:
+      envToBytes(process.env.BACKGROUND_IMAGE_SEARCH_MAX_DOWNLOAD_BYTES) || 25000000,
+    cacheTtlSeconds: envToNumber(process.env.BACKGROUND_IMAGE_SEARCH_CACHE_TTL_SECONDS) || 3600,
+    pexelsApiKey: process.env.PEXELS_API_KEY,
+    openverseClientId: process.env.OPENVERSE_CLIENT_ID,
+    openverseClientSecret: process.env.OPENVERSE_CLIENT_SECRET,
+    unsplashAccessKey: process.env.UNSPLASH_ACCESS_KEY,
+  },
 
   /* Internal */
 

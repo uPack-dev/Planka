@@ -120,6 +120,22 @@ services:
       # Use a proxy you control for privacy, or leave commented out or empty to disable.
       # - GRAVATAR_BASE_URL=https://www.gravatar.com/avatar/
 
+      # Online project background image search/import.
+      # Pexels requires PEXELS_API_KEY. Wikimedia works without a key.
+      # Openverse can work anonymously; credentials are optional when needed for higher limits.
+      # - BACKGROUND_IMAGE_SEARCH_PROVIDERS=pexels,openverse,wikimedia
+      # - BACKGROUND_IMAGE_SEARCH_DEFAULT_PROVIDER=pexels
+      # - BACKGROUND_IMAGE_SEARCH_MIN_WIDTH=1920
+      # - BACKGROUND_IMAGE_SEARCH_MIN_HEIGHT=1080
+      # - BACKGROUND_IMAGE_SEARCH_REQUIRE_MIN_SIZE=true
+      # - BACKGROUND_IMAGE_SEARCH_TIMEOUT_MS=10000
+      # - BACKGROUND_IMAGE_SEARCH_MAX_DOWNLOAD_BYTES=25000000
+      # - BACKGROUND_IMAGE_SEARCH_CACHE_TTL_SECONDS=3600
+      # - PEXELS_API_KEY=
+      # - OPENVERSE_CLIENT_ID=
+      # - OPENVERSE_CLIENT_SECRET=
+      # - UNSPLASH_ACCESS_KEY=
+
       # --------------------------------------------------------------------
       # Outgoing traffic control (internal Squid proxy)
       # --------------------------------------------------------------------

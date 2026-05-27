@@ -15,6 +15,7 @@ export default class extends BaseModel {
     id: attr(),
     url: attr(),
     thumbnailUrls: attr(),
+    source: attr(),
     projectId: fk({
       to: 'Project',
       as: 'project',

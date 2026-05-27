@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import { FilePicker } from '../../../../../lib/custom-ui';
 
 import selectors from '../../../../../selectors';
 import entryActions from '../../../../../entry-actions';
+import OnlineImages from '../OnlineImages';
 import Item from './Item';
 
 import styles from './Images.module.scss';
@@ -22,6 +23,7 @@ const Images = React.memo(({ target }) => {
   const dispatch = useDispatch();
   const [t] = useTranslation();
 
+  const [activeSource, setActiveSource] = useState('uploaded');
   const fieldRef = useRef(null);
 
   const handleFileSelect = useCallback(
@@ -36,30 +38,57 @@ const Images = React.memo(({ target }) => {
     [target, dispatch],
   );
 
-  useEffect(() => {
-    fieldRef.current.focus();
+  const handleActiveSourceChange = useCallback((_, { value }) => {
+    setActiveSource(value);
   }, []);
+
+  useEffect(() => {
+    if (activeSource === 'uploaded') {
+      fieldRef.current.focus();
+    }
+  }, [activeSource]);
 
   return (
     <>
-      <div className={styles.images}>
-        {backgroundImageIds.map((backgroundImageId) => (
-          <Item key={backgroundImageId} id={backgroundImageId} target={target} />
+      <Button.Group fluid basic className={styles.sourceButtonGroup}>
+        {[
+          ['uploaded', 'common.uploadedImages'],
+          ['online', 'common.onlineImages'],
+        ].map(([value, title]) => (
+          <Button
+            key={value}
+            type="button"
+            value={value}
+            active={activeSource === value}
+            onClick={handleActiveSourceChange}
+          >
+            {t(title)}
+          </Button>
         ))}
-      </div>
-      <div className={styles.actions}>
-        <div className={styles.action}>
-          <FilePicker accept="image/*" onSelect={handleFileSelect}>
-            <Button
-              ref={fieldRef}
-              content={t('action.uploadNewImage', {
-                context: 'title',
-              })}
-              className={styles.actionButton}
-            />
-          </FilePicker>
-        </div>
-      </div>
+      </Button.Group>
+      {activeSource === 'uploaded' && (
+        <>
+          <div className={styles.images}>
+            {backgroundImageIds.map((backgroundImageId) => (
+              <Item key={backgroundImageId} id={backgroundImageId} target={target} />
+            ))}
+          </div>
+          <div className={styles.actions}>
+            <div className={styles.action}>
+              <FilePicker accept="image/*" onSelect={handleFileSelect}>
+                <Button
+                  ref={fieldRef}
+                  content={t('action.uploadNewImage', {
+                    context: 'title',
+                  })}
+                  className={styles.actionButton}
+                />
+              </FilePicker>
+            </div>
+          </div>
+        </>
+      )}
+      {activeSource === 'online' && <OnlineImages target={target} />}
     </>
   );
 });

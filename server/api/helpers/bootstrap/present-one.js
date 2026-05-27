@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const imageSearch = require('../../services/image-search');
+
 module.exports = {
   sync: false,
 
@@ -29,6 +31,7 @@ module.exports = {
     const googleDriveConfig = await sails.helpers.googleDrive.getConfig();
 
     Object.assign(data, {
+      backgroundImageSearch: imageSearch.getPublicConfig(),
       googleDrive: {
         enabled: googleDriveConfig.enabled,
         configured: !!(
