@@ -18,7 +18,7 @@ import globalStyles from '../../../styles.module.scss';
 const ProjectBackground = React.memo(() => {
   const selectBackgroundImageById = useMemo(() => selectors.makeSelectBackgroundImageById(), []);
 
-  const { backgroundImageId, backgroundType, backgroundGradient } = useSelector(
+  const { backgroundImageId, backgroundType, backgroundGradient, backgroundColor } = useSelector(
     selectors.selectCurrentProject,
   );
 
@@ -44,7 +44,10 @@ const ProjectBackground = React.memo(() => {
           globalStyles[`background${upperFirst(camelCase(backgroundGradient))}`],
       )}
       style={{
-        background: backgroundImageUrl && `url("${backgroundImageUrl}") center / cover`,
+        background:
+          (backgroundImageUrl && `url("${backgroundImageUrl}") center / cover`) ||
+          (backgroundType === ProjectBackgroundTypes.COLOR && backgroundColor) ||
+          undefined,
       }}
     />
   );

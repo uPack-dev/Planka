@@ -163,6 +163,43 @@ const getByListIds = async (listIds, { sort = ['position', 'id'] } = {}) =>
     { sort },
   );
 
+const countByBoardIds = async (boardIds) => {
+  if (boardIds.length === 0) {
+    return {};
+  }
+
+  const queryValues = [];
+  const boardInValues = boardIds.map((boardId) => {
+    queryValues.push(boardId);
+    return `$${queryValues.length}`;
+  });
+
+  const typeInValues = List.KANBAN_TYPES.map((type) => {
+    queryValues.push(type);
+    return `$${queryValues.length}`;
+  });
+
+  const queryResult = await sails.sendNativeQuery(
+    `
+      SELECT card.board_id AS "boardId", COUNT(*)::int AS total
+      FROM card
+      INNER JOIN list ON card.list_id = list.id
+      WHERE card.board_id IN (${boardInValues.join(', ')})
+      AND list.type IN (${typeInValues.join(', ')})
+      GROUP BY card.board_id
+    `,
+    queryValues,
+  );
+
+  return queryResult.rows.reduce(
+    (result, row) => ({
+      ...result,
+      [row.boardId]: row.total,
+    }),
+    {},
+  );
+};
+
 const getByCalendarRange = async ({
   start,
   end,
@@ -388,6 +425,7 @@ module.exports = {
   getByListId,
   getByEndlessListId,
   getByListIds,
+  countByBoardIds,
   getByCalendarRange,
   getOneById,
   update,

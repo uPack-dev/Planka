@@ -61,14 +61,28 @@ module.exports = {
       user: inputs.actorUser,
     });
 
+    const target = values.target || 'background';
+    const projectValues = {};
+
+    if (target === 'background' || target === 'both') {
+      Object.assign(projectValues, {
+        backgroundImage,
+        backgroundType: Project.BackgroundTypes.IMAGE,
+      });
+    }
+
+    if (target === 'cover' || target === 'both') {
+      Object.assign(projectValues, {
+        coverBackgroundImage: backgroundImage,
+        coverBackgroundType: Project.BackgroundTypes.IMAGE,
+      });
+    }
+
     await sails.helpers.projects.updateOne.with({
       scoper,
       webhooks,
       record: values.project,
-      values: {
-        backgroundImage,
-        backgroundType: Project.BackgroundTypes.IMAGE,
-      },
+      values: projectValues,
       actorUser: inputs.actorUser,
     });
 

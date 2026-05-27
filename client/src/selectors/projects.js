@@ -98,6 +98,37 @@ export const makeSelectNotificationsTotalByProjectId = () =>
 
 export const selectNotificationsTotalByProjectId = makeSelectNotificationsTotalByProjectId();
 
+export const makeSelectCardsTotalByProjectId = () =>
+  createSelector(
+    orm,
+    (_, id) => id,
+    (state) => selectCurrentUserId(state),
+    ({ Project, User }, id, currentUserId) => {
+      const projectModel = Project.withId(id);
+
+      if (!projectModel) {
+        return projectModel;
+      }
+
+      const currentUserModel = User.withId(currentUserId);
+      const boardsModels = projectModel.getBoardsModelArrayAvailableForUser(currentUserModel);
+
+      return boardsModels.reduce((result, boardModel) => {
+        if (
+          boardModel.isFetching === false ||
+          boardModel.cardsTotal === null ||
+          boardModel.cardsTotal === undefined
+        ) {
+          return result + boardModel.getCardsModelArray().length;
+        }
+
+        return result + boardModel.cardsTotal;
+      }, 0);
+    },
+  );
+
+export const selectCardsTotalByProjectId = makeSelectCardsTotalByProjectId();
+
 export const makeSelectIsProjectWithIdAvailableForCurrentUser = () =>
   createSelector(
     orm,
@@ -319,6 +350,8 @@ export default {
   selectFirstBoardIdByProjectId,
   makeSelectNotificationsTotalByProjectId,
   selectNotificationsTotalByProjectId,
+  makeSelectCardsTotalByProjectId,
+  selectCardsTotalByProjectId,
   makeSelectIsProjectWithIdAvailableForCurrentUser,
   selectIsProjectWithIdAvailableForCurrentUser,
   makeSelectIsProjectWithIdExternalAccessibleForCurrentUser,

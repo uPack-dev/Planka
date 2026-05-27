@@ -37,6 +37,11 @@
  *                 nullable: true
  *                 description: ID of the background image used as background
  *                 example: "1357158568008091266"
+ *               coverBackgroundImageId:
+ *                 type: string
+ *                 nullable: true
+ *                 description: ID of the background image used as project cover
+ *                 example: "1357158568008091266"
  *               name:
  *                 type: string
  *                 maxLength: 128
@@ -50,7 +55,7 @@
  *                 example: A project for developing new features...
  *               backgroundType:
  *                 type: string
- *                 enum: [gradient, image]
+ *                 enum: [gradient, image, color]
  *                 nullable: true
  *                 description: Type of background for the project
  *                 example: gradient
@@ -60,6 +65,28 @@
  *                 nullable: true
  *                 description: Gradient background for the project
  *                 example: ocean-dive
+ *               backgroundColor:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Hex color background for the project
+ *                 example: "#1E88E5"
+ *               coverBackgroundType:
+ *                 type: string
+ *                 enum: [gradient, image, color]
+ *                 nullable: true
+ *                 description: Type of background for the project cover
+ *                 example: color
+ *               coverBackgroundGradient:
+ *                 type: string
+ *                 enum: [old-lime, ocean-dive, tzepesch-style, jungle-mesh, strawberry-dust, purple-rose, sun-scream, warm-rust, sky-change, green-eyes, blue-xchange, blood-orange, sour-peel, green-ninja, algae-green, coral-reef, steel-grey, heat-waves, velvet-lounge, purple-rain, blue-steel, blueish-curve, prism-light, green-mist, red-curtain]
+ *                 nullable: true
+ *                 description: Gradient background for the project cover
+ *                 example: ocean-dive
+ *               coverBackgroundColor:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Hex color background for the project cover
+ *                 example: "#1E88E5"
  *               isHidden:
  *                 type: boolean
  *                 description: Whether the project is hidden
@@ -121,6 +148,12 @@ const Errors = {
   BACKGROUND_GRADIENT_MUST_BE_PRESENT: {
     backgroundGradientMustBePresent: 'Background gradient must be present',
   },
+  BACKGROUND_COLOR_MUST_BE_PRESENT: {
+    backgroundColorMustBePresent: 'Background color must be present',
+  },
+  BACKGROUND_COLOR_MUST_BE_VALID: {
+    backgroundColorMustBeValid: 'Background color must be a valid hex color',
+  },
 };
 
 module.exports = {
@@ -134,6 +167,10 @@ module.exports = {
       allowNull: true,
     },
     backgroundImageId: {
+      ...idInput,
+      allowNull: true,
+    },
+    coverBackgroundImageId: {
       ...idInput,
       allowNull: true,
     },
@@ -156,6 +193,24 @@ module.exports = {
     backgroundGradient: {
       type: 'string',
       isIn: Project.BACKGROUND_GRADIENTS,
+      allowNull: true,
+    },
+    backgroundColor: {
+      type: 'string',
+      allowNull: true,
+    },
+    coverBackgroundType: {
+      type: 'string',
+      isIn: Object.values(Project.BackgroundTypes),
+      allowNull: true,
+    },
+    coverBackgroundGradient: {
+      type: 'string',
+      isIn: Project.BACKGROUND_GRADIENTS,
+      allowNull: true,
+    },
+    coverBackgroundColor: {
+      type: 'string',
       allowNull: true,
     },
     isHidden: {
@@ -189,6 +244,12 @@ module.exports = {
       responseType: 'unprocessableEntity',
     },
     backgroundGradientMustBePresent: {
+      responseType: 'unprocessableEntity',
+    },
+    backgroundColorMustBePresent: {
+      responseType: 'unprocessableEntity',
+    },
+    backgroundColorMustBeValid: {
       responseType: 'unprocessableEntity',
     },
   },
@@ -225,10 +286,15 @@ module.exports = {
     if (projectManager) {
       availableInputKeys.push(
         'backgroundImageId',
+        'coverBackgroundImageId',
         'name',
         'description',
         'backgroundType',
         'backgroundGradient',
+        'backgroundColor',
+        'coverBackgroundType',
+        'coverBackgroundGradient',
+        'coverBackgroundColor',
       );
     }
 
@@ -262,6 +328,22 @@ module.exports = {
       delete inputs.backgroundImageId; // eslint-disable-line no-param-reassign
     }
 
+    let nextCoverBackgroundImage;
+    if (inputs.coverBackgroundImageId) {
+      nextCoverBackgroundImage = await BackgroundImage.qm.getOneById(
+        inputs.coverBackgroundImageId,
+        {
+          projectId: project.id,
+        },
+      );
+
+      if (!nextCoverBackgroundImage) {
+        throw Errors.BACKGROUND_IMAGE_NOT_FOUND;
+      }
+
+      delete inputs.coverBackgroundImageId; // eslint-disable-line no-param-reassign
+    }
+
     if (!_.isUndefined(inputs.isFavorite)) {
       if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
         if (!projectManager) {
@@ -281,10 +363,15 @@ module.exports = {
     const values = _.pick(inputs, [
       'ownerProjectManagerId',
       'backgroundImageId',
+      'coverBackgroundImageId',
       'name',
       'description',
       'backgroundType',
       'backgroundGradient',
+      'backgroundColor',
+      'coverBackgroundType',
+      'coverBackgroundGradient',
+      'coverBackgroundColor',
       'isHidden',
       'isFavorite',
     ]);
@@ -296,6 +383,7 @@ module.exports = {
           ...values,
           ownerProjectManager: nextOwnerProjectManager,
           backgroundImage: nextBackgroundImage,
+          coverBackgroundImage: nextCoverBackgroundImage,
         },
         actorUser: currentUser,
         request: this.req,
@@ -312,6 +400,11 @@ module.exports = {
         'backgroundGradientInValuesMustBePresent',
         () => Errors.BACKGROUND_GRADIENT_MUST_BE_PRESENT,
       )
+      .intercept(
+        'backgroundColorInValuesMustBePresent',
+        () => Errors.BACKGROUND_COLOR_MUST_BE_PRESENT,
+      )
+      .intercept('backgroundColorInValuesMustBeValid', () => Errors.BACKGROUND_COLOR_MUST_BE_VALID)
       .intercept(
         'alreadyHasOwnerProjectManager',
         () => Errors.PROJECT_ALREADY_HAS_OWNER_PROJECT_MANAGER,

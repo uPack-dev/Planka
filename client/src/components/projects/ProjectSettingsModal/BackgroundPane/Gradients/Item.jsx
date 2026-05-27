@@ -14,14 +14,15 @@ import { Button, Label } from 'semantic-ui-react';
 import selectors from '../../../../../selectors';
 import entryActions from '../../../../../entry-actions';
 import { ProjectBackgroundTypes } from '../../../../../constants/Enums';
+import { buildBackgroundData, buildClearBackgroundData, getBackgroundForTarget } from '../utils';
 
 import styles from './Item.module.scss';
 import globalStyles from '../../../../../styles.module.scss';
 
-const Item = React.memo(({ name }) => {
+const Item = React.memo(({ name, target }) => {
   const isActive = useSelector((state) => {
-    const { backgroundType, backgroundGradient } = selectors.selectCurrentProject(state);
-    return backgroundType === ProjectBackgroundTypes.GRADIENT && name === backgroundGradient;
+    const background = getBackgroundForTarget(selectors.selectCurrentProject(state), target);
+    return background.type === ProjectBackgroundTypes.GRADIENT && name === background.gradient;
   });
 
   const dispatch = useDispatch();
@@ -30,17 +31,11 @@ const Item = React.memo(({ name }) => {
     dispatch(
       entryActions.updateCurrentProject(
         isActive
-          ? {
-              backgroundType: null,
-              backgroundGradient: null,
-            }
-          : {
-              backgroundType: ProjectBackgroundTypes.GRADIENT,
-              backgroundGradient: name,
-            },
+          ? buildClearBackgroundData(target)
+          : buildBackgroundData(target, ProjectBackgroundTypes.GRADIENT, name),
       ),
     );
-  }, [name, isActive, dispatch]);
+  }, [name, target, isActive, dispatch]);
 
   return (
     <Button
@@ -69,6 +64,7 @@ const Item = React.memo(({ name }) => {
 
 Item.propTypes = {
   name: PropTypes.string.isRequired,
+  target: PropTypes.oneOf(['background', 'cover']).isRequired,
 };
 
 export default Item;

@@ -46,6 +46,7 @@ export const ProjectTypes = {
 export const ProjectBackgroundTypes = {
   GRADIENT: 'gradient',
   IMAGE: 'image',
+  COLOR: 'color',
 };
 
 export const BoardViews = {

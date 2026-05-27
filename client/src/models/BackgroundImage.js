@@ -87,6 +87,17 @@ export default class extends BaseModel {
       this.backgroundedProject.update({
         backgroundType: null,
         backgroundImageId: null,
+        backgroundGradient: null,
+        backgroundColor: null,
+      });
+    }
+
+    if (this.coverBackgroundedProject) {
+      this.coverBackgroundedProject.update({
+        coverBackgroundType: null,
+        coverBackgroundImageId: null,
+        coverBackgroundGradient: null,
+        coverBackgroundColor: null,
       });
     }
   }
