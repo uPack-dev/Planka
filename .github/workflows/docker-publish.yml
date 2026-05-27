@@ -3,11 +3,7 @@ name: Build and Publish Planka Image
 on:
   push:
     branches:
-      - dev
       - master
-    tags:
-      - 'v*.*.*'
-      - '*.*.*'
   workflow_dispatch:
 
 env:
@@ -17,6 +13,7 @@ env:
 jobs:
   build-and-push:
     runs-on: blacksmith-4vcpu-ubuntu-2404
+    if: github.ref == 'refs/heads/master'
     permissions:
       contents: read
       packages: write
@@ -28,10 +25,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Read package version
+      - name: Read package version and detect changes
         id: package-version
         run: |
+          TARGET_SHA="${{ github.sha }}"
+          BEFORE_SHA="${{ github.event.before }}"
           VERSION="$(node -p "require('./package.json').version")"
 
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.+][0-9A-Za-z.-]+)?$ ]]; then
@@ -39,6 +40,24 @@ jobs:
             exit 1
           fi
 
+          if [ -z "$BEFORE_SHA" ] || [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+            BEFORE_SHA="$(git rev-parse "${TARGET_SHA}^" 2>/dev/null || true)"
+          fi
+
+          PREVIOUS_VERSION=""
+          if [ -n "$BEFORE_SHA" ] && git cat-file -e "$BEFORE_SHA:package.json" 2>/dev/null; then
+            PREVIOUS_VERSION="$(git show "$BEFORE_SHA:package.json" | node -pe "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")"
+          fi
+
+          if [ "$VERSION" != "$PREVIOUS_VERSION" ]; then
+            CHANGED=true
+            echo "Version changed from '${PREVIOUS_VERSION:-none}' to '$VERSION'."
+          else
+            CHANGED=false
+            echo "Version '$VERSION' is unchanged. Only nightly will be updated."
+          fi
+
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Setup Blacksmith Builder
@@ -56,12 +75,11 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=false
           tags: |
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
-            type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ github.ref == 'refs/heads/master' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=nightly
+            type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ steps.package-version.outputs.changed == 'true' }}
             type=sha
 
       - name: Build and push Docker image

@@ -1,13 +1,9 @@
 name: Release Version
 
 on:
-  workflow_run:
-    workflows:
-      - Build and Test
+  push:
     branches:
       - master
-    types:
-      - completed
   workflow_dispatch:
 
 concurrency:
@@ -21,43 +17,49 @@ jobs:
   prepare:
     name: Prepare release
     runs-on: blacksmith-4vcpu-ubuntu-2404
-    if: >-
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master') ||
-      (github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.event == 'push' &&
-        github.event.workflow_run.head_branch == 'master')
+    if: github.ref == 'refs/heads/master'
     outputs:
       prerelease: ${{ steps.version.outputs.prerelease }}
       release_exists: ${{ steps.release.outputs.exists }}
       tag: ${{ steps.version.outputs.tag }}
-      target_sha: ${{ steps.target.outputs.sha }}
+      target_sha: ${{ steps.version.outputs.target_sha }}
       version: ${{ steps.version.outputs.version }}
+      version_changed: ${{ steps.version.outputs.changed }}
 
     steps:
-      - name: Resolve target SHA
-        id: target
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ steps.target.outputs.sha }}
+          ref: ${{ github.sha }}
 
-      - name: Read package version
+      - name: Read package version and detect changes
         id: version
         run: |
+          TARGET_SHA="${{ github.sha }}"
+          BEFORE_SHA="${{ github.event.before }}"
           VERSION="$(node -p "require('./package.json').version")"
 
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.+][0-9A-Za-z.-]+)?$ ]]; then
             echo "::error::package.json version '$VERSION' is not a valid release version"
             exit 1
+          fi
+
+          if [ -z "$BEFORE_SHA" ] || [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
+            BEFORE_SHA="$(git rev-parse "${TARGET_SHA}^" 2>/dev/null || true)"
+          fi
+
+          PREVIOUS_VERSION=""
+          if [ -n "$BEFORE_SHA" ] && git cat-file -e "$BEFORE_SHA:package.json" 2>/dev/null; then
+            PREVIOUS_VERSION="$(git show "$BEFORE_SHA:package.json" | node -pe "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")"
+          fi
+
+          if [ "$VERSION" != "$PREVIOUS_VERSION" ]; then
+            CHANGED=true
+            echo "Version changed from '${PREVIOUS_VERSION:-none}' to '$VERSION'."
+          else
+            CHANGED=false
+            echo "Version '$VERSION' is unchanged. Skipping version release."
           fi
 
           if [[ "$VERSION" == *-* ]]; then
@@ -66,11 +68,14 @@ jobs:
             PRERELEASE=false
           fi
 
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
           echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
           echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Check existing release
+        if: steps.version.outputs.changed == 'true'
         id: release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -84,10 +89,10 @@ jobs:
           fi
 
       - name: Check existing tag target
-        if: steps.release.outputs.exists == 'false'
+        if: steps.version.outputs.changed == 'true' && steps.release.outputs.exists == 'false'
         env:
           TAG: ${{ steps.version.outputs.tag }}
-          TARGET_SHA: ${{ steps.target.outputs.sha }}
+          TARGET_SHA: ${{ steps.version.outputs.target_sha }}
         run: |
           if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
             TAG_SHA="$(git rev-list -n 1 "$TAG")"
@@ -102,7 +107,7 @@ jobs:
     name: Build package and publish release
     runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: prepare
-    if: needs.prepare.outputs.release_exists == 'false'
+    if: needs.prepare.outputs.version_changed == 'true' && needs.prepare.outputs.release_exists == 'false'
 
     steps:
       - name: Checkout repository
