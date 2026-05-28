@@ -105,6 +105,18 @@
     margin-right: 10px;
   }
 
+  .titleButton {
+    background: transparent;
+    border: 0;
+    color: #ffffff;
+    cursor: pointer;
+    display: block;
+    font-size: 16px;
+    padding: 14px 0 14px 2px;
+    text-align: left;
+    width: 100%;
+  }
+
   .wrapper:not(:last-child) {
     margin-bottom: 20px;
   }

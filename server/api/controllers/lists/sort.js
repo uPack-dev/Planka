@@ -134,6 +134,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     const options = _.pick(inputs, ['fieldName', 'order']);
 
     const cards = await sails.helpers.lists.sortOne

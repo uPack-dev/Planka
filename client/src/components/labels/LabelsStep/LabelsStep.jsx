@@ -32,6 +32,10 @@ const LabelsStep = React.memo(({ currentIds, cardId, title, onSelect, onDeselect
   const labels = useSelector(selectors.selectLabelsForCurrentBoard);
 
   const canAdd = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
     return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
   });

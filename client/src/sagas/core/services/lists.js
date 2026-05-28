@@ -133,6 +133,56 @@ export function* handleListUpdate(list) {
   }
 }
 
+export function* duplicateList(id, data = {}) {
+  yield put(actions.duplicateList(id, data));
+
+  let list;
+  let cards;
+  let cardMemberships;
+  let cardLabels;
+  let taskLists;
+  let tasks;
+  let attachments;
+  let customFieldGroups;
+  let customFields;
+  let customFieldValues;
+
+  try {
+    ({
+      item: list,
+      included: {
+        cards,
+        cardMemberships,
+        cardLabels,
+        taskLists,
+        tasks,
+        attachments,
+        customFieldGroups,
+        customFields,
+        customFieldValues,
+      },
+    } = yield call(request, api.duplicateList, id, data));
+  } catch (error) {
+    yield put(actions.duplicateList.failure(id, error));
+    return;
+  }
+
+  yield put(
+    actions.duplicateList.success(
+      list,
+      cards,
+      cardMemberships,
+      cardLabels,
+      taskLists,
+      tasks,
+      attachments,
+      customFieldGroups,
+      customFields,
+      customFieldValues,
+    ),
+  );
+}
+
 export function* moveList(id, index) {
   const { boardId } = yield select(selectors.selectListById, id);
   const position = yield select(selectors.selectNextListPosition, boardId, index, id);
@@ -267,6 +317,7 @@ export default {
   handleListCreate,
   updateList,
   handleListUpdate,
+  duplicateList,
   moveList,
   transferList,
   sortList,

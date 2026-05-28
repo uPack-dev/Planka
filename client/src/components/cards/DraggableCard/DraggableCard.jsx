@@ -21,6 +21,10 @@ const DraggableCard = React.memo(({ id, index, className, ...props }) => {
   const card = useSelector((state) => selectCardById(state, id));
 
   const canDrag = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
     return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
   });

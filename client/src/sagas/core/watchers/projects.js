@@ -19,6 +19,9 @@ export default function* projectsWatchers() {
     takeEvery(EntryActionTypes.HIDDEN_PROJECTS_TOGGLE, ({ payload: { isVisible } }) =>
       services.toggleHiddenProjects(isVisible),
     ),
+    takeEvery(EntryActionTypes.ARCHIVED_PROJECTS_TOGGLE, ({ payload: { isVisible } }) =>
+      services.toggleArchivedProjects(isVisible),
+    ),
     takeEvery(EntryActionTypes.PROJECT_CREATE, ({ payload: { data } }) =>
       services.createProject(data),
     ),
@@ -33,6 +36,14 @@ export default function* projectsWatchers() {
     ),
     takeEvery(EntryActionTypes.PROJECT_UPDATE_HANDLE, ({ payload: { project } }) =>
       services.handleProjectUpdate(project),
+    ),
+    takeEvery(EntryActionTypes.CURRENT_PROJECT_ARCHIVE, () => services.archiveCurrentProject()),
+    takeEvery(EntryActionTypes.PROJECT_ARCHIVE_HANDLE, ({ payload: { project } }) =>
+      services.handleProjectArchive(project),
+    ),
+    takeEvery(EntryActionTypes.CURRENT_PROJECT_RESTORE, () => services.restoreCurrentProject()),
+    takeEvery(EntryActionTypes.PROJECT_RESTORE_HANDLE, ({ payload: { project } }) =>
+      services.handleProjectRestore(project),
     ),
     takeEvery(EntryActionTypes.CURRENT_PROJECT_DELETE, () => services.deleteCurrentProject()),
     takeEvery(EntryActionTypes.PROJECT_DELETE_HANDLE, ({ payload: { project } }) =>

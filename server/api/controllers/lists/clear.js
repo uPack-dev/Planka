@@ -94,6 +94,10 @@ module.exports = {
       }
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     // TODO: allow for other types?
     if (list.type !== List.Types.TRASH) {
       throw Errors.NOT_ENOUGH_RIGHTS;

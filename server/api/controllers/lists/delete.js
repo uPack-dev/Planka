@@ -108,6 +108,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     const result = await sails.helpers.lists.deleteOne.with({
       project,
       board,

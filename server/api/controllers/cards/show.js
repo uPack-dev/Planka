@@ -131,16 +131,20 @@ module.exports = {
   async fn(inputs) {
     const { currentUser } = this.req;
 
-    const { card, project } = await sails.helpers.cards
+    const { card, board, project } = await sails.helpers.cards
       .getPathToProjectById(inputs.id)
       .intercept('pathNotFound', () => Errors.CARD_NOT_FOUND);
 
-    if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
-      const isProjectManager = await sails.helpers.users.isProjectManager(
-        currentUser.id,
-        project.id,
-      );
+    const isProjectManager = await sails.helpers.users.isProjectManager(currentUser.id, project.id);
 
+    const isAdminWithAccess =
+      currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId;
+
+    if (project.isArchived || board.isArchived) {
+      if (!isProjectManager && !isAdminWithAccess) {
+        throw Errors.CARD_NOT_FOUND; // Forbidden
+      }
+    } else if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
       if (!isProjectManager) {
         const boardMembership = await BoardMembership.qm.getOneByBoardIdAndUserId(
           card.boardId,

@@ -284,6 +284,10 @@ module.exports = {
       throw Errors.CARD_NOT_FOUND; // Forbidden
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     const availableInputKeys = ['id', 'isSubscribed'];
     if (boardMembership.role === BoardMembership.Roles.EDITOR) {
       availableInputKeys.push(
@@ -328,6 +332,10 @@ module.exports = {
       }
 
       if (boardMembership.role !== BoardMembership.Roles.EDITOR) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+
+      if (sails.helpers.boards.isReadOnly(nextProject, nextBoard)) {
         throw Errors.NOT_ENOUGH_RIGHTS;
       }
     }

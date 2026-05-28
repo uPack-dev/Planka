@@ -86,7 +86,7 @@ module.exports = {
   async fn(inputs) {
     const { currentUser } = this.req;
 
-    const { card, project } = await sails.helpers.cards
+    const { card, board, project } = await sails.helpers.cards
       .getPathToProjectById(inputs.cardId)
       .intercept('pathNotFound', () => Errors.CARD_NOT_FOUND);
 
@@ -96,15 +96,34 @@ module.exports = {
     );
 
     if (!boardMembership) {
-      if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
-        const isProjectManager = await sails.helpers.users.isProjectManager(
-          currentUser.id,
-          project.id,
-        );
+      const isProjectManager = await sails.helpers.users.isProjectManager(
+        currentUser.id,
+        project.id,
+      );
 
+      const isAdminWithAccess =
+        currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId;
+
+      if (project.isArchived || board.isArchived) {
+        if (!isProjectManager && !isAdminWithAccess) {
+          throw Errors.CARD_NOT_FOUND; // Forbidden
+        }
+      } else if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
         if (!isProjectManager) {
           throw Errors.CARD_NOT_FOUND; // Forbidden
         }
+      }
+    } else if (project.isArchived || board.isArchived) {
+      const isProjectManager = await sails.helpers.users.isProjectManager(
+        currentUser.id,
+        project.id,
+      );
+
+      const isAdminWithAccess =
+        currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId;
+
+      if (!isProjectManager && !isAdminWithAccess) {
+        throw Errors.CARD_NOT_FOUND; // Forbidden
       }
     }
 

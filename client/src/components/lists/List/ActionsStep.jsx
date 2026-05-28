@@ -82,6 +82,11 @@ const ActionsStep = React.memo(({ listId, onNameEdit, onCardAdd, onClose }) => {
     openStep(StepTypes.MOVE);
   }, [openStep]);
 
+  const handleDuplicateClick = useCallback(() => {
+    dispatch(entryActions.duplicateList(listId));
+    onClose();
+  }, [listId, onClose, dispatch]);
+
   const handleArchiveCardsClick = useCallback(() => {
     openStep(StepTypes.ARCHIVE_CARDS);
   }, [openStep]);
@@ -168,6 +173,12 @@ const ActionsStep = React.memo(({ listId, onNameEdit, onCardAdd, onClose }) => {
           <Menu.Item className={styles.menuItem} onClick={handleMoveClick}>
             <Icon name="share square outline" className={styles.menuItemIcon} />
             {t('action.moveList', {
+              context: 'title',
+            })}
+          </Menu.Item>
+          <Menu.Item className={styles.menuItem} onClick={handleDuplicateClick}>
+            <Icon name="copy outline" className={styles.menuItemIcon} />
+            {t('action.duplicateList', {
               context: 'title',
             })}
           </Menu.Item>

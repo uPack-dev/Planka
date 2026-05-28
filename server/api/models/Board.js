@@ -27,6 +27,7 @@
  *         - alwaysDisplayCardCreator
  *         - displayCardAges
  *         - expandTaskListsByDefault
+ *         - isArchived
  *         - createdAt
  *         - updatedAt
  *       properties:
@@ -78,6 +79,22 @@
  *           default: false
  *           description: Whether to expand task lists by default
  *           example: false
+ *         isArchived:
+ *           type: boolean
+ *           default: false
+ *           description: Whether the board is archived
+ *           example: false
+ *         archivedAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: When the board was archived
+ *           example: 2024-01-01T00:00:00.000Z
+ *         archivedByUserId:
+ *           type: string
+ *           nullable: true
+ *           description: ID of the user who archived the board
+ *           example: "1357158568008091267"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -153,6 +170,15 @@ module.exports = {
       defaultsTo: false,
       columnName: 'expand_task_lists_by_default',
     },
+    isArchived: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'is_archived',
+    },
+    archivedAt: {
+      type: 'ref',
+      columnName: 'archived_at',
+    },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗
@@ -166,6 +192,10 @@ module.exports = {
       model: 'Project',
       required: true,
       columnName: 'project_id',
+    },
+    archivedByUserId: {
+      model: 'User',
+      columnName: 'archived_by_user_id',
     },
     memberUsers: {
       collection: 'User',

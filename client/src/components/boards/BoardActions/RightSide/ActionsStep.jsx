@@ -13,7 +13,7 @@ import { Popup } from '../../../../lib/custom-ui';
 import selectors from '../../../../selectors';
 import entryActions from '../../../../entry-actions';
 import { useSteps } from '../../../../hooks';
-import { BoardContexts, BoardMembershipRoles } from '../../../../constants/Enums';
+import { BoardContexts, BoardMembershipRoles, UserRoles } from '../../../../constants/Enums';
 import { BoardContextIcons } from '../../../../constants/Icons';
 import ConfirmationStep from '../../../common/ConfirmationStep';
 import CustomFieldGroupsStep from '../../../custom-field-groups/CustomFieldGroupsStep';
@@ -22,15 +22,26 @@ import styles from './ActionsStep.module.scss';
 
 const StepTypes = {
   CUSTOM_FIELD_GROUPS: 'CUSTOM_FIELD_GROUPS',
+  ARCHIVE_BOARD: 'ARCHIVE_BOARD',
+  RESTORE_BOARD: 'RESTORE_BOARD',
   EMPTY_TRASH: 'EMPTY_TRASH',
 };
 
 const ActionsStep = React.memo(({ onClose }) => {
   const board = useSelector(selectors.selectCurrentBoard);
 
-  const { withSubscribe, withCustomFieldGroups, withTrashEmptier } = useSelector((state) => {
+  const {
+    withSubscribe,
+    withCustomFieldGroups,
+    withDuplicate,
+    withArchive,
+    withRestore,
+    withTrashEmptier,
+  } = useSelector((state) => {
     const isManager = selectors.selectIsCurrentUserManagerForCurrentProject(state);
+    const currentUser = selectors.selectCurrentUser(state);
     const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
+    const isReadOnly = selectors.selectIsCurrentBoardReadOnly(state);
 
     let isMember = false;
     let isEditor = false;
@@ -41,9 +52,19 @@ const ActionsStep = React.memo(({ onClose }) => {
     }
 
     return {
-      withSubscribe: isMember, // TODO: rename?
-      withCustomFieldGroups: isEditor,
-      withTrashEmptier: board.context === BoardContexts.TRASH && (isManager || isEditor),
+      withSubscribe: isMember && !isReadOnly, // TODO: rename?
+      withCustomFieldGroups: isEditor && !isReadOnly,
+      withDuplicate: isManager && !isReadOnly,
+      withArchive:
+        isManager &&
+        !isReadOnly &&
+        !board.isArchived &&
+        currentUser &&
+        [UserRoles.ADMIN, UserRoles.PROJECT_OWNER].includes(currentUser.role),
+      withRestore:
+        board.isArchived && (isManager || (currentUser && currentUser.role === UserRoles.ADMIN)),
+      withTrashEmptier:
+        board.context === BoardContexts.TRASH && (isManager || isEditor) && !isReadOnly,
     };
   }, shallowEqual);
 
@@ -74,6 +95,21 @@ const ActionsStep = React.memo(({ onClose }) => {
     onClose();
   }, [onClose, dispatch]);
 
+  const handleDuplicateBoardClick = useCallback(() => {
+    dispatch(entryActions.duplicateCurrentBoard());
+    onClose();
+  }, [onClose, dispatch]);
+
+  const handleArchiveBoardConfirm = useCallback(() => {
+    dispatch(entryActions.archiveCurrentBoard());
+    onClose();
+  }, [onClose, dispatch]);
+
+  const handleRestoreBoardConfirm = useCallback(() => {
+    dispatch(entryActions.restoreCurrentBoard());
+    onClose();
+  }, [onClose, dispatch]);
+
   const handleEmptyTrashConfirm = useCallback(() => {
     dispatch(entryActions.clearTrashListInCurrentBoard());
     onClose();
@@ -81,6 +117,14 @@ const ActionsStep = React.memo(({ onClose }) => {
 
   const handleCustomFieldsClick = useCallback(() => {
     openStep(StepTypes.CUSTOM_FIELD_GROUPS);
+  }, [openStep]);
+
+  const handleArchiveBoardClick = useCallback(() => {
+    openStep(StepTypes.ARCHIVE_BOARD);
+  }, [openStep]);
+
+  const handleRestoreBoardClick = useCallback(() => {
+    openStep(StepTypes.RESTORE_BOARD);
   }, [openStep]);
 
   const handleEmptyTrashClick = useCallback(() => {
@@ -91,6 +135,26 @@ const ActionsStep = React.memo(({ onClose }) => {
     switch (step.type) {
       case StepTypes.CUSTOM_FIELD_GROUPS:
         return <CustomFieldGroupsStep onBack={handleBack} onClose={onClose} />;
+      case StepTypes.ARCHIVE_BOARD:
+        return (
+          <ConfirmationStep
+            title="common.archiveBoard"
+            content="common.areYouSureYouWantToArchiveThisBoard"
+            buttonContent="action.archiveBoard"
+            onConfirm={handleArchiveBoardConfirm}
+            onBack={handleBack}
+          />
+        );
+      case StepTypes.RESTORE_BOARD:
+        return (
+          <ConfirmationStep
+            title="common.restoreBoard"
+            content="common.areYouSureYouWantToRestoreThisBoard"
+            buttonContent="action.restoreBoard"
+            onConfirm={handleRestoreBoardConfirm}
+            onBack={handleBack}
+          />
+        );
       case StepTypes.EMPTY_TRASH:
         return (
           <ConfirmationStep
@@ -139,6 +203,35 @@ const ActionsStep = React.memo(({ onClose }) => {
               context: 'title',
             })}
           </Menu.Item>
+          {withDuplicate && (
+            <Menu.Item className={styles.menuItem} onClick={handleDuplicateBoardClick}>
+              <Icon name="copy outline" className={styles.menuItemIcon} />
+              {t('action.duplicateBoard', {
+                context: 'title',
+              })}
+            </Menu.Item>
+          )}
+          {(withArchive || withRestore) && (
+            <>
+              <hr className={styles.divider} />
+              {withArchive && (
+                <Menu.Item className={styles.menuItem} onClick={handleArchiveBoardClick}>
+                  <Icon name="archive" className={styles.menuItemIcon} />
+                  {t('action.archiveBoard', {
+                    context: 'title',
+                  })}
+                </Menu.Item>
+              )}
+              {withRestore && (
+                <Menu.Item className={styles.menuItem} onClick={handleRestoreBoardClick}>
+                  <Icon name="undo" className={styles.menuItemIcon} />
+                  {t('action.restoreBoard', {
+                    context: 'title',
+                  })}
+                </Menu.Item>
+              )}
+            </>
+          )}
           {withTrashEmptier && (
             <>
               <hr className={styles.divider} />

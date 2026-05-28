@@ -30,6 +30,20 @@ const getBoard = (id, subscribe, headers) =>
 
 const updateBoard = (id, data, headers) => socket.patch(`/boards/${id}`, data, headers);
 
+const archiveBoard = (id, headers) => socket.post(`/boards/${id}/archive`, undefined, headers);
+
+const restoreBoard = (id, headers) => socket.post(`/boards/${id}/restore`, undefined, headers);
+
+const duplicateBoard = (id, data, headers) =>
+  socket.post(`/boards/${id}/duplicate`, data, headers).then((body) => ({
+    ...body,
+    included: {
+      ...body.included,
+      cards: body.included.cards.map(transformCard),
+      attachments: body.included.attachments.map(transformAttachment),
+    },
+  }));
+
 const deleteBoard = (id, headers) => socket.delete(`/boards/${id}`, undefined, headers);
 
 export default {
@@ -37,5 +51,8 @@ export default {
   createBoardWithImport,
   getBoard,
   updateBoard,
+  archiveBoard,
+  restoreBoard,
+  duplicateBoard,
   deleteBoard,
 };

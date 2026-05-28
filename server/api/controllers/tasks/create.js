@@ -147,6 +147,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     let linkedCard;
     if (!_.isUndefined(inputs.linkedCardId)) {
       const path = await sails.helpers.cards
@@ -154,6 +158,10 @@ module.exports = {
         .intercept('pathNotFound', () => Errors.LINKED_CARD_NOT_FOUND);
 
       ({ card: linkedCard } = path);
+
+      if (sails.helpers.boards.isReadOnly(path.project, path.board)) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
 
       if (currentUser.role !== User.Roles.ADMIN || path.project.ownerProjectManagerId) {
         const isProjectManager = await sails.helpers.users.isProjectManager(

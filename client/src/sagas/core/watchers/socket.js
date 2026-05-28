@@ -69,6 +69,14 @@ const createSocketEventsChannel = () =>
       emit(entryActions.handleProjectUpdate(item));
     };
 
+    const handleProjectArchive = ({ item }) => {
+      emit(entryActions.handleProjectArchive(item));
+    };
+
+    const handleProjectRestore = ({ item }) => {
+      emit(entryActions.handleProjectRestore(item));
+    };
+
     const handleProjectDelete = ({ item }) => {
       emit(entryActions.handleProjectDelete(item));
     };
@@ -107,6 +115,14 @@ const createSocketEventsChannel = () =>
 
     const handleBoardUpdate = ({ item }) => {
       emit(entryActions.handleBoardUpdate(item));
+    };
+
+    const handleBoardArchive = ({ item }) => {
+      emit(entryActions.handleBoardArchive(item));
+    };
+
+    const handleBoardRestore = ({ item }) => {
+      emit(entryActions.handleBoardRestore(item));
     };
 
     const handleBoardDelete = ({ item }) => {
@@ -313,6 +329,8 @@ const createSocketEventsChannel = () =>
 
     socket.on('projectCreate', handleProjectCreate);
     socket.on('projectUpdate', handleProjectUpdate);
+    socket.on('projectArchive', handleProjectArchive);
+    socket.on('projectRestore', handleProjectRestore);
     socket.on('projectDelete', handleProjectDelete);
 
     socket.on('projectManagerCreate', handleProjectManagerCreate);
@@ -327,6 +345,8 @@ const createSocketEventsChannel = () =>
 
     socket.on('boardCreate', handleBoardCreate);
     socket.on('boardUpdate', handleBoardUpdate);
+    socket.on('boardArchive', handleBoardArchive);
+    socket.on('boardRestore', handleBoardRestore);
     socket.on('boardDelete', handleBoardDelete);
 
     socket.on('boardMembershipCreate', handleBoardMembershipCreate);
@@ -410,6 +430,8 @@ const createSocketEventsChannel = () =>
 
       socket.off('projectCreate', handleProjectCreate);
       socket.off('projectUpdate', handleProjectUpdate);
+      socket.off('projectArchive', handleProjectArchive);
+      socket.off('projectRestore', handleProjectRestore);
       socket.off('projectDelete', handleProjectDelete);
 
       socket.off('projectManagerCreate', handleProjectManagerCreate);
@@ -424,6 +446,8 @@ const createSocketEventsChannel = () =>
 
       socket.off('boardCreate', handleBoardCreate);
       socket.off('boardUpdate', handleBoardUpdate);
+      socket.off('boardArchive', handleBoardArchive);
+      socket.off('boardRestore', handleBoardRestore);
       socket.off('boardDelete', handleBoardDelete);
 
       socket.off('boardMembershipCreate', handleBoardMembershipCreate);

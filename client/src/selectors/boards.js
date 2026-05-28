@@ -205,6 +205,24 @@ export const selectCurrentUserMembershipForCurrentBoard = createSelector(
   },
 );
 
+export const selectIsCurrentBoardReadOnly = createSelector(
+  orm,
+  (state) => selectPath(state).boardId,
+  ({ Board }, id) => {
+    if (!id) {
+      return false;
+    }
+
+    const boardModel = Board.withId(id);
+
+    if (!boardModel) {
+      return false;
+    }
+
+    return boardModel.isArchived || !!(boardModel.project && boardModel.project.isArchived);
+  },
+);
+
 export const selectLabelsForCurrentBoard = createSelector(
   orm,
   (state) => selectPath(state).boardId,
@@ -526,6 +544,7 @@ export default {
   selectMembershipsForCurrentBoard,
   selectMemberUserIdsForCurrentBoard,
   selectCurrentUserMembershipForCurrentBoard,
+  selectIsCurrentBoardReadOnly,
   selectLabelsForCurrentBoard,
   selectArchiveListIdForCurrentBoard,
   selectTrashListIdForCurrentBoard,

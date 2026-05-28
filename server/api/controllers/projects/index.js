@@ -111,12 +111,14 @@ module.exports = {
       fullyVisibleProjectIds.push(...sharedProjectIds);
     }
 
-    const boardMemberships = await BoardMembership.qm.getByUserId(currentUser.id);
+    let boardMemberships = await BoardMembership.qm.getByUserId(currentUser.id);
     const membershipBoardIds = sails.helpers.utils.mapRecords(boardMemberships, 'boardId');
 
-    const membershipBoards = await Board.qm.getByIds(membershipBoardIds, {
+    let membershipBoards = await Board.qm.getByIds(membershipBoardIds, {
       exceptProjectIdOrIds: fullyVisibleProjectIds,
     });
+
+    membershipBoards = membershipBoards.filter((board) => !board.isArchived);
 
     const membershipProjectIds = sails.helpers.utils.mapRecords(
       membershipBoards,
@@ -124,7 +126,16 @@ module.exports = {
       true,
     );
 
-    const projectIds = [...managerProjectIds, ...membershipProjectIds];
+    const membershipProjects = await Project.qm.getByIds(membershipProjectIds);
+    const visibleMembershipProjectIds = membershipProjects.flatMap((project) =>
+      project.isArchived ? [] : project.id,
+    );
+
+    membershipBoards = membershipBoards.filter((board) =>
+      visibleMembershipProjectIds.includes(board.projectId),
+    );
+
+    const projectIds = [...managerProjectIds, ...visibleMembershipProjectIds];
     const projects = await Project.qm.getByIds(projectIds);
 
     if (sharedProjectIds) {
@@ -134,9 +145,14 @@ module.exports = {
 
     const fullyVisibleBoards = await Board.qm.getByProjectIds(fullyVisibleProjectIds);
     const boards = [...fullyVisibleBoards, ...membershipBoards];
-    const cardsTotalByBoardId = await Card.qm.countByBoardIds(
-      sails.helpers.utils.mapRecords(boards),
+    const boardIds = sails.helpers.utils.mapRecords(boards);
+
+    const boardIdsSet = new Set(boardIds);
+    boardMemberships = boardMemberships.filter((boardMembership) =>
+      boardIdsSet.has(boardMembership.boardId),
     );
+
+    const cardsTotalByBoardId = await Card.qm.countByBoardIds(boardIds);
 
     const projectFavorites = await ProjectFavorite.qm.getByProjectIdsAndUserId(
       projectIds,

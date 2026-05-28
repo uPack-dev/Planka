@@ -75,6 +75,7 @@ export default class extends BaseModel {
       case ActionTypes.CORE_INITIALIZE:
       case ActionTypes.USER_UPDATE_HANDLE:
       case ActionTypes.PROJECT_UPDATE_HANDLE:
+      case ActionTypes.PROJECT_RESTORE_HANDLE:
       case ActionTypes.PROJECT_MANAGER_CREATE_HANDLE:
       case ActionTypes.BOARD_MEMBERSHIP_CREATE_HANDLE:
         if (payload.lists) {
@@ -109,6 +110,7 @@ export default class extends BaseModel {
 
         break;
       case ActionTypes.BOARD_FETCH__SUCCESS:
+      case ActionTypes.BOARD_DUPLICATE__SUCCESS:
       case ActionTypes.GLOBAL_CALENDAR_CARDS_FETCH__SUCCESS:
         payload.lists.forEach((list) => {
           List.upsert(prepareList(list));
@@ -118,6 +120,7 @@ export default class extends BaseModel {
       case ActionTypes.LIST_CREATE:
       case ActionTypes.LIST_CREATE_HANDLE:
       case ActionTypes.LIST_UPDATE__SUCCESS:
+      case ActionTypes.LIST_DUPLICATE__SUCCESS:
       case ActionTypes.LIST_SORT__SUCCESS:
       case ActionTypes.LIST_CARDS_MOVE__SUCCESS:
       case ActionTypes.LIST_CLEAR__SUCCESS:

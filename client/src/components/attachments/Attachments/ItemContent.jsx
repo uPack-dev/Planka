@@ -35,6 +35,10 @@ const ItemContent = React.forwardRef(({ id, onOpen }, ref) => {
   );
 
   const canEdit = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     const { listId } = selectors.selectCurrentCard(state);
     const list = selectListById(state, listId);
 

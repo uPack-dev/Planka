@@ -19,6 +19,8 @@ export default [
 
   'boardCreate',
   'boardUpdate',
+  'boardArchive',
+  'boardRestore',
   'boardDelete',
 
   'boardMembershipCreate',
@@ -70,6 +72,8 @@ export default [
 
   'projectCreate',
   'projectUpdate',
+  'projectArchive',
+  'projectRestore',
   'projectDelete',
 
   'projectManagerCreate',

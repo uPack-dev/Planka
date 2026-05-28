@@ -26,6 +26,8 @@ const initialState = {
   projectsSearch: '',
   projectsOrder: ProjectOrders.BY_DEFAULT,
   isHiddenProjectsVisible: false, // TODO: refactor?
+  isArchivedProjectsVisible: false,
+  isArchivedBoardsVisible: false,
 };
 
 // eslint-disable-next-line default-param-last
@@ -150,6 +152,16 @@ export default (state = initialState, { type, payload }) => {
       return {
         ...state,
         isHiddenProjectsVisible: payload.isVisible,
+      };
+    case ActionTypes.ARCHIVED_PROJECTS_TOGGLE:
+      return {
+        ...state,
+        isArchivedProjectsVisible: payload.isVisible,
+      };
+    case ActionTypes.ARCHIVED_BOARDS_TOGGLE:
+      return {
+        ...state,
+        isArchivedBoardsVisible: payload.isVisible,
       };
     case ActionTypes.BOARD_DELETE:
       if (

@@ -37,6 +37,10 @@ const CustomField = React.memo(({ id, customFieldGroupId }) => {
   );
 
   const canEdit = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     const { listId } = selectors.selectCurrentCard(state);
     const list = selectListById(state, listId);
 

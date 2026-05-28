@@ -107,6 +107,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     let cardMembership = await CardMembership.qm.getOneByCardIdAndUserId(
       inputs.cardId,
       inputs.userId,

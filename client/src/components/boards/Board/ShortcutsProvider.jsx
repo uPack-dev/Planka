@@ -120,6 +120,11 @@ const ShortcutsProvider = React.memo(({ children }) => {
       }
 
       const state = store.getState();
+
+      if (selectors.selectIsCurrentBoardReadOnly(state)) {
+        return;
+      }
+
       const card = selectors.selectCardById(state, selectedCardRef.current.id);
 
       if (!card || !card.isPersisted) {
@@ -143,6 +148,11 @@ const ShortcutsProvider = React.memo(({ children }) => {
       }
 
       const state = store.getState();
+
+      if (selectors.selectIsCurrentBoardReadOnly(state)) {
+        return;
+      }
+
       const card = selectors.selectCardById(state, selectedCardRef.current.id);
 
       if (!card || !card.isPersisted) {
@@ -161,6 +171,11 @@ const ShortcutsProvider = React.memo(({ children }) => {
 
     const handleCardPaste = (event) => {
       const state = store.getState();
+
+      if (selectors.selectIsCurrentBoardReadOnly(state)) {
+        return;
+      }
+
       const clipboard = selectors.selectClipboard(state);
 
       if (!clipboard) {
@@ -210,6 +225,7 @@ const ShortcutsProvider = React.memo(({ children }) => {
       }
 
       const state = store.getState();
+
       const card = selectors.selectCardById(state, selectedCardRef.current.id);
 
       if (!card || !card.isPersisted) {
@@ -228,6 +244,11 @@ const ShortcutsProvider = React.memo(({ children }) => {
       }
 
       const state = store.getState();
+
+      if (selectors.selectIsCurrentBoardReadOnly(state)) {
+        return;
+      }
+
       const card = selectors.selectCardById(state, selectedCardRef.current.id);
 
       if (!card || !card.isPersisted) {
@@ -251,6 +272,11 @@ const ShortcutsProvider = React.memo(({ children }) => {
       }
 
       const state = store.getState();
+
+      if (selectors.selectIsCurrentBoardReadOnly(state)) {
+        return;
+      }
+
       const card = selectors.selectCardById(state, selectedCardRef.current.id);
 
       if (!card || !card.isPersisted) {
@@ -274,6 +300,11 @@ const ShortcutsProvider = React.memo(({ children }) => {
       }
 
       const state = store.getState();
+
+      if (selectors.selectIsCurrentBoardReadOnly(state)) {
+        return;
+      }
+
       const card = selectors.selectCardById(state, selectedCardRef.current.id);
 
       if (!card || !card.isPersisted) {
@@ -297,6 +328,11 @@ const ShortcutsProvider = React.memo(({ children }) => {
       }
 
       const state = store.getState();
+
+      if (selectors.selectIsCurrentBoardReadOnly(state)) {
+        return;
+      }
+
       const card = selectors.selectCardById(state, selectedCardRef.current.id);
 
       if (!card || !card.isPersisted) {
@@ -320,6 +356,11 @@ const ShortcutsProvider = React.memo(({ children }) => {
       }
 
       const state = store.getState();
+
+      if (selectors.selectIsCurrentBoardReadOnly(state)) {
+        return;
+      }
+
       const card = selectors.selectCardById(state, selectedCardRef.current.id);
 
       if (!card || !card.isPersisted) {

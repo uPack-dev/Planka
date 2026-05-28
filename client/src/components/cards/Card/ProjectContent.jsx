@@ -87,6 +87,10 @@ const ProjectContent = React.memo(({ cardId }) => {
   }, shallowEqual);
 
   const canEditStopwatch = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     if (isListArchiveOrTrash(list)) {
       return false;
     }

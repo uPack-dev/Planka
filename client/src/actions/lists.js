@@ -89,6 +89,49 @@ const handleListUpdate = (
   },
 });
 
+const duplicateList = (id, data) => ({
+  type: ActionTypes.LIST_DUPLICATE,
+  payload: {
+    id,
+    data,
+  },
+});
+
+duplicateList.success = (
+  list,
+  cards,
+  cardMemberships,
+  cardLabels,
+  taskLists,
+  tasks,
+  attachments,
+  customFieldGroups,
+  customFields,
+  customFieldValues,
+) => ({
+  type: ActionTypes.LIST_DUPLICATE__SUCCESS,
+  payload: {
+    list,
+    cards,
+    cardMemberships,
+    cardLabels,
+    taskLists,
+    tasks,
+    attachments,
+    customFieldGroups,
+    customFields,
+    customFieldValues,
+  },
+});
+
+duplicateList.failure = (id, error) => ({
+  type: ActionTypes.LIST_DUPLICATE__FAILURE,
+  payload: {
+    id,
+    error,
+  },
+});
+
 const sortList = (id, data) => ({
   type: ActionTypes.LIST_SORT,
   payload: {
@@ -206,6 +249,7 @@ export default {
   handleListCreate,
   updateList,
   handleListUpdate,
+  duplicateList,
   sortList,
   moveListCards,
   clearList,

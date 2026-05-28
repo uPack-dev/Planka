@@ -93,6 +93,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     if (customFieldGroup.boardId) {
       customFieldGroup = await sails.helpers.customFieldGroups.deleteOneInBoard.with({
         project,

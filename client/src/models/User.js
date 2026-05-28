@@ -46,7 +46,7 @@ const DEFAULT_API_KEY_STATE = {
 
 const filterProjectModels = (projectModels, search, isHidden) => {
   let filteredProjectModels = projectModels.filter(
-    (projectModel) => projectModel.isHidden === isHidden,
+    (projectModel) => !projectModel.isArchived && projectModel.isHidden === isHidden,
   );
 
   if (filteredProjectModels.length > 0 && search) {
@@ -102,6 +102,7 @@ export default class extends BaseModel {
     switch (type) {
       case ActionTypes.LOCATION_CHANGE_HANDLE:
       case ActionTypes.PROJECT_UPDATE_HANDLE:
+      case ActionTypes.PROJECT_ARCHIVE_HANDLE:
       case ActionTypes.BOARD_MEMBERSHIP_CREATE_HANDLE:
       case ActionTypes.LIST_UPDATE_HANDLE:
       case ActionTypes.CARD_UPDATE_HANDLE:
@@ -132,6 +133,7 @@ export default class extends BaseModel {
         break;
       case ActionTypes.USERS_RESET_HANDLE:
       case ActionTypes.PROJECT_CREATE_HANDLE:
+      case ActionTypes.PROJECT_RESTORE_HANDLE:
       case ActionTypes.PROJECT_MANAGER_CREATE_HANDLE:
       case ActionTypes.BOARD_FETCH__SUCCESS:
       case ActionTypes.GLOBAL_CALENDAR_CARDS_FETCH__SUCCESS:
@@ -475,7 +477,8 @@ export default class extends BaseModel {
     let projectModels = this.getProjectsModelArray();
 
     projectModels = projectModels.filter(
-      (projectModel) => !projectModel.isHidden && projectModel.isFavorite,
+      (projectModel) =>
+        !projectModel.isArchived && !projectModel.isHidden && projectModel.isFavorite,
     );
 
     if (orderByArgs) {
@@ -505,6 +508,26 @@ export default class extends BaseModel {
   getFilteredProjectsModelArray(search, isHidden, orderByArgs) {
     let projectModels = this.getProjectsModelArray();
     projectModels = filterProjectModels(projectModels, search, isHidden);
+
+    if (orderByArgs) {
+      projectModels = orderBy(projectModels, ...orderByArgs);
+    }
+
+    return projectModels;
+  }
+
+  getFilteredArchivedProjectsModelArray(search, orderByArgs) {
+    let projectModels = this.getProjectsModelArray().filter(
+      (projectModel) => projectModel.isArchived && projectModel.isExternalAccessibleForUser(this),
+    );
+
+    if (projectModels.length > 0 && search) {
+      const searchParts = buildSearchParts(search);
+
+      projectModels = projectModels.filter((projectModel) =>
+        searchParts.every((searchPart) => projectModel.name.toLowerCase().includes(searchPart)),
+      );
+    }
 
     if (orderByArgs) {
       projectModels = orderBy(projectModels, ...orderByArgs);

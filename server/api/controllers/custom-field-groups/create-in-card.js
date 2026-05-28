@@ -140,6 +140,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     let baseCustomFieldGroup;
     if (inputs.baseCustomFieldGroupId) {
       baseCustomFieldGroup = await BaseCustomFieldGroup.qm.getOneById(

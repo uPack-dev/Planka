@@ -38,7 +38,8 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const { values } = inputs;
+    const { customFieldGroupIdByCustomFieldGroupId, customFieldIdByCustomFieldId, ...values } =
+      inputs.values;
 
     if (values.project && values.project.id === inputs.project.id) {
       delete values.project;
@@ -164,8 +165,7 @@ module.exports = {
     }
 
     if (!values.name) {
-      const t = sails.helpers.utils.makeTranslator(values.creatorUser.language);
-      values.name = `${inputs.record.name} (${t('copy')})`;
+      values.name = inputs.record.name;
     }
 
     let card = await Card.qm.createOne({
@@ -282,6 +282,8 @@ module.exports = {
       card,
       !!values.board,
       !!values.project,
+      customFieldGroupIdByCustomFieldGroupId,
+      customFieldIdByCustomFieldId,
     );
 
     sails.sockets.broadcast(

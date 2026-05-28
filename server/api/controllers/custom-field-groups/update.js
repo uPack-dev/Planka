@@ -129,6 +129,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     const values = _.pick(inputs, ['position', 'name']);
 
     if (customFieldGroup.boardId) {

@@ -96,6 +96,7 @@ const CalendarView = React.memo(({ cardIds }) => {
   const board = useSelector(selectors.selectCurrentBoard);
   const cards = useSelector(selectors.selectCalendarCardsForCurrentBoard);
   const boardMembership = useSelector(selectors.selectCurrentUserMembershipForCurrentBoard);
+  const isReadOnly = useSelector(selectors.selectIsCurrentBoardReadOnly);
   const hasKanbanList = useSelector((state) => !!selectors.selectFirstKanbanListId(state));
 
   const dispatch = useDispatch();
@@ -106,6 +107,7 @@ const CalendarView = React.memo(({ cardIds }) => {
 
   const canEdit =
     board.context === BoardContexts.BOARD &&
+    !isReadOnly &&
     hasKanbanList &&
     !!boardMembership &&
     boardMembership.role === BoardMembershipRoles.EDITOR;

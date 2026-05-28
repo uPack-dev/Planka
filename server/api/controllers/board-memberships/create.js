@@ -134,6 +134,10 @@ module.exports = {
       throw Errors.BOARD_NOT_FOUND; // Forbidden
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     if (!sails.helpers.users.isAdminOrProjectOwner(currentUser)) {
       if (inputs.userId !== currentUser.id) {
         throw Errors.NOT_ENOUGH_RIGHTS;

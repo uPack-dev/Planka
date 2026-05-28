@@ -43,6 +43,9 @@
 const { idInput } = require('../../../utils/inputs');
 
 const Errors = {
+  NOT_ENOUGH_RIGHTS: {
+    notEnoughRights: 'Not enough rights',
+  },
   BOARD_MEMBERSHIP_NOT_FOUND: {
     boardMembershipNotFound: 'Board membership not found',
   },
@@ -57,6 +60,9 @@ module.exports = {
   },
 
   exits: {
+    notEnoughRights: {
+      responseType: 'forbidden',
+    },
     boardMembershipNotFound: {
       responseType: 'notFound',
     },
@@ -81,6 +87,10 @@ module.exports = {
       if (!isProjectManager) {
         throw Errors.BOARD_MEMBERSHIP_NOT_FOUND; // Forbidden
       }
+    }
+
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     const user = await User.qm.getOneById(boardMembership.userId);

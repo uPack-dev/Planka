@@ -23,11 +23,23 @@ module.exports = {
       type: 'boolean',
       defaultsTo: true,
     },
+    customFieldGroupIdByCustomFieldGroupId: {
+      type: 'ref',
+    },
+    customFieldIdByCustomFieldId: {
+      type: 'ref',
+    },
   },
 
   async fn(inputs) {
+    const customFieldGroupIdByCustomFieldGroupId =
+      inputs.customFieldGroupIdByCustomFieldGroupId || {};
+    const customFieldIdByCustomFieldId = inputs.customFieldIdByCustomFieldId || {};
+
     const boardCustomFieldGroups = inputs.detachBoardCustomFieldGroups
-      ? await CustomFieldGroup.qm.getByBoardId(inputs.fromRecord.boardId)
+      ? (await CustomFieldGroup.qm.getByBoardId(inputs.fromRecord.boardId)).filter(
+          (customFieldGroup) => !customFieldGroupIdByCustomFieldGroupId[customFieldGroup.id],
+        )
       : [];
 
     const cardCustomFieldGroups = await CustomFieldGroup.qm.getByCardId(inputs.fromRecord.id);
@@ -166,10 +178,13 @@ module.exports = {
         cardId: inputs.toRecord.id,
         customFieldGroupId:
           nextCustomFieldGroupIdByCustomFieldGroupId[customFieldValue.customFieldGroupId] ||
+          customFieldGroupIdByCustomFieldGroupId[customFieldValue.customFieldGroupId] ||
           customFieldValue.customFieldGroupId,
         customFieldId:
           nextCustomFieldIdByCustomFieldId[groupedId] ||
           nextCustomFieldIdByCustomFieldId[customFieldValue.customFieldId] ||
+          customFieldIdByCustomFieldId[groupedId] ||
+          customFieldIdByCustomFieldId[customFieldValue.customFieldId] ||
           customFieldValue.customFieldId,
       };
     });

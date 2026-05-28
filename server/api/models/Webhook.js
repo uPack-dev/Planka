@@ -87,6 +87,8 @@ const Events = {
 
   BOARD_CREATE: 'boardCreate',
   BOARD_UPDATE: 'boardUpdate',
+  BOARD_ARCHIVE: 'boardArchive',
+  BOARD_RESTORE: 'boardRestore',
   BOARD_DELETE: 'boardDelete',
 
   BOARD_MEMBERSHIP_CREATE: 'boardMembershipCreate',
@@ -138,6 +140,8 @@ const Events = {
 
   PROJECT_CREATE: 'projectCreate',
   PROJECT_UPDATE: 'projectUpdate',
+  PROJECT_ARCHIVE: 'projectArchive',
+  PROJECT_RESTORE: 'projectRestore',
   PROJECT_DELETE: 'projectDelete',
 
   PROJECT_MANAGER_CREATE: 'projectManagerCreate',

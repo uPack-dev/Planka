@@ -154,6 +154,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     let nextProject;
     let nextBoard;
 
@@ -172,6 +176,10 @@ module.exports = {
       }
 
       if (boardMembership.role !== BoardMembership.Roles.EDITOR) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+
+      if (sails.helpers.boards.isReadOnly(nextProject, nextBoard)) {
         throw Errors.NOT_ENOUGH_RIGHTS;
       }
     }

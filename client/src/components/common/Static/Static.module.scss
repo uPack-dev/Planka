@@ -41,11 +41,11 @@
   }
 
   .wrapperBoard {
-    margin-top: calc(174px + var(--promo-banner-height, 0px));
+    margin-top: calc(174px + var(--archived-boards-height, 0px) + var(--promo-banner-height, 0px));
   }
 
   .wrapperBoardWithFavorites {
-    margin-top: calc(264px + var(--promo-banner-height, 0px));
+    margin-top: calc(264px + var(--archived-boards-height, 0px) + var(--promo-banner-height, 0px));
   }
 
   .wrapperFlex {
@@ -57,11 +57,15 @@
   }
 
   .wrapperProject {
-    margin-top: calc(98px + var(--promo-banner-height, 0px));
+    margin-top: calc(98px + var(--archived-boards-height, 0px) + var(--promo-banner-height, 0px));
   }
 
   .wrapperProjectWithFavorites {
-    margin-top: calc(188px + var(--promo-banner-height, 0px));
+    margin-top: calc(188px + var(--archived-boards-height, 0px) + var(--promo-banner-height, 0px));
+  }
+
+  .wrapperWithArchivedBoards {
+    --archived-boards-height: 38px;
   }
 
   .wrapperTransitioning {

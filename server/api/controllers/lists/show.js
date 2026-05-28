@@ -137,7 +137,7 @@ module.exports = {
   async fn(inputs) {
     const { currentUser } = this.req;
 
-    const { list, project } = await sails.helpers.lists
+    const { list, board, project } = await sails.helpers.lists
       .getPathToProjectById(inputs.id)
       .intercept('pathNotFound', () => Errors.LIST_NOT_FOUND);
 
@@ -145,12 +145,16 @@ module.exports = {
       throw Errors.LIST_NOT_FOUND;
     }
 
-    if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
-      const isProjectManager = await sails.helpers.users.isProjectManager(
-        currentUser.id,
-        project.id,
-      );
+    const isProjectManager = await sails.helpers.users.isProjectManager(currentUser.id, project.id);
 
+    const isAdminWithAccess =
+      currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId;
+
+    if (project.isArchived || board.isArchived) {
+      if (!isProjectManager && !isAdminWithAccess) {
+        throw Errors.LIST_NOT_FOUND; // Forbidden
+      }
+    } else if (currentUser.role !== User.Roles.ADMIN || project.ownerProjectManagerId) {
       if (!isProjectManager) {
         const boardMembership = await BoardMembership.qm.getOneByBoardIdAndUserId(
           list.boardId,

@@ -33,6 +33,11 @@ export default class extends BaseModel {
     alwaysDisplayCardCreator: attr(),
     displayCardAges: attr(),
     expandTaskListsByDefault: attr(),
+    isArchived: attr({
+      getDefault: () => false,
+    }),
+    archivedAt: attr(),
+    archivedByUserId: attr(),
     context: attr(),
     view: attr(),
     search: attr(),
@@ -176,6 +181,7 @@ export default class extends BaseModel {
 
         break;
       case ActionTypes.PROJECT_CREATE_HANDLE:
+      case ActionTypes.PROJECT_RESTORE_HANDLE:
         payload.boards.forEach((board) => {
           Board.upsert(board);
         });
@@ -199,9 +205,27 @@ export default class extends BaseModel {
       case ActionTypes.BOARD_CREATE_HANDLE:
       case ActionTypes.BOARD_UPDATE__SUCCESS:
       case ActionTypes.BOARD_UPDATE_HANDLE:
+      case ActionTypes.BOARD_ARCHIVE__SUCCESS:
+      case ActionTypes.BOARD_RESTORE__SUCCESS:
+      case ActionTypes.BOARD_RESTORE_HANDLE:
         Board.upsert(payload.board);
 
         break;
+      case ActionTypes.BOARD_ARCHIVE_HANDLE: {
+        const boardModel = Board.withId(payload.board.id);
+
+        if (boardModel) {
+          if (payload.isAvailable) {
+            Board.upsert(payload.board);
+          } else {
+            boardModel.deleteWithRelated(true);
+          }
+        } else if (payload.isAvailable) {
+          Board.upsert(payload.board);
+        }
+
+        break;
+      }
       case ActionTypes.BOARD_CREATE__SUCCESS:
         Board.withId(payload.localId).delete();
         Board.upsert(payload.board);
@@ -212,6 +236,7 @@ export default class extends BaseModel {
 
         break;
       case ActionTypes.BOARD_FETCH__SUCCESS:
+      case ActionTypes.BOARD_DUPLICATE__SUCCESS:
         Board.upsert(prepareFetchedBoard(payload.board));
 
         break;
@@ -436,6 +461,10 @@ export default class extends BaseModel {
   isAvailableForUser(userModel) {
     if (!this.project) {
       return false;
+    }
+
+    if (this.project.isArchived || this.isArchived) {
+      return this.project.isExternalAccessibleForUser(userModel);
     }
 
     return (

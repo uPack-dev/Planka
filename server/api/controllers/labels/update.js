@@ -130,6 +130,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     const values = _.pick(inputs, ['position', 'name', 'color']);
 
     label = await sails.helpers.labels.updateOne.with({
