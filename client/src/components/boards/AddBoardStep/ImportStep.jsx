@@ -9,10 +9,18 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'semantic-ui-react';
 import { FilePicker, Popup } from '../../../lib/custom-ui';
 
+import { useSteps } from '../../../hooks';
+import TemplateStep from './TemplateStep';
+
 import styles from './ImportStep.module.scss';
+
+const StepTypes = {
+  TEMPLATE: 'TEMPLATE',
+};
 
 const ImportStep = React.memo(({ onSelect, onBack }) => {
   const [t] = useTranslation();
+  const [step, openStep, handleBack] = useSteps();
 
   const handleFileSelect = useCallback(
     (type, file) => {
@@ -26,6 +34,26 @@ const ImportStep = React.memo(({ onSelect, onBack }) => {
     [onSelect, onBack],
   );
 
+  const handleTemplateSelect = useCallback(
+    (template) => {
+      onSelect({
+        type: 'template',
+        template,
+      });
+
+      onBack();
+    },
+    [onSelect, onBack],
+  );
+
+  const handleTemplateClick = useCallback(() => {
+    openStep(StepTypes.TEMPLATE);
+  }, [openStep]);
+
+  if (step && step.type === StepTypes.TEMPLATE) {
+    return <TemplateStep onSelect={handleTemplateSelect} onBack={handleBack} />;
+  }
+
   return (
     <>
       <Popup.Header onBack={onBack}>
@@ -37,6 +65,13 @@ const ImportStep = React.memo(({ onSelect, onBack }) => {
         <FilePicker accept=".json" onSelect={(file) => handleFileSelect('trello', file)}>
           <Button fluid content={t('common.fromTrello')} icon="trello" className={styles.button} />
         </FilePicker>
+        <Button
+          fluid
+          content={t('common.fromTemplate')}
+          icon="copy outline"
+          className={styles.button}
+          onClick={handleTemplateClick}
+        />
       </Popup.Content>
     </>
   );

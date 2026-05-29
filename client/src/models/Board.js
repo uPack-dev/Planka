@@ -36,6 +36,9 @@ export default class extends BaseModel {
     isArchived: attr({
       getDefault: () => false,
     }),
+    isTemplate: attr({
+      getDefault: () => false,
+    }),
     archivedAt: attr(),
     archivedByUserId: attr(),
     context: attr(),

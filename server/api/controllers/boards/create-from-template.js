@@ -9,30 +9,33 @@ const Errors = {
   NOT_ENOUGH_RIGHTS: {
     notEnoughRights: 'Not enough rights',
   },
-  BOARD_NOT_FOUND: {
-    boardNotFound: 'Board not found',
-  },
   PROJECT_NOT_FOUND: {
     projectNotFound: 'Project not found',
+  },
+  BOARD_TEMPLATE_NOT_FOUND: {
+    boardTemplateNotFound: 'Board template not found',
   },
 };
 
 module.exports = {
   inputs: {
-    id: {
+    projectId: {
       ...idInput,
       required: true,
     },
-    projectId: idInput,
     position: {
       type: 'number',
       min: 0,
+      required: true,
     },
     name: {
       type: 'string',
-      isNotEmptyString: true,
       maxLength: 128,
-      allowNull: true,
+      required: true,
+    },
+    templateId: {
+      ...idInput,
+      required: true,
     },
   },
 
@@ -40,10 +43,10 @@ module.exports = {
     notEnoughRights: {
       responseType: 'forbidden',
     },
-    boardNotFound: {
+    projectNotFound: {
       responseType: 'notFound',
     },
-    projectNotFound: {
+    boardTemplateNotFound: {
       responseType: 'notFound',
     },
   },
@@ -51,51 +54,46 @@ module.exports = {
   async fn(inputs) {
     const { currentUser } = this.req;
 
-    const { board, project } = await sails.helpers.boards
-      .getPathToProjectById(inputs.id)
-      .intercept('pathNotFound', () => Errors.BOARD_NOT_FOUND);
+    const project = await Project.qm.getOneById(inputs.projectId);
+
+    if (!project) {
+      throw Errors.PROJECT_NOT_FOUND;
+    }
 
     const isProjectManager = await sails.helpers.users.isProjectManager(currentUser.id, project.id);
     const isAdminWithAccess =
       currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId;
 
     if (!isProjectManager && !isAdminWithAccess) {
-      throw Errors.BOARD_NOT_FOUND; // Forbidden
+      throw Errors.PROJECT_NOT_FOUND; // Forbidden
     }
 
-    if (sails.helpers.boards.isReadOnly(project, board)) {
+    if (project.isArchived) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
-    let nextProject = project;
+    const boardTemplate = await BoardTemplate.qm.getOneById(inputs.templateId);
 
-    if (!_.isUndefined(inputs.projectId)) {
-      nextProject = await Project.qm.getOneById(inputs.projectId);
-
-      if (!nextProject) {
-        throw Errors.PROJECT_NOT_FOUND;
-      }
-
-      const isNextProjectManager = await sails.helpers.users.isProjectManager(
-        currentUser.id,
-        nextProject.id,
-      );
-      const isNextAdminWithAccess =
-        currentUser.role === User.Roles.ADMIN && !nextProject.ownerProjectManagerId;
-
-      if (!isNextProjectManager && !isNextAdminWithAccess) {
-        throw Errors.PROJECT_NOT_FOUND; // Forbidden
-      }
+    if (!boardTemplate) {
+      throw Errors.BOARD_TEMPLATE_NOT_FOUND;
     }
 
-    if (nextProject.isArchived) {
-      throw Errors.NOT_ENOUGH_RIGHTS;
+    const templateBoard = await Board.qm.getOneById(boardTemplate.boardId, {
+      withTemplate: true,
+    });
+
+    if (!templateBoard || !templateBoard.isTemplate) {
+      throw Errors.BOARD_TEMPLATE_NOT_FOUND;
     }
 
-    const values = _.pick(inputs, ['position', 'name']);
+    const templateProject = await Project.qm.getOneById(templateBoard.projectId);
+
+    if (!templateProject) {
+      throw Errors.BOARD_TEMPLATE_NOT_FOUND;
+    }
 
     const {
-      board: nextBoard,
+      board,
       boardMemberships,
       labels,
       lists,
@@ -109,18 +107,24 @@ module.exports = {
       customFields,
       customFieldValues,
     } = await sails.helpers.boards.duplicateOne.with({
-      project,
-      record: board,
+      project: templateProject,
+      record: templateBoard,
       values: {
-        ...values,
-        project: nextProject,
+        project,
+        position: inputs.position,
+        name: inputs.name,
       },
       actorUser: currentUser,
+      copyBoardMemberships: false,
+      copyCardMemberships: false,
+      copyAttachments: false,
+      skipCardEvents: true,
+      detachBaseCustomFieldGroups: true,
       request: this.req,
     });
 
     return {
-      item: nextBoard,
+      item: board,
       included: {
         boardMemberships,
         labels,

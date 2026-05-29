@@ -22,6 +22,7 @@ import styles from './ActionsStep.module.scss';
 
 const StepTypes = {
   CUSTOM_FIELD_GROUPS: 'CUSTOM_FIELD_GROUPS',
+  SAVE_AS_TEMPLATE: 'SAVE_AS_TEMPLATE',
   ARCHIVE_BOARD: 'ARCHIVE_BOARD',
   RESTORE_BOARD: 'RESTORE_BOARD',
   EMPTY_TRASH: 'EMPTY_TRASH',
@@ -35,6 +36,7 @@ const ActionsStep = React.memo(({ onClose }) => {
     withSubscribe,
     withCustomFieldGroups,
     withDuplicate,
+    withSaveAsTemplate,
     withArchive,
     withRestore,
     withTrashEmptier,
@@ -56,6 +58,12 @@ const ActionsStep = React.memo(({ onClose }) => {
       withSubscribe: isMember && !isReadOnly, // TODO: rename?
       withCustomFieldGroups: isEditor && !isReadOnly,
       withDuplicate: isManager && !isReadOnly,
+      withSaveAsTemplate:
+        !isReadOnly &&
+        project &&
+        !project.isArchived &&
+        !board.isArchived &&
+        (isManager || (currentUser && currentUser.role === UserRoles.ADMIN)),
       withArchive:
         isManager &&
         !isReadOnly &&
@@ -106,6 +114,11 @@ const ActionsStep = React.memo(({ onClose }) => {
     onClose();
   }, [onClose, dispatch]);
 
+  const handleSaveAsTemplateConfirm = useCallback(() => {
+    dispatch(entryActions.createTemplateFromCurrentBoard());
+    onClose();
+  }, [onClose, dispatch]);
+
   const handleArchiveBoardConfirm = useCallback(() => {
     dispatch(entryActions.archiveCurrentBoard());
     onClose();
@@ -129,6 +142,10 @@ const ActionsStep = React.memo(({ onClose }) => {
     openStep(StepTypes.ARCHIVE_BOARD);
   }, [openStep]);
 
+  const handleSaveAsTemplateClick = useCallback(() => {
+    openStep(StepTypes.SAVE_AS_TEMPLATE);
+  }, [openStep]);
+
   const handleRestoreBoardClick = useCallback(() => {
     openStep(StepTypes.RESTORE_BOARD);
   }, [openStep]);
@@ -141,6 +158,17 @@ const ActionsStep = React.memo(({ onClose }) => {
     switch (step.type) {
       case StepTypes.CUSTOM_FIELD_GROUPS:
         return <CustomFieldGroupsStep onBack={handleBack} onClose={onClose} />;
+      case StepTypes.SAVE_AS_TEMPLATE:
+        return (
+          <ConfirmationStep
+            title="common.saveAsTemplate"
+            content="common.areYouSureYouWantToSaveThisBoardAsTemplate"
+            buttonType="positive"
+            buttonContent="action.saveAsTemplate"
+            onConfirm={handleSaveAsTemplateConfirm}
+            onBack={handleBack}
+          />
+        );
       case StepTypes.ARCHIVE_BOARD:
         return (
           <ConfirmationStep
@@ -209,13 +237,21 @@ const ActionsStep = React.memo(({ onClose }) => {
               context: 'title',
             })}
           </Menu.Item>
-          {(withDuplicate || withArchive || withRestore) && (
+          {(withDuplicate || withSaveAsTemplate || withArchive || withRestore) && (
             <>
               <hr className={styles.divider} />
               {withDuplicate && (
                 <Menu.Item className={styles.menuItem} onClick={handleDuplicateBoardClick}>
                   <Icon name="copy outline" className={styles.menuItemIcon} />
                   {t('action.duplicateBoard', {
+                    context: 'title',
+                  })}
+                </Menu.Item>
+              )}
+              {withSaveAsTemplate && (
+                <Menu.Item className={styles.menuItem} onClick={handleSaveAsTemplateClick}>
+                  <Icon name="copy outline" className={styles.menuItemIcon} />
+                  {t('action.saveAsTemplate', {
                     context: 'title',
                   })}
                 </Menu.Item>

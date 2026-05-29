@@ -12,7 +12,7 @@ import { useTransitioning } from '../../../lib/hooks';
 import { usePopup } from '../../../lib/popup';
 
 import selectors from '../../../selectors';
-import { BoardViews } from '../../../constants/Enums';
+import { BoardViews, UserRoles } from '../../../constants/Enums';
 import Home from '../Home';
 import GhostError from '../GhostError';
 import Board from '../../boards/Board';
@@ -31,11 +31,13 @@ const Static = React.memo(() => {
 
   const canAddBoard = useSelector((state) => {
     const project = selectors.selectCurrentProject(state);
+    const currentUser = selectors.selectCurrentUser(state);
 
     return (
       !!project &&
       !project.isArchived &&
-      selectors.selectIsCurrentUserManagerForCurrentProject(state)
+      (selectors.selectIsCurrentUserManagerForCurrentProject(state) ||
+        (currentUser && currentUser.role === UserRoles.ADMIN && !project.ownerProjectManagerId))
     );
   });
 

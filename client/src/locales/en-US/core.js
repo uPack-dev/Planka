@@ -92,6 +92,8 @@ export default {
         'Are you sure you want to remove this member from the board?',
       areYouSureYouWantToRestoreThisBoard: 'Are you sure you want to restore this board?',
       areYouSureYouWantToRestoreThisProject: 'Are you sure you want to restore this project?',
+      areYouSureYouWantToSaveThisBoardAsTemplate:
+        'Are you sure you want to save this board as a template?',
       areYouSureYouWantToUnlinkSsoFromThisUser:
         'Are you sure you want to unlink SSO from this user? This will allow the user to log in with a password.',
       assignAsOwner_title: 'Assign As Owner',
@@ -263,6 +265,7 @@ export default {
       onlyFilesCanBeSelected: 'Only files can be selected.',
       popupWasBlocked: 'Popup was blocked. Please allow popups for this site.',
       loading: 'Loading...',
+      fromTemplate: 'From template',
       fromTrello: 'From Trello',
       fullKeyIsHiddenForSecurityReasons:
         'The full key is hidden for security reasons. Regenerate it to create a new one.',
@@ -311,6 +314,7 @@ export default {
       newVersionAvailable: 'New version available',
       newestFirst: 'Newest first',
       noApiKeyCreated: 'No API key created.',
+      noBoardTemplates: 'No board templates',
       noBoards: 'No boards',
       noCardsFound: 'No cards found.',
       noConnectionToServer: 'No connection to server',
@@ -347,6 +351,7 @@ export default {
       restoreBoard_title: 'Restore Board',
       restoreProject_title: 'Restore Project',
       role: 'Role',
+      saveAsTemplate: 'Save as template',
       saveThisKeyItWillNotBeShownAgain: 'Save this key — it will not be shown again!',
       searchCards: 'Search cards...',
       searchCustomFieldGroups: 'Search custom field groups...',
@@ -359,6 +364,7 @@ export default {
       seconds: 'Seconds',
       selectAssignee_title: 'Select Assignee',
       selectBoard: 'Select board',
+      selectBoardTemplate_title: 'Select Board Template',
       selectList: 'Select list',
       selectListToRestoreThisCard: 'Select list to restore this card',
       selectOrder_title: 'Select Order',
@@ -622,6 +628,7 @@ export default {
       restoreToList: 'Restore to {{list}}',
       returnToBoard: 'Return to board',
       save: 'Save',
+      saveAsTemplate: 'Save as template',
       saveSchedule: 'Save schedule',
       configureGoogleDrive: 'Configure Google Drive',
       connectGoogleDrive: 'Connect Google Drive',

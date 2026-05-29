@@ -169,9 +169,12 @@ module.exports = {
     const { project } = pathToProject;
 
     const isProjectManager = await sails.helpers.users.isProjectManager(currentUser.id, project.id);
+    const isAdminWithAccess =
+      currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId;
+    const canManageBoard = isProjectManager || isAdminWithAccess;
     const isBoardMember = await sails.helpers.users.isBoardMember(currentUser.id, board.id);
 
-    if (!isProjectManager && !isBoardMember) {
+    if (!canManageBoard && !isBoardMember) {
       throw Errors.BOARD_NOT_FOUND; // Forbidden
     }
 
@@ -181,7 +184,7 @@ module.exports = {
 
     let nextProject;
     if (!_.isUndefined(inputs.projectId)) {
-      if (!isProjectManager) {
+      if (!canManageBoard) {
         throw Errors.NOT_ENOUGH_RIGHTS;
       }
 
@@ -195,8 +198,10 @@ module.exports = {
         currentUser.id,
         nextProject.id,
       );
+      const isNextAdminWithAccess =
+        currentUser.role === User.Roles.ADMIN && !nextProject.ownerProjectManagerId;
 
-      if (!isNextProjectManager) {
+      if (!isNextProjectManager && !isNextAdminWithAccess) {
         throw Errors.PROJECT_NOT_FOUND; // Forbidden
       }
 
@@ -206,7 +211,7 @@ module.exports = {
     }
 
     const availableInputKeys = ['id'];
-    if (isProjectManager) {
+    if (canManageBoard) {
       availableInputKeys.push(
         'projectId',
         'position',

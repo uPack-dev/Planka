@@ -14,6 +14,7 @@ import { closePopup, usePopup } from '../../../lib/popup';
 import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import DroppableTypes from '../../../constants/DroppableTypes';
+import { UserRoles } from '../../../constants/Enums';
 import Item from './Item';
 import AddBoardStep from '../AddBoardStep';
 
@@ -33,11 +34,13 @@ const Boards = React.memo(() => {
     }
 
     const project = selectors.selectCurrentProject(state);
+    const currentUser = selectors.selectCurrentUser(state);
 
     return (
       !!project &&
       !project.isArchived &&
-      selectors.selectIsCurrentUserManagerForCurrentProject(state)
+      (selectors.selectIsCurrentUserManagerForCurrentProject(state) ||
+        (currentUser && currentUser.role === UserRoles.ADMIN && !project.ownerProjectManagerId))
     );
   });
 

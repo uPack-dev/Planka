@@ -22,6 +22,22 @@ const StepTypes = {
   IMPORT: 'IMPORT',
 };
 
+const getImportIcon = (boardImport) => {
+  if (!boardImport) {
+    return 'arrow down';
+  }
+
+  return boardImport.type === 'template' ? 'copy outline' : boardImport.type;
+};
+
+const getImportName = (boardImport) => {
+  if (!boardImport) {
+    return null;
+  }
+
+  return boardImport.type === 'template' ? boardImport.template.name : boardImport.file.name;
+};
+
 const AddBoardStep = React.memo(({ onClose }) => {
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -110,11 +126,8 @@ const AddBoardStep = React.memo(({ onClose }) => {
               className={classNames(styles.button, styles.importButton)}
               onClick={handleImportClick}
             >
-              <Icon
-                name={data.import ? data.import.type : 'arrow down'}
-                className={styles.importButtonIcon}
-              />
-              {data.import ? data.import.file.name : t('action.import')}
+              <Icon name={getImportIcon(data.import)} className={styles.importButtonIcon} />
+              {getImportName(data.import) || t('action.import')}
             </Button>
           </div>
         </Form>
