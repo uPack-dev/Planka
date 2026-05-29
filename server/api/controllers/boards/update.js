@@ -27,6 +27,10 @@
  *           schema:
  *             type: object
  *             properties:
+ *               projectId:
+ *                 type: string
+ *                 description: ID of the project to move the board to
+ *                 example: "1357158568008091264"
  *               position:
  *                 type: number
  *                 minimum: 0
@@ -96,6 +100,9 @@ const Errors = {
   BOARD_NOT_FOUND: {
     boardNotFound: 'Board not found',
   },
+  PROJECT_NOT_FOUND: {
+    projectNotFound: 'Project not found',
+  },
 };
 
 module.exports = {
@@ -104,6 +111,7 @@ module.exports = {
       ...idInput,
       required: true,
     },
+    projectId: idInput,
     position: {
       type: 'number',
       min: 0,
@@ -145,6 +153,9 @@ module.exports = {
     boardNotFound: {
       responseType: 'notFound',
     },
+    projectNotFound: {
+      responseType: 'notFound',
+    },
   },
 
   async fn(inputs) {
@@ -168,9 +179,36 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    let nextProject;
+    if (!_.isUndefined(inputs.projectId)) {
+      if (!isProjectManager) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+
+      nextProject = await Project.qm.getOneById(inputs.projectId);
+
+      if (!nextProject) {
+        throw Errors.PROJECT_NOT_FOUND;
+      }
+
+      const isNextProjectManager = await sails.helpers.users.isProjectManager(
+        currentUser.id,
+        nextProject.id,
+      );
+
+      if (!isNextProjectManager) {
+        throw Errors.PROJECT_NOT_FOUND; // Forbidden
+      }
+
+      if (nextProject.isArchived) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+    }
+
     const availableInputKeys = ['id'];
     if (isProjectManager) {
       availableInputKeys.push(
+        'projectId',
         'position',
         'name',
         'defaultView',
@@ -190,6 +228,7 @@ module.exports = {
     }
 
     const values = _.pick(inputs, [
+      'projectId',
       'position',
       'name',
       'defaultView',
@@ -201,8 +240,15 @@ module.exports = {
       'isSubscribed',
     ]);
 
+    const helperValues = nextProject
+      ? {
+          ...values,
+          project: nextProject,
+        }
+      : values;
+
     board = await sails.helpers.boards.updateOne.with({
-      values,
+      values: helperValues,
       project,
       record: board,
       actorUser: currentUser,

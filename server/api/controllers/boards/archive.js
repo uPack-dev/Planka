@@ -54,6 +54,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (project.isArchived) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     board = await sails.helpers.boards.archiveOne.with({
       project,
       record: board,

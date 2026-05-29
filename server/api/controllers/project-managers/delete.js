@@ -99,6 +99,10 @@ module.exports = {
       }
     }
 
+    if (project.isArchived) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     if (project.ownerProjectManagerId) {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }

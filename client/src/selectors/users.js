@@ -251,6 +251,27 @@ export const selectProjectsToBoardsWithEditorRightsForCurrentUser = createSelect
   },
 );
 
+export const selectProjectsWithManagerRightsForCurrentUser = createSelector(
+  orm,
+  (state) => selectCurrentUserId(state),
+  ({ User }, id) => {
+    if (!id) {
+      return id;
+    }
+
+    const userModel = User.withId(id);
+
+    if (!userModel) {
+      return userModel;
+    }
+
+    return userModel
+      .getManagerProjectsModelArray()
+      .filter((projectModel) => !projectModel.isArchived)
+      .map((projectModel) => projectModel.ref);
+  },
+);
+
 export const selectProjectsToListsWithEditorRightsForCurrentUser = createSelector(
   orm,
   (state) => selectCurrentUserId(state),
@@ -389,6 +410,7 @@ export default {
   selectFilteredArchivedProjectIdsForCurrentUser,
   selectIsArchivedProjectsVisibleForCurrentUser,
   selectFavoriteProjectIdsForCurrentUser,
+  selectProjectsWithManagerRightsForCurrentUser,
   selectProjectsToBoardsWithEditorRightsForCurrentUser,
   selectProjectsToListsWithEditorRightsForCurrentUser,
   selectBoardIdsForCurrentUser,

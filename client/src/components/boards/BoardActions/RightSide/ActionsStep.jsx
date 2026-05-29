@@ -29,6 +29,7 @@ const StepTypes = {
 
 const ActionsStep = React.memo(({ onClose }) => {
   const board = useSelector(selectors.selectCurrentBoard);
+  const project = useSelector(selectors.selectCurrentProject);
 
   const {
     withSubscribe,
@@ -58,11 +59,16 @@ const ActionsStep = React.memo(({ onClose }) => {
       withArchive:
         isManager &&
         !isReadOnly &&
+        project &&
+        !project.isArchived &&
         !board.isArchived &&
         currentUser &&
         [UserRoles.ADMIN, UserRoles.PROJECT_OWNER].includes(currentUser.role),
       withRestore:
-        board.isArchived && (isManager || (currentUser && currentUser.role === UserRoles.ADMIN)),
+        project &&
+        !project.isArchived &&
+        board.isArchived &&
+        (isManager || (currentUser && currentUser.role === UserRoles.ADMIN)),
       withTrashEmptier:
         board.context === BoardContexts.TRASH && (isManager || isEditor) && !isReadOnly,
     };
@@ -203,17 +209,17 @@ const ActionsStep = React.memo(({ onClose }) => {
               context: 'title',
             })}
           </Menu.Item>
-          {withDuplicate && (
-            <Menu.Item className={styles.menuItem} onClick={handleDuplicateBoardClick}>
-              <Icon name="copy outline" className={styles.menuItemIcon} />
-              {t('action.duplicateBoard', {
-                context: 'title',
-              })}
-            </Menu.Item>
-          )}
-          {(withArchive || withRestore) && (
+          {(withDuplicate || withArchive || withRestore) && (
             <>
               <hr className={styles.divider} />
+              {withDuplicate && (
+                <Menu.Item className={styles.menuItem} onClick={handleDuplicateBoardClick}>
+                  <Icon name="copy outline" className={styles.menuItemIcon} />
+                  {t('action.duplicateBoard', {
+                    context: 'title',
+                  })}
+                </Menu.Item>
+              )}
               {withArchive && (
                 <Menu.Item className={styles.menuItem} onClick={handleArchiveBoardClick}>
                   <Icon name="archive" className={styles.menuItemIcon} />

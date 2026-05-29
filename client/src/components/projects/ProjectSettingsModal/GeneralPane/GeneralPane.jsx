@@ -63,7 +63,7 @@ const GeneralPane = React.memo(() => {
 
   return (
     <Tab.Pane attached={false} className={styles.wrapper}>
-      {canEdit && (
+      {canEdit && !project.isArchived && (
         <>
           <EditInformation />
           <Divider horizontal section>
@@ -75,14 +75,16 @@ const GeneralPane = React.memo(() => {
           </Divider>
         </>
       )}
-      <Radio
-        toggle
-        name="isHidden"
-        checked={project.isHidden}
-        label={t('common.hideFromProjectListAndFavorites')}
-        className={styles.radio}
-        onChange={handleToggleChange}
-      />
+      {!project.isArchived && (
+        <Radio
+          toggle
+          name="isHidden"
+          checked={project.isHidden}
+          label={t('common.hideFromProjectListAndFavorites')}
+          className={styles.radio}
+          onChange={handleToggleChange}
+        />
+      )}
       {(canArchive || canRestore || canEdit) && (
         <>
           <Divider horizontal section>
@@ -123,7 +125,7 @@ const GeneralPane = React.memo(() => {
               )}
             </div>
           )}
-          {canEdit && (
+          {canEdit && !project.isArchived && (
             <div className={styles.action}>
               <ConfirmationPopup
                 title="common.deleteProject"

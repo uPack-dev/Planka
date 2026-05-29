@@ -13,17 +13,21 @@ import entryActions from '../../../../entry-actions';
 import { usePopupInClosableContext } from '../../../../hooks';
 import { UserRoles } from '../../../../constants/Enums';
 import EditInformation from './EditInformation';
+import MoveBoardStep from './MoveBoardStep';
 import ConfirmationStep from '../../../common/ConfirmationStep';
 
 import styles from './GeneralPane.module.scss';
 
 const GeneralPane = React.memo(() => {
   const selectBoardById = useMemo(() => selectors.makeSelectBoardById(), []);
+  const selectProjectById = useMemo(() => selectors.makeSelectProjectById(), []);
 
   const boardId = useSelector((state) => selectors.selectCurrentModal(state).params.id);
   const board = useSelector((state) => selectBoardById(state, boardId));
-  const isReadOnly = useSelector(selectors.selectIsCurrentBoardReadOnly);
+  const project = useSelector((state) => board && selectProjectById(state, board.projectId));
   const currentUser = useSelector(selectors.selectCurrentUser);
+  const isProjectArchived = !!(project && project.isArchived);
+  const isReadOnly = !!(board && (board.isArchived || isProjectArchived));
   const canArchive =
     currentUser && [UserRoles.ADMIN, UserRoles.PROJECT_OWNER].includes(currentUser.role);
 
@@ -47,12 +51,31 @@ const GeneralPane = React.memo(() => {
   }, [boardId, dispatch]);
 
   const ConfirmationPopup = usePopupInClosableContext(ConfirmationStep);
+  const MoveBoardPopup = usePopupInClosableContext(MoveBoardStep);
 
   return (
     <Tab.Pane attached={false} className={styles.wrapper}>
+      {!isReadOnly && <EditInformation />}
+      {((board.isArchived && !isProjectArchived) || !isReadOnly) && (
+        <Divider horizontal section>
+          <Header as="h4">
+            {t('common.dangerZone', {
+              context: 'title',
+            })}
+          </Header>
+        </Divider>
+      )}
       {!isReadOnly && (
         <>
-          <EditInformation />
+          <div className={styles.action}>
+            <MoveBoardPopup id={boardId}>
+              <Button className={styles.actionButton}>
+                {t('action.moveBoard', {
+                  context: 'title',
+                })}
+              </Button>
+            </MoveBoardPopup>
+          </div>
           <div className={styles.action}>
             <Button className={styles.actionButton} onClick={handleDuplicateClick}>
               {t('action.duplicateBoard', {
@@ -62,16 +85,7 @@ const GeneralPane = React.memo(() => {
           </div>
         </>
       )}
-      {(board.isArchived || !isReadOnly) && (
-        <Divider horizontal section>
-          <Header as="h4">
-            {t('common.dangerZone', {
-              context: 'title',
-            })}
-          </Header>
-        </Divider>
-      )}
-      {(board.isArchived || (canArchive && !isReadOnly)) && (
+      {!isProjectArchived && (board.isArchived || (canArchive && !isReadOnly)) && (
         <div className={styles.action}>
           {board.isArchived ? (
             <ConfirmationPopup

@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const { POSITION_GAP } = require('../../../constants');
+
 module.exports = {
   inputs: {
     record: {
@@ -27,20 +29,28 @@ module.exports = {
   },
 
   async fn(inputs) {
-    const { isSubscribed, ...values } = inputs.values;
+    const { isSubscribed, project: nextProject, ...values } = inputs.values;
+    delete values.projectId;
+    const project = nextProject || inputs.project;
+    const isProjectChanged = project.id !== inputs.project.id;
 
     let board;
-    if (_.isEmpty(values)) {
+    if (_.isEmpty(values) && !isProjectChanged) {
       board = inputs.record;
     } else {
       const scoper = sails.helpers.projects.makeScoper.with({
-        record: inputs.project,
+        record: project,
       });
 
-      if (!_.isUndefined(values.position)) {
-        const boards = await Board.qm.getByProjectId(inputs.record.projectId, {
+      if (isProjectChanged || !_.isUndefined(values.position)) {
+        const boards = await Board.qm.getByProjectId(project.id, {
           exceptIdOrIds: inputs.record.id,
         });
+
+        if (_.isUndefined(values.position)) {
+          const lastBoard = _.last(boards);
+          values.position = lastBoard ? lastBoard.position + POSITION_GAP : POSITION_GAP;
+        }
 
         const { position, repositions } = sails.helpers.utils.insertToPositionables(
           values.position,
@@ -84,14 +94,37 @@ module.exports = {
         }
       }
 
+      if (isProjectChanged) {
+        values.projectId = project.id;
+      }
+
+      let prevBoardRelatedUserIds;
+      if (isProjectChanged) {
+        const prevScoper = sails.helpers.projects.makeScoper.with({
+          record: inputs.project,
+          board: inputs.record,
+        });
+
+        prevBoardRelatedUserIds = await prevScoper.getBoardRelatedUserIds();
+      }
+
       board = await Board.qm.updateOne(inputs.record.id, values);
 
       if (!board) {
         return board;
       }
 
+      if (isProjectChanged) {
+        await BoardMembership.update({ boardId: board.id }).set({
+          projectId: project.id,
+        });
+      }
+
       scoper.board = board;
       const boardRelatedUserIds = await scoper.getBoardRelatedUserIds();
+      const removedUserIds = isProjectChanged
+        ? _.difference(prevBoardRelatedUserIds, boardRelatedUserIds)
+        : [];
 
       boardRelatedUserIds.forEach((userId) => {
         sails.sockets.broadcast(
@@ -99,6 +132,17 @@ module.exports = {
           'boardUpdate',
           {
             item: board,
+          },
+          inputs.request,
+        );
+      });
+
+      removedUserIds.forEach((userId) => {
+        sails.sockets.broadcast(
+          `user:${userId}`,
+          'boardDelete',
+          {
+            item: inputs.record,
           },
           inputs.request,
         );
@@ -112,7 +156,7 @@ module.exports = {
         buildData: () => ({
           item: board,
           included: {
-            projects: [inputs.project],
+            projects: [project],
           },
         }),
         buildPrevData: () => ({

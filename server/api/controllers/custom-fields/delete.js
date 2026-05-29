@@ -90,6 +90,10 @@ module.exports = {
         throw Errors.CUSTOM_FIELD_NOT_FOUND; // Forbidden
       }
 
+      if (project.isArchived) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+
       customField = await sails.helpers.customFields.deleteOneInBaseCustomFieldGroup.with({
         project,
         baseCustomFieldGroup,

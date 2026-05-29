@@ -6,6 +6,9 @@
 const { idInput } = require('../../../utils/inputs');
 
 const Errors = {
+  NOT_ENOUGH_RIGHTS: {
+    notEnoughRights: 'Not enough rights',
+  },
   BOARD_NOT_FOUND: {
     boardNotFound: 'Board not found',
   },
@@ -20,6 +23,9 @@ module.exports = {
   },
 
   exits: {
+    notEnoughRights: {
+      responseType: 'forbidden',
+    },
     boardNotFound: {
       responseType: 'notFound',
     },
@@ -42,6 +48,10 @@ module.exports = {
 
     if (!isProjectManager && !isAdminWithAccess) {
       throw Errors.BOARD_NOT_FOUND; // Forbidden
+    }
+
+    if (project.isArchived) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     board = await sails.helpers.boards.restoreOne.with({

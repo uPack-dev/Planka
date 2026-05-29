@@ -302,6 +302,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (project.isArchived) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     let nextOwnerProjectManager;
     if (inputs.ownerProjectManagerId) {
       nextOwnerProjectManager = await ProjectManager.qm.getOneById(inputs.ownerProjectManagerId, {

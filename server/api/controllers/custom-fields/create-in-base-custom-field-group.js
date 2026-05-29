@@ -67,6 +67,9 @@
 const { idInput } = require('../../../utils/inputs');
 
 const Errors = {
+  NOT_ENOUGH_RIGHTS: {
+    notEnoughRights: 'Not enough rights',
+  },
   BASE_CUSTOM_FIELD_GROUP_NOT_FOUND: {
     baseCustomFieldGroupNotFound: 'Base custom field group not found',
   },
@@ -94,6 +97,9 @@ module.exports = {
   },
 
   exits: {
+    notEnoughRights: {
+      responseType: 'forbidden',
+    },
     baseCustomFieldGroupNotFound: {
       responseType: 'notFound',
     },
@@ -110,6 +116,10 @@ module.exports = {
 
     if (!isProjectManager) {
       throw Errors.BASE_CUSTOM_FIELD_GROUP_NOT_FOUND; // Forbidden
+    }
+
+    if (project.isArchived) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     const values = _.pick(inputs, ['position', 'name', 'showOnFrontOfCard']);

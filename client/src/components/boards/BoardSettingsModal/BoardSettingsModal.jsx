@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Tab } from 'semantic-ui-react';
@@ -19,6 +19,12 @@ const BoardSettingsModal = React.memo(() => {
   const openPreferences = useSelector(
     (state) => selectors.selectCurrentModal(state).params.openPreferences,
   );
+  const boardId = useSelector((state) => selectors.selectCurrentModal(state).params.id);
+  const selectBoardById = useMemo(() => selectors.makeSelectBoardById(), []);
+  const selectProjectById = useMemo(() => selectors.makeSelectProjectById(), []);
+  const board = useSelector((state) => selectBoardById(state, boardId));
+  const project = useSelector((state) => board && selectProjectById(state, board.projectId));
+  const isReadOnly = !!(board && (board.isArchived || (project && project.isArchived)));
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -36,19 +42,24 @@ const BoardSettingsModal = React.memo(() => {
       }),
       render: () => <GeneralPane />,
     },
-    {
-      menuItem: t('common.preferences', {
-        context: 'title',
-      }),
-      render: () => <PreferencesPane />,
-    },
-    {
-      menuItem: t('common.notifications', {
-        context: 'title',
-      }),
-      render: () => <NotificationsPane />,
-    },
   ];
+
+  if (!isReadOnly) {
+    panes.push(
+      {
+        menuItem: t('common.preferences', {
+          context: 'title',
+        }),
+        render: () => <PreferencesPane />,
+      },
+      {
+        menuItem: t('common.notifications', {
+          context: 'title',
+        }),
+        render: () => <NotificationsPane />,
+      },
+    );
+  }
 
   return (
     <ClosableModal closeIcon size="small" centered={false} onClose={handleClose}>
@@ -59,7 +70,7 @@ const BoardSettingsModal = React.memo(() => {
             pointing: true,
           }}
           panes={panes}
-          defaultActiveIndex={openPreferences ? 1 : undefined}
+          defaultActiveIndex={openPreferences && !isReadOnly ? 1 : undefined}
         />
       </ClosableModal.Content>
     </ClosableModal>
