@@ -28,6 +28,22 @@ module.exports = {
     request: {
       type: 'ref',
     },
+    copyCardMemberships: {
+      type: 'boolean',
+      defaultsTo: true,
+    },
+    copyAttachments: {
+      type: 'boolean',
+      defaultsTo: true,
+    },
+    skipEvents: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
+    detachBaseCustomFieldGroups: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
   },
 
   exits: {
@@ -192,12 +208,18 @@ module.exports = {
       listChangedAt: new Date().toISOString(),
     });
 
-    const boardMemberUserIds = await sails.helpers.boards.getMemberUserIds(card.boardId);
+    const boardMemberUserIds = inputs.copyCardMemberships
+      ? await sails.helpers.boards.getMemberUserIds(card.boardId)
+      : [];
+
     const boardMemberUserIdsSet = new Set(boardMemberUserIds);
 
-    const cardMemberships = await CardMembership.qm.getByCardId(inputs.record.id, {
-      userIdOrIds: boardMemberUserIds,
-    });
+    const cardMemberships =
+      boardMemberUserIds.length > 0
+        ? await CardMembership.qm.getByCardId(inputs.record.id, {
+            userIdOrIds: boardMemberUserIds,
+          })
+        : [];
 
     const cardMembershipsValues = cardMemberships.map((cardMembership) => ({
       ..._.pick(cardMembership, ['userId']),
@@ -222,7 +244,9 @@ module.exports = {
     const taskListIds = sails.helpers.utils.mapRecords(taskLists);
 
     const tasks = await Task.qm.getByTaskListIds(taskListIds);
-    const attachments = await Attachment.qm.getByCardId(inputs.record.id);
+    const attachments = inputs.copyAttachments
+      ? await Attachment.qm.getByCardId(inputs.record.id)
+      : [];
 
     const ids = await sails.helpers.utils.generateIds(taskLists.length + attachments.length);
 
@@ -281,81 +305,83 @@ module.exports = {
       inputs.record,
       card,
       !!values.board,
-      !!values.project,
+      inputs.detachBaseCustomFieldGroups || !!values.project,
       customFieldGroupIdByCustomFieldGroupId,
       customFieldIdByCustomFieldId,
     );
 
-    sails.sockets.broadcast(
-      `board:${card.boardId}`,
-      'cardCreate',
-      {
-        item: card,
-      },
-      inputs.request,
-    );
-
-    const webhooks = await Webhook.qm.getAll();
-
-    sails.helpers.utils.sendWebhooks.with({
-      webhooks,
-      event: Webhook.Events.CARD_CREATE,
-      buildData: () => ({
-        item: card,
-        included: {
-          projects: [project],
-          boards: [board],
-          lists: [list],
-          cardMemberships: nextCardMemberships,
-          cardLabels: nextCardLabels,
-          taskLists: nextTaskLists,
-          tasks: nextTasks,
-          attachments: sails.helpers.attachments.presentMany(nextAttachments),
-          customFieldGroups: nextCustomFieldGroups,
-          customFields: nextCustomFields,
-          customFieldValues: nextCustomFieldValues,
+    if (!inputs.skipEvents) {
+      sails.sockets.broadcast(
+        `board:${card.boardId}`,
+        'cardCreate',
+        {
+          item: card,
         },
-      }),
-      user: values.creatorUser,
-    });
+        inputs.request,
+      );
 
-    if (values.creatorUser.subscribeToOwnCards) {
-      try {
-        await CardSubscription.qm.createOne({
-          cardId: card.id,
-          userId: card.creatorUserId,
-        });
-      } catch (error) {
-        if (error.code !== 'E_UNIQUE') {
-          throw error;
-        }
-      }
+      const webhooks = await Webhook.qm.getAll();
 
-      sails.sockets.broadcast(`user:${card.creatorUserId}`, 'cardUpdate', {
-        item: {
-          id: card.id,
-          isSubscribed: true,
-        },
+      sails.helpers.utils.sendWebhooks.with({
+        webhooks,
+        event: Webhook.Events.CARD_CREATE,
+        buildData: () => ({
+          item: card,
+          included: {
+            projects: [project],
+            boards: [board],
+            lists: [list],
+            cardMemberships: nextCardMemberships,
+            cardLabels: nextCardLabels,
+            taskLists: nextTaskLists,
+            tasks: nextTasks,
+            attachments: sails.helpers.attachments.presentMany(nextAttachments),
+            customFieldGroups: nextCustomFieldGroups,
+            customFields: nextCustomFields,
+            customFieldValues: nextCustomFieldValues,
+          },
+        }),
+        user: values.creatorUser,
       });
 
-      // TODO: send webhooks
-    }
+      if (values.creatorUser.subscribeToOwnCards) {
+        try {
+          await CardSubscription.qm.createOne({
+            cardId: card.id,
+            userId: card.creatorUserId,
+          });
+        } catch (error) {
+          if (error.code !== 'E_UNIQUE') {
+            throw error;
+          }
+        }
 
-    await sails.helpers.actions.createOne.with({
-      project,
-      board,
-      list,
-      webhooks,
-      values: {
-        card,
-        type: Action.Types.CREATE_CARD, // TODO: introduce separate type?
-        data: {
-          card: _.pick(card, ['name']),
-          list: _.pick(list, ['id', 'type', 'name']),
+        sails.sockets.broadcast(`user:${card.creatorUserId}`, 'cardUpdate', {
+          item: {
+            id: card.id,
+            isSubscribed: true,
+          },
+        });
+
+        // TODO: send webhooks
+      }
+
+      await sails.helpers.actions.createOne.with({
+        project,
+        board,
+        list,
+        webhooks,
+        values: {
+          card,
+          type: Action.Types.CREATE_CARD, // TODO: introduce separate type?
+          data: {
+            card: _.pick(card, ['name']),
+            list: _.pick(list, ['id', 'type', 'name']),
+          },
+          user: values.creatorUser,
         },
-        user: values.creatorUser,
-      },
-    });
+      });
+    }
 
     return {
       card,

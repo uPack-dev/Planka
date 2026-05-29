@@ -156,12 +156,17 @@ module.exports.routes = {
   'PATCH /api/base-custom-field-groups/:id': 'base-custom-field-groups/update',
   'DELETE /api/base-custom-field-groups/:id': 'base-custom-field-groups/delete',
 
+  'GET /api/board-templates': 'board-templates/index',
+  'DELETE /api/board-templates/:id': 'board-templates/delete',
+
   'POST /api/projects/:projectId/boards': 'boards/create',
+  'POST /api/projects/:projectId/boards/from-template': 'boards/create-from-template',
   'GET /api/boards/:id': 'boards/show',
   'PATCH /api/boards/:id': 'boards/update',
   'POST /api/boards/:id/archive': 'boards/archive',
   'POST /api/boards/:id/restore': 'boards/restore',
   'POST /api/boards/:id/duplicate': 'boards/duplicate',
+  'POST /api/boards/:id/board-templates': 'board-templates/create',
   'DELETE /api/boards/:id': 'boards/delete',
 
   'POST /api/boards/:boardId/board-memberships': 'board-memberships/create',

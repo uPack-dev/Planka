@@ -103,6 +103,11 @@ const duplicateCurrentBoard = (data = {}) => ({
   },
 });
 
+const createTemplateFromCurrentBoard = () => ({
+  type: EntryActionTypes.CURRENT_BOARD_TO_TEMPLATE_CREATE,
+  payload: {},
+});
+
 const moveBoard = (id, index) => ({
   type: EntryActionTypes.BOARD_MOVE,
   payload: {
@@ -168,6 +173,7 @@ export default {
   handleBoardRestore,
   duplicateBoard,
   duplicateCurrentBoard,
+  createTemplateFromCurrentBoard,
   moveBoard,
   updateContextInCurrentBoard,
   toggleArchivedBoards,

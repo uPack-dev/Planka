@@ -7,20 +7,23 @@ const defaultFind = (criteria, { sort = 'id' } = {}) => Board.find(criteria).sor
 
 /* Query methods */
 
-const createOne = (values, { user } = {}) =>
+const createOne = (values, { user, withMembership = true } = {}) =>
   sails.getDatastore().transaction(async (db) => {
     const board = await Board.create({ ...values })
       .fetch()
       .usingConnection(db);
 
-    const boardMembership = await BoardMembership.create({
-      projectId: board.projectId,
-      boardId: board.id,
-      userId: user.id,
-      role: BoardMembership.Roles.EDITOR,
-    })
-      .fetch()
-      .usingConnection(db);
+    let boardMembership = null;
+    if (withMembership) {
+      boardMembership = await BoardMembership.create({
+        projectId: board.projectId,
+        boardId: board.id,
+        userId: user.id,
+        role: BoardMembership.Roles.EDITOR,
+      })
+        .fetch()
+        .usingConnection(db);
+    }
 
     const lists = await List.createEach(
       [List.Types.ARCHIVE, List.Types.TRASH].map((type) => ({
@@ -34,10 +37,14 @@ const createOne = (values, { user } = {}) =>
     return { board, boardMembership, lists };
   });
 
-const getByIds = (ids, { exceptProjectIdOrIds } = {}) => {
+const getByIds = (ids, { exceptProjectIdOrIds, withTemplates = false } = {}) => {
   const criteria = {
     id: ids,
   };
+
+  if (!withTemplates) {
+    criteria.isTemplate = false;
+  }
 
   if (exceptProjectIdOrIds) {
     criteria.projectId = {
@@ -48,10 +55,17 @@ const getByIds = (ids, { exceptProjectIdOrIds } = {}) => {
   return defaultFind(criteria);
 };
 
-const getByProjectId = (projectId, { exceptIdOrIds, sort = ['position', 'id'] } = {}) => {
+const getByProjectId = (
+  projectId,
+  { exceptIdOrIds, withTemplates = false, sort = ['position', 'id'] } = {},
+) => {
   const criteria = {
     projectId,
   };
+
+  if (!withTemplates) {
+    criteria.isTemplate = false;
+  }
 
   if (exceptIdOrIds) {
     criteria.id = {
@@ -62,15 +76,26 @@ const getByProjectId = (projectId, { exceptIdOrIds, sort = ['position', 'id'] } 
   return defaultFind(criteria, { sort });
 };
 
-const getByProjectIds = (projectIds, { sort = ['position', 'id'] } = {}) =>
+const getByProjectIds = (projectIds, { withTemplates = false, sort = ['position', 'id'] } = {}) =>
   defaultFind(
     {
       projectId: projectIds,
+      ...(withTemplates ? {} : { isTemplate: false }),
     },
     { sort },
   );
 
-const getOneById = (id) => Board.findOne(id);
+const getOneById = (id, { withTemplate = false } = {}) => {
+  const criteria = {
+    id,
+  };
+
+  if (!withTemplate) {
+    criteria.isTemplate = false;
+  }
+
+  return Board.findOne(criteria);
+};
 
 const updateOne = (criteria, values) => Board.updateOne(criteria).set({ ...values });
 

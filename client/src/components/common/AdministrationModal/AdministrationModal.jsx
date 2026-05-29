@@ -16,6 +16,7 @@ import UsersPane from './UsersPane';
 import SmtpPane from './SmtpPane';
 import WebhooksPane from './WebhooksPane';
 import GoogleDrivePane from './GoogleDrivePane';
+import TemplatesPane from './TemplatesPane';
 
 import styles from './AdministrationModal.module.scss';
 
@@ -63,6 +64,12 @@ const AdministrationModal = React.memo(() => {
       context: 'title',
     }),
     render: () => <WebhooksPane />,
+  });
+  panes.push({
+    menuItem: t('common.boardTemplates', {
+      context: 'title',
+    }),
+    render: () => <TemplatesPane />,
   });
 
   const isUsersPaneActive = activeTabIndex === 0;

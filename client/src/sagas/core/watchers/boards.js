@@ -44,6 +44,9 @@ export default function* boardsWatchers() {
     takeEvery(EntryActionTypes.CURRENT_BOARD_DUPLICATE, ({ payload: { data } }) =>
       services.duplicateCurrentBoard(data),
     ),
+    takeEvery(EntryActionTypes.CURRENT_BOARD_TO_TEMPLATE_CREATE, () =>
+      services.createTemplateFromCurrentBoard(),
+    ),
     takeEvery(EntryActionTypes.BOARD_MOVE, ({ payload: { id, index } }) =>
       services.moveBoard(id, index),
     ),

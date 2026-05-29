@@ -28,6 +28,7 @@
  *         - displayCardAges
  *         - expandTaskListsByDefault
  *         - isArchived
+ *         - isTemplate
  *         - createdAt
  *         - updatedAt
  *       properties:
@@ -83,6 +84,11 @@
  *           type: boolean
  *           default: false
  *           description: Whether the board is archived
+ *           example: false
+ *         isTemplate:
+ *           type: boolean
+ *           default: false
+ *           description: Whether the board is an internal template snapshot
  *           example: false
  *         archivedAt:
  *           type: string
@@ -174,6 +180,11 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false,
       columnName: 'is_archived',
+    },
+    isTemplate: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'is_template',
     },
     archivedAt: {
       type: 'ref',

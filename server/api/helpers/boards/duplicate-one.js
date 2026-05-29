@@ -10,7 +10,13 @@ const getNextPosition = (positionables) => {
   return lastPositionable ? lastPositionable.position + POSITION_GAP : POSITION_GAP;
 };
 
-const copyBoardCustomFields = async (fromBoard, toBoard, fromProject, toProject) => {
+const copyBoardCustomFields = async (
+  fromBoard,
+  toBoard,
+  fromProject,
+  toProject,
+  detachBaseCustomFieldGroups,
+) => {
   const customFieldGroups = await CustomFieldGroup.qm.getByBoardId(fromBoard.id);
 
   if (customFieldGroups.length === 0) {
@@ -32,12 +38,36 @@ const copyBoardCustomFields = async (fromBoard, toBoard, fromProject, toProject)
     true,
   );
 
+  const preserveBaseCustomFieldGroups =
+    fromProject.id === toProject.id && !detachBaseCustomFieldGroups;
+
   const baseCustomFieldGroupsById =
-    fromProject.id === toProject.id || baseCustomFieldGroupIds.length === 0
+    preserveBaseCustomFieldGroups || baseCustomFieldGroupIds.length === 0
       ? {}
       : _.keyBy(await BaseCustomFieldGroup.qm.getByIds(baseCustomFieldGroupIds), 'id');
 
-  const ids = await sails.helpers.utils.generateIds(customFieldGroups.length + customFields.length);
+  const baseCustomFields =
+    preserveBaseCustomFieldGroups || baseCustomFieldGroupIds.length === 0
+      ? []
+      : await CustomField.qm.getByBaseCustomFieldGroupIds(Object.keys(baseCustomFieldGroupsById));
+
+  const baseCustomFieldsByBaseCustomFieldGroupId = _.groupBy(
+    baseCustomFields,
+    'baseCustomFieldGroupId',
+  );
+
+  const nextBaseCustomFieldsTotal = preserveBaseCustomFieldGroups
+    ? 0
+    : customFieldGroups.reduce((result, customFieldGroup) => {
+        const baseCustomFieldsItem =
+          baseCustomFieldsByBaseCustomFieldGroupId[customFieldGroup.baseCustomFieldGroupId];
+
+        return result + (baseCustomFieldsItem ? baseCustomFieldsItem.length : 0);
+      }, 0);
+
+  const ids = await sails.helpers.utils.generateIds(
+    customFieldGroups.length + customFields.length + nextBaseCustomFieldsTotal,
+  );
 
   const customFieldGroupIdByCustomFieldGroupId = {};
   const nextCustomFieldGroupsValues = customFieldGroups.map((customFieldGroup) => {
@@ -50,7 +80,7 @@ const copyBoardCustomFields = async (fromBoard, toBoard, fromProject, toProject)
       boardId: toBoard.id,
     };
 
-    if (fromProject.id === toProject.id) {
+    if (preserveBaseCustomFieldGroups) {
       values.baseCustomFieldGroupId = customFieldGroup.baseCustomFieldGroupId;
     } else if (customFieldGroup.baseCustomFieldGroupId && !values.name) {
       const baseCustomFieldGroup =
@@ -77,6 +107,28 @@ const copyBoardCustomFields = async (fromBoard, toBoard, fromProject, toProject)
       customFieldGroupId: customFieldGroupIdByCustomFieldGroupId[customField.customFieldGroupId],
     };
   });
+
+  if (!preserveBaseCustomFieldGroups) {
+    customFieldGroups.forEach((customFieldGroup) => {
+      const baseCustomFieldsItem =
+        baseCustomFieldsByBaseCustomFieldGroupId[customFieldGroup.baseCustomFieldGroupId];
+
+      if (!baseCustomFieldsItem) {
+        return;
+      }
+
+      baseCustomFieldsItem.forEach((customField) => {
+        const id = ids.shift();
+        customFieldIdByCustomFieldId[`${customFieldGroup.id}:${customField.id}`] = id;
+
+        nextCustomFieldsValues.push({
+          ..._.pick(customField, ['position', 'name', 'showOnFrontOfCard']),
+          id,
+          customFieldGroupId: customFieldGroupIdByCustomFieldGroupId[customFieldGroup.id],
+        });
+      });
+    });
+  }
 
   const nextCustomFields =
     nextCustomFieldsValues.length > 0 ? await CustomField.qm.create(nextCustomFieldsValues) : [];
@@ -109,6 +161,30 @@ module.exports = {
     },
     request: {
       type: 'ref',
+    },
+    copyBoardMemberships: {
+      type: 'boolean',
+      defaultsTo: true,
+    },
+    copyCardMemberships: {
+      type: 'boolean',
+      defaultsTo: true,
+    },
+    copyAttachments: {
+      type: 'boolean',
+      defaultsTo: true,
+    },
+    skipCardEvents: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
+    skipEvents: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
+    detachBaseCustomFieldGroups: {
+      type: 'boolean',
+      defaultsTo: false,
     },
   },
 
@@ -183,17 +259,21 @@ module.exports = {
           'displayCardAges',
           'expandTaskListsByDefault',
         ]),
-        ..._.pick(values, ['position', 'name']),
+        ..._.pick(values, ['position', 'name', 'isTemplate']),
         projectId: project.id,
       },
       {
         user: inputs.actorUser,
+        withMembership: !values.isTemplate,
       },
     );
 
     const defaultListByType = _.keyBy(defaultLists, 'type');
 
-    const sourceBoardMemberships = await BoardMembership.qm.getByBoardId(inputs.record.id);
+    const sourceBoardMemberships = inputs.copyBoardMemberships
+      ? await BoardMembership.qm.getByBoardId(inputs.record.id)
+      : [];
+
     const boardMembershipsValues = sourceBoardMemberships.flatMap((sourceBoardMembership) => {
       if (sourceBoardMembership.userId === inputs.actorUser.id) {
         return [];
@@ -210,7 +290,10 @@ module.exports = {
       boardMembershipsValues.length > 0
         ? await BoardMembership.qm.create(boardMembershipsValues)
         : [];
-    const boardMemberships = [boardMembership, ...copiedBoardMemberships];
+    const boardMemberships = [
+      ...(boardMembership ? [boardMembership] : []),
+      ...copiedBoardMemberships,
+    ];
 
     const sourceLabels = await Label.qm.getByBoardId(inputs.record.id);
     const labelsValues = sourceLabels.map((label) => ({
@@ -225,7 +308,13 @@ module.exports = {
       customFields: boardCustomFields,
       customFieldGroupIdByCustomFieldGroupId,
       customFieldIdByCustomFieldId,
-    } = await copyBoardCustomFields(inputs.record, board, inputs.project, project);
+    } = await copyBoardCustomFields(
+      inputs.record,
+      board,
+      inputs.project,
+      project,
+      inputs.detachBaseCustomFieldGroups,
+    );
 
     const sourceLists = await List.qm.getByBoardId(inputs.record.id);
 
@@ -277,6 +366,10 @@ module.exports = {
             customFieldGroupIdByCustomFieldGroupId,
             customFieldIdByCustomFieldId,
           },
+          copyCardMemberships: inputs.copyCardMemberships,
+          copyAttachments: inputs.copyAttachments,
+          skipEvents: inputs.skipCardEvents,
+          detachBaseCustomFieldGroups: inputs.detachBaseCustomFieldGroups,
           request: inputs.request,
         });
 
@@ -292,42 +385,46 @@ module.exports = {
       }
     }
 
-    const scoper = sails.helpers.projects.makeScoper.with({
-      record: project,
-      board,
-    });
+    if (!inputs.skipEvents) {
+      const scoper = sails.helpers.projects.makeScoper.with({
+        record: project,
+        board,
+      });
 
-    scoper.boardMemberships = boardMemberships;
-    const boardRelatedUserIds = await scoper.getBoardRelatedUserIds();
+      scoper.boardMemberships = boardMemberships;
+      const boardRelatedUserIds = await scoper.getBoardRelatedUserIds();
 
-    boardRelatedUserIds.forEach((userId) => {
-      sails.sockets.broadcast(
-        `user:${userId}`,
-        'boardCreate',
-        {
+      boardRelatedUserIds.forEach((userId) => {
+        sails.sockets.broadcast(
+          `user:${userId}`,
+          'boardCreate',
+          {
+            item: board,
+            included: {
+              boardMemberships: boardMemberships.filter(
+                (membership) => membership.userId === userId,
+              ),
+            },
+          },
+          inputs.request,
+        );
+      });
+
+      const webhooks = await Webhook.qm.getAll();
+
+      sails.helpers.utils.sendWebhooks.with({
+        webhooks,
+        event: Webhook.Events.BOARD_CREATE,
+        buildData: () => ({
           item: board,
           included: {
-            boardMemberships: boardMemberships.filter((membership) => membership.userId === userId),
+            projects: [project],
+            boardMemberships,
           },
-        },
-        inputs.request,
-      );
-    });
-
-    const webhooks = await Webhook.qm.getAll();
-
-    sails.helpers.utils.sendWebhooks.with({
-      webhooks,
-      event: Webhook.Events.BOARD_CREATE,
-      buildData: () => ({
-        item: board,
-        included: {
-          projects: [project],
-          boardMemberships,
-        },
-      }),
-      user: inputs.actorUser,
-    });
+        }),
+        user: inputs.actorUser,
+      });
+    }
 
     return {
       board,

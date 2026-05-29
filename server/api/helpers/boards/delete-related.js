@@ -25,6 +25,10 @@ module.exports = {
       boardId: boardIdOrIds,
     });
 
+    await BoardTemplate.qm.delete({
+      boardId: boardIdOrIds,
+    });
+
     await Label.qm.delete({
       boardId: boardIdOrIds,
     });

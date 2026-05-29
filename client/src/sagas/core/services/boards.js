@@ -40,22 +40,32 @@ export function* createBoard(projectId, { import: boardImport, ...data }) {
   let boardMemberships;
 
   try {
-    ({
-      item: board,
-      included: { boardMemberships },
-    } = yield boardImport
-      ? call(
-          request,
-          api.createBoardWithImport,
-          projectId,
-          {
-            ...nextData,
-            importType: boardImport.type,
-            importFile: boardImport.file,
-          },
-          localId,
-        )
-      : call(request, api.createBoard, projectId, nextData));
+    if (boardImport && boardImport.type === 'template') {
+      ({
+        item: board,
+        included: { boardMemberships },
+      } = yield call(request, api.createBoardFromTemplate, projectId, {
+        ...nextData,
+        templateId: boardImport.template.id,
+      }));
+    } else {
+      ({
+        item: board,
+        included: { boardMemberships },
+      } = yield boardImport
+        ? call(
+            request,
+            api.createBoardWithImport,
+            projectId,
+            {
+              ...nextData,
+              importType: boardImport.type,
+              importFile: boardImport.file,
+            },
+            localId,
+          )
+        : call(request, api.createBoard, projectId, nextData));
+    }
   } catch (error) {
     yield put(actions.createBoard.failure(localId, error));
     return;
@@ -65,10 +75,12 @@ export function* createBoard(projectId, { import: boardImport, ...data }) {
 
   if (watchForCreateBoardActionTask.isRunning()) {
     yield call(goToBoard, board.id);
-    yield call(openModal, ModalTypes.BOARD_SETTINGS, {
-      id: board.id,
-      openPreferences: true,
-    });
+    if (!boardImport) {
+      yield call(openModal, ModalTypes.BOARD_SETTINGS, {
+        id: board.id,
+        openPreferences: true,
+      });
+    }
   }
 }
 
@@ -366,6 +378,16 @@ export function* duplicateCurrentBoard(data) {
   yield call(duplicateBoard, boardId, data);
 }
 
+export function* createTemplateFromCurrentBoard() {
+  const { boardId } = yield select(selectors.selectPath);
+
+  try {
+    yield call(request, api.createBoardTemplate, boardId);
+  } catch {
+    /* empty */
+  }
+}
+
 export function* moveBoard(id, index) {
   const { projectId } = yield select(selectors.selectBoardById, id);
   const position = yield select(selectors.selectNextBoardPosition, projectId, index, id);
@@ -456,6 +478,7 @@ export default {
   handleBoardRestore,
   duplicateBoard,
   duplicateCurrentBoard,
+  createTemplateFromCurrentBoard,
   moveBoard,
   updateBoardContext,
   toggleArchivedBoards,
