@@ -113,6 +113,10 @@ module.exports = {
       }
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     const values = _.pick(inputs, ['text']);
 
     const comment = await sails.helpers.comments.createOne.with({

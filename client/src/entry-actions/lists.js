@@ -34,6 +34,14 @@ const handleListUpdate = (list) => ({
   },
 });
 
+const duplicateList = (id, data = {}) => ({
+  type: EntryActionTypes.LIST_DUPLICATE,
+  payload: {
+    id,
+    data,
+  },
+});
+
 const moveList = (id, index) => ({
   type: EntryActionTypes.LIST_MOVE,
   payload: {
@@ -100,6 +108,7 @@ export default {
   handleListCreate,
   updateList,
   handleListUpdate,
+  duplicateList,
   moveList,
   transferList,
   sortList,

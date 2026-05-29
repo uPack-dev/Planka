@@ -60,6 +60,9 @@
 const { idInput } = require('../../../utils/inputs');
 
 const Errors = {
+  NOT_ENOUGH_RIGHTS: {
+    notEnoughRights: 'Not enough rights',
+  },
   NOTIFICATION_SERVICE_NOT_FOUND: {
     notificationServiceNotFound: 'Notification service not found',
   },
@@ -83,6 +86,9 @@ module.exports = {
   },
 
   exits: {
+    notEnoughRights: {
+      responseType: 'forbidden',
+    },
     notificationServiceNotFound: {
       responseType: 'notFound',
     },
@@ -120,6 +126,10 @@ module.exports = {
 
       if (!isProjectManager) {
         throw Errors.NOTIFICATION_SERVICE_NOT_FOUND; // Forbidden
+      }
+
+      if (sails.helpers.boards.isReadOnly(project, board)) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
       }
 
       notificationService = await sails.helpers.notificationServices.updateOneInBoard.with({

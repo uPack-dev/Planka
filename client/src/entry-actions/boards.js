@@ -50,6 +50,59 @@ const handleBoardUpdate = (board) => ({
   },
 });
 
+const archiveBoard = (id) => ({
+  type: EntryActionTypes.BOARD_ARCHIVE,
+  payload: {
+    id,
+  },
+});
+
+const archiveCurrentBoard = () => ({
+  type: EntryActionTypes.CURRENT_BOARD_ARCHIVE,
+  payload: {},
+});
+
+const handleBoardArchive = (board) => ({
+  type: EntryActionTypes.BOARD_ARCHIVE_HANDLE,
+  payload: {
+    board,
+  },
+});
+
+const restoreBoard = (id) => ({
+  type: EntryActionTypes.BOARD_RESTORE,
+  payload: {
+    id,
+  },
+});
+
+const restoreCurrentBoard = () => ({
+  type: EntryActionTypes.CURRENT_BOARD_RESTORE,
+  payload: {},
+});
+
+const handleBoardRestore = (board) => ({
+  type: EntryActionTypes.BOARD_RESTORE_HANDLE,
+  payload: {
+    board,
+  },
+});
+
+const duplicateBoard = (id, data) => ({
+  type: EntryActionTypes.BOARD_DUPLICATE,
+  payload: {
+    id,
+    data,
+  },
+});
+
+const duplicateCurrentBoard = (data = {}) => ({
+  type: EntryActionTypes.CURRENT_BOARD_DUPLICATE,
+  payload: {
+    data,
+  },
+});
+
 const moveBoard = (id, index) => ({
   type: EntryActionTypes.BOARD_MOVE,
   payload: {
@@ -62,6 +115,13 @@ const updateContextInCurrentBoard = (value) => ({
   type: EntryActionTypes.CONTEXT_IN_CURRENT_BOARD_UPDATE,
   payload: {
     value,
+  },
+});
+
+const toggleArchivedBoards = (isVisible) => ({
+  type: EntryActionTypes.ARCHIVED_BOARDS_TOGGLE,
+  payload: {
+    isVisible,
   },
 });
 
@@ -100,8 +160,17 @@ export default {
   updateBoard,
   updateCurrentBoard,
   handleBoardUpdate,
+  archiveBoard,
+  archiveCurrentBoard,
+  handleBoardArchive,
+  restoreBoard,
+  restoreCurrentBoard,
+  handleBoardRestore,
+  duplicateBoard,
+  duplicateCurrentBoard,
   moveBoard,
   updateContextInCurrentBoard,
+  toggleArchivedBoards,
   updateViewInCurrentBoard,
   searchInCurrentBoard,
   deleteBoard,

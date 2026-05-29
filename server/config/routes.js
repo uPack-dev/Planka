@@ -138,6 +138,8 @@ module.exports.routes = {
   'POST /api/projects': 'projects/create',
   'GET /api/projects/:id': 'projects/show',
   'PATCH /api/projects/:id': 'projects/update',
+  'POST /api/projects/:id/archive': 'projects/archive',
+  'POST /api/projects/:id/restore': 'projects/restore',
   'DELETE /api/projects/:id': 'projects/delete',
 
   'GET /api/calendar/cards': 'calendar/cards',
@@ -157,6 +159,9 @@ module.exports.routes = {
   'POST /api/projects/:projectId/boards': 'boards/create',
   'GET /api/boards/:id': 'boards/show',
   'PATCH /api/boards/:id': 'boards/update',
+  'POST /api/boards/:id/archive': 'boards/archive',
+  'POST /api/boards/:id/restore': 'boards/restore',
+  'POST /api/boards/:id/duplicate': 'boards/duplicate',
   'DELETE /api/boards/:id': 'boards/delete',
 
   'POST /api/boards/:boardId/board-memberships': 'board-memberships/create',
@@ -171,6 +176,7 @@ module.exports.routes = {
   'GET /api/lists/:id': 'lists/show',
   'PATCH /api/lists/:id': 'lists/update',
   'POST /api/lists/:id/sort': 'lists/sort',
+  'POST /api/lists/:id/duplicate': 'lists/duplicate',
   'POST /api/lists/:id/move-cards': 'lists/move-cards',
   'POST /api/lists/:id/clear': 'lists/clear',
   'DELETE /api/lists/:id': 'lists/delete',

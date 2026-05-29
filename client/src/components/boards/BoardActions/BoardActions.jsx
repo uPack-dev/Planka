@@ -19,7 +19,8 @@ import BoardMemberships from '../../board-memberships/BoardMemberships';
 import styles from './BoardActions.module.scss';
 
 const BoardActions = React.memo(() => {
-  const boardContext = useSelector((state) => selectors.selectCurrentBoard(state).context);
+  const board = useSelector(selectors.selectCurrentBoard);
+  const boardContext = board.context;
 
   const withContextTitle = boardContext !== BoardContexts.BOARD;
 
@@ -47,6 +48,14 @@ const BoardActions = React.memo(() => {
             <div className={styles.contextTitle}>
               <Icon name={BoardContextIcons[boardContext]} className={styles.contextTitleIcon} />
               {t(`common.${boardContext}`)}
+            </div>
+          </div>
+        )}
+        {board.isArchived && (
+          <div className={styles.action}>
+            <div className={styles.contextTitle}>
+              <Icon name="archive" className={styles.contextTitleIcon} />
+              {t('common.archivedBoard')}
             </div>
           </div>
         )}

@@ -26,8 +26,10 @@ const GridView = React.memo(
     const clipboard = useSelector(selectors.selectClipboard);
 
     const { canAddCard, canPasteCard } = useSelector((state) => {
+      const isReadOnly = selectors.selectIsCurrentBoardReadOnly(state);
       const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
-      const isEditor = !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
+      const isEditor =
+        !isReadOnly && !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
 
       return {
         canAddCard: isEditor,

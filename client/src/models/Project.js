@@ -23,6 +23,11 @@ export default class extends BaseModel {
     coverBackgroundGradient: attr(),
     coverBackgroundColor: attr(),
     isHidden: attr(),
+    isArchived: attr({
+      getDefault: () => false,
+    }),
+    archivedAt: attr(),
+    archivedByUserId: attr(),
     isFavorite: attr({
       getDefault: () => false,
     }),
@@ -93,6 +98,8 @@ export default class extends BaseModel {
       case ActionTypes.PROJECT_CREATE__SUCCESS:
       case ActionTypes.PROJECT_CREATE_HANDLE:
       case ActionTypes.PROJECT_UPDATE__SUCCESS:
+      case ActionTypes.PROJECT_ARCHIVE__SUCCESS:
+      case ActionTypes.PROJECT_RESTORE__SUCCESS:
         Project.upsert(payload.project);
 
         break;
@@ -119,6 +126,25 @@ export default class extends BaseModel {
 
         break;
       }
+      case ActionTypes.PROJECT_ARCHIVE_HANDLE: {
+        const projectModel = Project.withId(payload.project.id);
+
+        if (projectModel) {
+          if (payload.isAvailable) {
+            Project.upsert(payload.project);
+          } else {
+            projectModel.deleteWithRelated(true);
+          }
+        } else if (payload.isAvailable) {
+          Project.upsert(payload.project);
+        }
+
+        break;
+      }
+      case ActionTypes.PROJECT_RESTORE_HANDLE:
+        Project.upsert(payload.project);
+
+        break;
       case ActionTypes.PROJECT_DELETE:
         Project.withId(payload.id).deleteWithRelated();
 
@@ -235,6 +261,10 @@ export default class extends BaseModel {
   }
 
   isAvailableForUser(userModel) {
+    if (this.isArchived) {
+      return this.isExternalAccessibleForUser(userModel);
+    }
+
     return (
       this.isExternalAccessibleForUser(userModel) ||
       this.hasMembershipWithUserIdInAnyBoard(userModel.id)

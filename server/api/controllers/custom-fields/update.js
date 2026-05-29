@@ -125,6 +125,10 @@ module.exports = {
         throw Errors.CUSTOM_FIELD_NOT_FOUND; // Forbidden
       }
 
+      if (project.isArchived) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+
       customField = await sails.helpers.customFields.updateOneInBaseCustomFieldGroup.with({
         values,
         project,
@@ -144,6 +148,10 @@ module.exports = {
       }
 
       if (boardMembership.role !== BoardMembership.Roles.EDITOR) {
+        throw Errors.NOT_ENOUGH_RIGHTS;
+      }
+
+      if (sails.helpers.boards.isReadOnly(project, board)) {
         throw Errors.NOT_ENOUGH_RIGHTS;
       }
 

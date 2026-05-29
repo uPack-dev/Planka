@@ -38,6 +38,13 @@ const Item = React.memo(({ id }) => {
   );
 
   const { canEdit, canDelete } = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return {
+        canEdit: false,
+        canDelete: false,
+      };
+    }
+
     const { listId } = selectors.selectCurrentCard(state);
     const list = selectListById(state, listId);
 

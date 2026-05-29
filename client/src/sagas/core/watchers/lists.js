@@ -22,6 +22,9 @@ export default function* listsWatchers() {
     takeEvery(EntryActionTypes.LIST_UPDATE_HANDLE, ({ payload: { list } }) =>
       services.handleListUpdate(list),
     ),
+    takeEvery(EntryActionTypes.LIST_DUPLICATE, ({ payload: { id, data } }) =>
+      services.duplicateList(id, data),
+    ),
     takeEvery(EntryActionTypes.LIST_MOVE, ({ payload: { id, index } }) =>
       services.moveList(id, index),
     ),

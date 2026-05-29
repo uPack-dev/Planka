@@ -18,6 +18,7 @@ const TITLE_BY_GROUP = {
   [ProjectGroups.TEAM]: 'common.team',
   [ProjectGroups.SHARED_WITH_ME]: 'common.sharedWithMe',
   [ProjectGroups.OTHERS]: 'common.others',
+  [ProjectGroups.ARCHIVED]: 'common.archivedProjects',
 };
 
 const DEFAULT_TYPE_BY_GROUP = {
@@ -27,6 +28,8 @@ const DEFAULT_TYPE_BY_GROUP = {
 
 const GroupedProjectsView = React.memo(() => {
   const projectIdsByGroup = useSelector(selectors.selectFilteredProjctIdsByGroupForCurrentUser);
+  const archivedProjectIds = useSelector(selectors.selectFilteredArchivedProjectIdsForCurrentUser);
+  const isArchivedProjectsVisible = useSelector(selectors.selectIsArchivedProjectsVisible);
 
   const canAdd = useSelector((state) => {
     const user = selectors.selectCurrentUser(state);
@@ -41,6 +44,10 @@ const GroupedProjectsView = React.memo(() => {
     },
     [dispatch],
   );
+
+  const handleToggleArchived = useCallback(() => {
+    dispatch(entryActions.toggleArchivedProjects(!isArchivedProjectsVisible));
+  }, [isArchivedProjectsVisible, dispatch]);
 
   return (
     <>
@@ -67,6 +74,16 @@ const GroupedProjectsView = React.memo(() => {
               titleIcon={ProjectGroupIcons[group]}
             />
           ),
+      )}
+      {archivedProjectIds.length > 0 && (
+        <Projects
+          withTypeIndicator
+          ids={archivedProjectIds}
+          title={TITLE_BY_GROUP[ProjectGroups.ARCHIVED]}
+          titleIcon={ProjectGroupIcons[ProjectGroups.ARCHIVED]}
+          isCollapsed={!isArchivedProjectsVisible}
+          onToggle={handleToggleArchived}
+        />
       )}
     </>
   );

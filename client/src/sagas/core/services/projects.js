@@ -37,6 +37,10 @@ export function* toggleHiddenProjects(isVisible) {
   yield put(actions.toggleHiddenProjects(isVisible));
 }
 
+export function* toggleArchivedProjects(isVisible) {
+  yield put(actions.toggleArchivedProjects(isVisible));
+}
+
 export function* createProject(data) {
   yield put(actions.createProject(omit(data, 'type')));
 
@@ -261,6 +265,106 @@ export function* handleProjectUpdate(project) {
   }
 }
 
+export function* archiveProject(id) {
+  yield put(actions.archiveProject(id));
+
+  let project;
+  try {
+    ({ item: project } = yield call(request, api.archiveProject, id));
+  } catch (error) {
+    yield put(actions.archiveProject.failure(id, error));
+    return;
+  }
+
+  yield put(actions.archiveProject.success(project));
+}
+
+export function* archiveCurrentProject() {
+  const { projectId } = yield select(selectors.selectPath);
+
+  yield call(archiveProject, projectId);
+}
+
+export function* handleProjectArchive(project) {
+  const { projectId } = yield select(selectors.selectPath);
+  const boardIds = yield select(selectors.selectBoardIdsByProjectId, project.id);
+
+  const isAvailable = yield select(
+    selectors.selectIsProjectWithIdExternalAccessibleForCurrentUser,
+    project.id,
+  );
+
+  yield put(actions.handleProjectArchive(project, boardIds || [], isAvailable));
+
+  if (!isAvailable && project.id === projectId) {
+    yield call(goToRoot);
+  }
+}
+
+export function* restoreProject(id) {
+  yield put(actions.restoreProject(id));
+
+  let project;
+  try {
+    ({ item: project } = yield call(request, api.restoreProject, id));
+  } catch (error) {
+    yield put(actions.restoreProject.failure(id, error));
+    return;
+  }
+
+  yield put(actions.restoreProject.success(project));
+}
+
+export function* restoreCurrentProject() {
+  const { projectId } = yield select(selectors.selectPath);
+
+  yield call(restoreProject, projectId);
+}
+
+export function* handleProjectRestore({ id }) {
+  let project;
+  let users;
+  let projectManagers;
+  let backgroundImages;
+  let baseCustomFieldGroups;
+  let boards;
+  let boardMemberships;
+  let customFields;
+  let notificationServices;
+
+  try {
+    ({
+      item: project,
+      included: {
+        users,
+        projectManagers,
+        backgroundImages,
+        baseCustomFieldGroups,
+        boards,
+        boardMemberships,
+        customFields,
+        notificationServices,
+      },
+    } = yield call(request, api.getProject, id));
+  } catch {
+    return;
+  }
+
+  yield put(
+    actions.handleProjectRestore(
+      project,
+      users,
+      projectManagers,
+      backgroundImages,
+      baseCustomFieldGroups,
+      boards,
+      boardMemberships,
+      customFields,
+      notificationServices,
+    ),
+  );
+}
+
 export function* deleteProject(id) {
   const { projectId } = yield select(selectors.selectPath);
 
@@ -301,11 +405,18 @@ export default {
   searchProjects,
   updateProjectsOrder,
   toggleHiddenProjects,
+  toggleArchivedProjects,
   createProject,
   handleProjectCreate,
   updateProject,
   updateCurrentProject,
   handleProjectUpdate,
+  archiveProject,
+  archiveCurrentProject,
+  handleProjectArchive,
+  restoreProject,
+  restoreCurrentProject,
+  handleProjectRestore,
   deleteProject,
   deleteCurrentProject,
   handleProjectDelete,

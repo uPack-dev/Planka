@@ -7,6 +7,8 @@ const defaultFind = (criteria) => BoardMembership.find(criteria).sort('id');
 
 /* Query methods */
 
+const create = (arrayOfValues) => BoardMembership.createEach(arrayOfValues).fetch();
+
 const createOne = (values) => BoardMembership.create({ ...values }).fetch();
 
 const getByIds = (ids) => defaultFind(ids);
@@ -83,6 +85,7 @@ const delete_ = (criteria) => BoardMembership.destroy(criteria).fetch();
 const deleteOne = (criteria) => BoardMembership.destroyOne(criteria);
 
 module.exports = {
+  create,
   createOne,
   getByIds,
   getByProjectId,

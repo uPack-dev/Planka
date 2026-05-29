@@ -30,9 +30,12 @@ export default class extends BaseModel {
       case ActionTypes.CORE_INITIALIZE:
       case ActionTypes.USER_UPDATE_HANDLE:
       case ActionTypes.PROJECT_UPDATE_HANDLE:
+      case ActionTypes.PROJECT_RESTORE_HANDLE:
       case ActionTypes.PROJECT_MANAGER_CREATE_HANDLE:
       case ActionTypes.BOARD_MEMBERSHIP_CREATE_HANDLE:
       case ActionTypes.LIST_UPDATE_HANDLE:
+      case ActionTypes.BOARD_DUPLICATE__SUCCESS:
+      case ActionTypes.LIST_DUPLICATE__SUCCESS:
       case ActionTypes.CARD_UPDATE_HANDLE:
       case ActionTypes.CARD_TRANSFER__FAILURE:
         if (payload.taskLists) {

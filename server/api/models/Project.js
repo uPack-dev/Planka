@@ -30,6 +30,7 @@
  *         - coverBackgroundGradient
  *         - coverBackgroundColor
  *         - isHidden
+ *         - isArchived
  *         - createdAt
  *         - updatedAt
  *       properties:
@@ -100,6 +101,22 @@
  *           default: false
  *           description: Whether the project is hidden
  *           example: false
+ *         isArchived:
+ *           type: boolean
+ *           default: false
+ *           description: Whether the project is archived
+ *           example: false
+ *         archivedAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: When the project was archived
+ *           example: 2024-01-01T00:00:00.000Z
+ *         archivedByUserId:
+ *           type: string
+ *           nullable: true
+ *           description: ID of the user who archived the project
+ *           example: "1357158568008091267"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -211,6 +228,15 @@ module.exports = {
       defaultsTo: false, // TODO: implement via normalizeValues?
       columnName: 'is_hidden',
     },
+    isArchived: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'is_archived',
+    },
+    archivedAt: {
+      type: 'ref',
+      columnName: 'archived_at',
+    },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗
@@ -231,6 +257,10 @@ module.exports = {
     coverBackgroundImageId: {
       model: 'BackgroundImage',
       columnName: 'cover_background_image_id',
+    },
+    archivedByUserId: {
+      model: 'User',
+      columnName: 'archived_by_user_id',
     },
     managerUsers: {
       collection: 'User',

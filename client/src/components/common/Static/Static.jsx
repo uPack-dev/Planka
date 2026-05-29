@@ -25,10 +25,19 @@ const Static = React.memo(() => {
   const board = useSelector(selectors.selectCurrentBoard);
   const isFetching = useSelector(selectors.selectIsContentFetching);
   const isFavoritesActive = useSelector(selectors.selectIsFavoritesActiveForCurrentUser);
-
-  const canAddBoard = useSelector((state) =>
-    selectors.selectIsCurrentUserManagerForCurrentProject(state),
+  const isArchivedBoardsVisible = useSelector(
+    selectors.selectIsArchivedBoardsVisibleForCurrentProject,
   );
+
+  const canAddBoard = useSelector((state) => {
+    const project = selectors.selectCurrentProject(state);
+
+    return (
+      !!project &&
+      !project.isArchived &&
+      selectors.selectIsCurrentUserManagerForCurrentProject(state)
+    );
+  });
 
   const [t] = useTranslation();
 
@@ -61,6 +70,7 @@ const Static = React.memo(() => {
   } else if (board === undefined) {
     wrapperClassNames = [
       isFavoritesActive ? styles.wrapperProjectWithFavorites : styles.wrapperProject,
+      isArchivedBoardsVisible && styles.wrapperWithArchivedBoards,
       styles.wrapperFlex,
     ];
 
@@ -89,12 +99,14 @@ const Static = React.memo(() => {
     wrapperClassNames = [
       styles.wrapperLoader,
       isFavoritesActive ? styles.wrapperProjectWithFavorites : styles.wrapperProject,
+      isArchivedBoardsVisible && styles.wrapperWithArchivedBoards,
     ];
 
     contentNode = <Loader active size="big" />;
   } else {
     wrapperClassNames = [
       isFavoritesActive ? styles.wrapperBoardWithFavorites : styles.wrapperBoard,
+      isArchivedBoardsVisible && styles.wrapperWithArchivedBoards,
       [BoardViews.CALENDAR, BoardViews.GRID, BoardViews.LIST].includes(board.view) &&
         styles.wrapperVertical,
       styles.wrapperFlex,

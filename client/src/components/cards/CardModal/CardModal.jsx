@@ -34,6 +34,10 @@ const CardModal = React.memo(() => {
   const prevCardId = useSelector(selectors.selectPrevCardId);
 
   const canEdit = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     const list = selectListById(state, card.listId);
 
     if (isListArchiveOrTrash(list)) {

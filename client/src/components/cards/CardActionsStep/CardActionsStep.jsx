@@ -70,10 +70,12 @@ const CardActionsStep = React.memo(({ cardId, defaultStep, onNameEdit, onClose }
     canUseMembers,
     canUseLabels,
   } = useSelector((state) => {
+    const isReadOnly = selectors.selectIsCurrentBoardReadOnly(state);
     const isManager = selectors.selectIsCurrentUserManagerForCurrentProject(state);
 
     const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
-    const isEditor = !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
+    const isEditor =
+      !isReadOnly && !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
 
     if (isListArchiveOrTrash(list)) {
       return {
@@ -81,7 +83,7 @@ const CardActionsStep = React.memo(({ cardId, defaultStep, onNameEdit, onClose }
         canEditName: false,
         canEditDueDate: false,
         canEditStopwatch: false,
-        canCopy: isManager || isEditor,
+        canCopy: !isReadOnly && (isManager || isEditor),
         canCut: isEditor,
         canDuplicate: false,
         canMove: false,
@@ -98,7 +100,7 @@ const CardActionsStep = React.memo(({ cardId, defaultStep, onNameEdit, onClose }
       canEditName: isEditor,
       canEditDueDate: isEditor,
       canEditStopwatch: isEditor,
-      canCopy: isManager || isEditor,
+      canCopy: !isReadOnly && (isManager || isEditor),
       canCut: isEditor,
       canDuplicate: isEditor,
       canMove: isEditor,

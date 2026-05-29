@@ -45,6 +45,9 @@
 const { idInput } = require('../../../utils/inputs');
 
 const Errors = {
+  NOT_ENOUGH_RIGHTS: {
+    notEnoughRights: 'Not enough rights',
+  },
   PROJECT_NOT_FOUND: {
     projectNotFound: 'Project not found',
   },
@@ -62,6 +65,9 @@ module.exports = {
   },
 
   exits: {
+    notEnoughRights: {
+      responseType: 'forbidden',
+    },
     projectNotFound: {
       responseType: 'notFound',
     },
@@ -83,6 +89,10 @@ module.exports = {
 
     if (!isProjectManager) {
       throw Errors.PROJECT_NOT_FOUND; // Forbidden
+    }
+
+    if (project.isArchived) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     project = await sails.helpers.projects.deleteOne

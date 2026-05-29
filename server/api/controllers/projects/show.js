@@ -132,6 +132,12 @@ module.exports = {
     }
 
     const isProjectManager = await sails.helpers.users.isProjectManager(currentUser.id, project.id);
+    const isAdminWithAccess =
+      currentUser.role === User.Roles.ADMIN && !project.ownerProjectManagerId;
+
+    if (project.isArchived && !isProjectManager && !isAdminWithAccess) {
+      throw Errors.PROJECT_NOT_FOUND; // Forbidden
+    }
 
     const boardMemberships = await BoardMembership.qm.getByProjectIdAndUserId(
       project.id,
@@ -146,7 +152,7 @@ module.exports = {
         }
 
         const boardIds = sails.helpers.utils.mapRecords(boardMemberships, 'boardId');
-        boards = await Board.qm.getByIds(boardIds);
+        boards = (await Board.qm.getByIds(boardIds)).filter((board) => !board.isArchived);
       }
     }
 
@@ -171,7 +177,7 @@ module.exports = {
 
     let notificationServices = [];
     if (isProjectManager) {
-      boardIds = sails.helpers.utils.mapRecords(boards);
+      const boardIds = sails.helpers.utils.mapRecords(boards);
       notificationServices = await NotificationService.qm.getByBoardIds(boardIds);
     }
 

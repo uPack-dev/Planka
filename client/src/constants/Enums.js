@@ -36,6 +36,7 @@ export const ProjectGroups = {
   TEAM: 'team',
   SHARED_WITH_ME: 'sharedWithMe',
   OTHERS: 'others',
+  ARCHIVED: 'archived',
 };
 
 export const ProjectTypes = {

@@ -7,6 +7,8 @@ const defaultFind = (criteria, { sort = 'id' } = {}) => Label.find(criteria).sor
 
 /* Query methods */
 
+const create = (arrayOfValues) => Label.createEach(arrayOfValues).fetch();
+
 const createOne = (values) => Label.create({ ...values }).fetch();
 
 const getByIds = (ids) => defaultFind(ids);
@@ -53,6 +55,7 @@ const delete_ = (criteria) => Label.destroy(criteria).fetch();
 const deleteOne = (criteria) => Label.destroyOne(criteria);
 
 module.exports = {
+  create,
   createOne,
   getByIds,
   getByBoardId,

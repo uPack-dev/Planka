@@ -32,6 +32,10 @@ const KanbanContent = React.memo(() => {
       return isEditModeEnabled;
     }
 
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
     return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
   });

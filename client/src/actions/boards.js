@@ -119,11 +119,126 @@ const handleBoardUpdate = (board) => ({
   },
 });
 
+const archiveBoard = (id) => ({
+  type: ActionTypes.BOARD_ARCHIVE,
+  payload: {
+    id,
+  },
+});
+
+archiveBoard.success = (board) => ({
+  type: ActionTypes.BOARD_ARCHIVE__SUCCESS,
+  payload: {
+    board,
+  },
+});
+
+archiveBoard.failure = (id, error) => ({
+  type: ActionTypes.BOARD_ARCHIVE__FAILURE,
+  payload: {
+    id,
+    error,
+  },
+});
+
+const handleBoardArchive = (board, isAvailable) => ({
+  type: ActionTypes.BOARD_ARCHIVE_HANDLE,
+  payload: {
+    board,
+    isAvailable,
+  },
+});
+
+const restoreBoard = (id) => ({
+  type: ActionTypes.BOARD_RESTORE,
+  payload: {
+    id,
+  },
+});
+
+restoreBoard.success = (board) => ({
+  type: ActionTypes.BOARD_RESTORE__SUCCESS,
+  payload: {
+    board,
+  },
+});
+
+restoreBoard.failure = (id, error) => ({
+  type: ActionTypes.BOARD_RESTORE__FAILURE,
+  payload: {
+    id,
+    error,
+  },
+});
+
+const handleBoardRestore = (board) => ({
+  type: ActionTypes.BOARD_RESTORE_HANDLE,
+  payload: {
+    board,
+  },
+});
+
+const duplicateBoard = (id, data) => ({
+  type: ActionTypes.BOARD_DUPLICATE,
+  payload: {
+    id,
+    data,
+  },
+});
+
+duplicateBoard.success = (
+  board,
+  boardMemberships,
+  labels,
+  lists,
+  cards,
+  cardMemberships,
+  cardLabels,
+  taskLists,
+  tasks,
+  attachments,
+  customFieldGroups,
+  customFields,
+  customFieldValues,
+) => ({
+  type: ActionTypes.BOARD_DUPLICATE__SUCCESS,
+  payload: {
+    board,
+    boardMemberships,
+    labels,
+    lists,
+    cards,
+    cardMemberships,
+    cardLabels,
+    taskLists,
+    tasks,
+    attachments,
+    customFieldGroups,
+    customFields,
+    customFieldValues,
+  },
+});
+
+duplicateBoard.failure = (id, error) => ({
+  type: ActionTypes.BOARD_DUPLICATE__FAILURE,
+  payload: {
+    id,
+    error,
+  },
+});
+
 const updateBoardContext = (id, value) => ({
   type: ActionTypes.BOARD_CONTEXT_UPDATE,
   payload: {
     id,
     value,
+  },
+});
+
+const toggleArchivedBoards = (isVisible) => ({
+  type: ActionTypes.ARCHIVED_BOARDS_TOGGLE,
+  payload: {
+    isVisible,
   },
 });
 
@@ -171,7 +286,13 @@ export default {
   fetchBoard,
   updateBoard,
   handleBoardUpdate,
+  archiveBoard,
+  handleBoardArchive,
+  restoreBoard,
+  handleBoardRestore,
+  duplicateBoard,
   updateBoardContext,
+  toggleArchivedBoards,
   searchInBoard,
   deleteBoard,
   handleBoardDelete,

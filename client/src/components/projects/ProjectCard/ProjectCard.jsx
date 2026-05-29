@@ -108,7 +108,8 @@ const ProjectCard = React.memo(
       );
     }, [project, dispatch]);
 
-    const withSidebar = withTypeIndicator || (withFavoriteButton && !project.isHidden);
+    const withSidebar =
+      withTypeIndicator || (withFavoriteButton && !project.isHidden && !project.isArchived);
 
     return (
       <div
@@ -117,6 +118,7 @@ const ProjectCard = React.memo(
           styles.wrapper,
           styles[`wrapper${upperFirst(size)}`],
           project.isHidden && styles.wrapperHidden,
+          project.isArchived && styles.wrapperArchived,
         )}
       >
         <Link
@@ -187,7 +189,7 @@ const ProjectCard = React.memo(
             </div>
           )}
         </Link>
-        {withFavoriteButton && !project.isHidden && (
+        {withFavoriteButton && !project.isHidden && !project.isArchived && (
           <Button
             className={classNames(
               styles.favoriteButton,

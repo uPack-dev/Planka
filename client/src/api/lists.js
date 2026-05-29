@@ -36,6 +36,16 @@ const sortList = (id, data, headers) =>
     },
   }));
 
+const duplicateList = (id, data, headers) =>
+  socket.post(`/lists/${id}/duplicate`, data, headers).then((body) => ({
+    ...body,
+    included: {
+      ...body.included,
+      cards: body.included.cards.map(transformCard),
+      attachments: body.included.attachments.map(transformAttachment),
+    },
+  }));
+
 const moveListCards = (id, data, headers) =>
   socket.post(`/lists/${id}/move-cards`, data, headers).then((body) => ({
     ...body,
@@ -74,6 +84,7 @@ export default {
   getList,
   updateList,
   sortList,
+  duplicateList,
   moveListCards,
   clearList,
   deleteList,

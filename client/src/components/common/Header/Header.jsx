@@ -48,8 +48,24 @@ const Header = React.memo(() => {
 
     const isAdminInSharedProject = user.role === UserRoles.ADMIN && !project.ownerProjectManagerId;
     const isManager = selectors.selectIsCurrentUserManagerForCurrentProject(state);
+    const isBoardReadOnly = board && selectors.selectIsCurrentBoardReadOnly(state);
+    const canManageProject = isAdminInSharedProject || isManager;
 
-    if (isAdminInSharedProject || isManager) {
+    if (project.isArchived && canManageProject) {
+      return {
+        withEditModeToggler: false,
+        canEditProject: true,
+      };
+    }
+
+    if (isBoardReadOnly) {
+      return {
+        withEditModeToggler: false,
+        canEditProject: canManageProject,
+      };
+    }
+
+    if (canManageProject) {
       return {
         withEditModeToggler: true,
         canEditProject: isEditModeEnabled,

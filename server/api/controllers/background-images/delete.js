@@ -45,6 +45,9 @@
 const { idInput } = require('../../../utils/inputs');
 
 const Errors = {
+  NOT_ENOUGH_RIGHTS: {
+    notEnoughRights: 'Not enough rights',
+  },
   BACKGROUND_IMAGE_NOT_FOUND: {
     backgroundImageNotFound: 'Background image not found',
   },
@@ -59,6 +62,9 @@ module.exports = {
   },
 
   exits: {
+    notEnoughRights: {
+      responseType: 'forbidden',
+    },
     backgroundImageNotFound: {
       responseType: 'notFound',
     },
@@ -78,6 +84,10 @@ module.exports = {
 
     if (!isProjectManager) {
       throw Errors.BACKGROUND_IMAGE_NOT_FOUND; // Forbidden
+    }
+
+    if (project.isArchived) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
     backgroundImage = await sails.helpers.backgroundImages.deleteOne.with({

@@ -28,6 +28,12 @@ export const selectProjectsOrder = ({ core: { projectsOrder } }) => projectsOrde
 export const selectIsHiddenProjectsVisible = ({ core: { isHiddenProjectsVisible } }) =>
   isHiddenProjectsVisible;
 
+export const selectIsArchivedProjectsVisible = ({ core: { isArchivedProjectsVisible } }) =>
+  isArchivedProjectsVisible;
+
+export const selectIsArchivedBoardsVisible = ({ core: { isArchivedBoardsVisible } }) =>
+  isArchivedBoardsVisible;
+
 export default {
   selectIsContentFetching,
   selectIsLogouting,
@@ -41,4 +47,6 @@ export default {
   selectProjectsSearch,
   selectProjectsOrder,
   selectIsHiddenProjectsVisible,
+  selectIsArchivedProjectsVisible,
+  selectIsArchivedBoardsVisible,
 };

@@ -46,6 +46,10 @@ const Card = React.memo(({ id, isInline }) => {
   });
 
   const canUseActions = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     const isManager = selectors.selectIsCurrentUserManagerForCurrentProject(state);
 
     if (isManager) {

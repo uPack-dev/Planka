@@ -3,7 +3,7 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Tab } from 'semantic-ui-react';
@@ -19,7 +19,10 @@ import BaseCustomFieldGroupsPane from './BaseCustomFieldGroupsPane';
 import styles from './ProjectSettingsModal.module.scss';
 
 const ProjectSettingsModal = React.memo(() => {
+  const project = useSelector(selectors.selectCurrentProject);
   const withManagablePanes = useSelector(selectors.selectIsCurrentUserManagerForCurrentProject);
+  const isArchived = !!(project && project.isArchived);
+  const withEditablePanes = withManagablePanes && !isArchived;
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -33,6 +36,12 @@ const ProjectSettingsModal = React.memo(() => {
     setActiveTabIndex(activeIndex);
   }, []);
 
+  useEffect(() => {
+    if (isArchived) {
+      setActiveTabIndex(0);
+    }
+  }, [isArchived]);
+
   const [ClosableModal] = useClosableModal();
 
   const panes = [
@@ -42,15 +51,18 @@ const ProjectSettingsModal = React.memo(() => {
       }),
       render: () => <GeneralPane />,
     },
-    {
+  ];
+
+  if (!isArchived) {
+    panes.push({
       menuItem: t('common.managers', {
         context: 'title',
       }),
       render: () => <ManagersPane />,
-    },
-  ];
+    });
+  }
 
-  if (withManagablePanes) {
+  if (withEditablePanes) {
     panes.push(
       {
         menuItem: t('common.background', {
@@ -67,7 +79,8 @@ const ProjectSettingsModal = React.memo(() => {
     );
   }
 
-  const isBackgroundPaneActive = withManagablePanes && activeTabIndex === 2;
+  const activeIndex = activeTabIndex < panes.length ? activeTabIndex : 0;
+  const isBackgroundPaneActive = withEditablePanes && activeIndex === 2;
 
   return (
     <ClosableModal
@@ -83,6 +96,7 @@ const ProjectSettingsModal = React.memo(() => {
             secondary: true,
             pointing: true,
           }}
+          activeIndex={activeIndex}
           panes={panes}
           onTabChange={handleTabChange}
         />

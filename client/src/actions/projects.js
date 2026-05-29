@@ -26,6 +26,13 @@ const toggleHiddenProjects = (isVisible) => ({
   },
 });
 
+const toggleArchivedProjects = (isVisible) => ({
+  type: ActionTypes.ARCHIVED_PROJECTS_TOGGLE,
+  payload: {
+    isVisible,
+  },
+});
+
 const createProject = (data) => ({
   type: ActionTypes.PROJECT_CREATE,
   payload: {
@@ -149,6 +156,84 @@ const handleProjectUpdate = (
   },
 });
 
+const archiveProject = (id) => ({
+  type: ActionTypes.PROJECT_ARCHIVE,
+  payload: {
+    id,
+  },
+});
+
+archiveProject.success = (project) => ({
+  type: ActionTypes.PROJECT_ARCHIVE__SUCCESS,
+  payload: {
+    project,
+  },
+});
+
+archiveProject.failure = (id, error) => ({
+  type: ActionTypes.PROJECT_ARCHIVE__FAILURE,
+  payload: {
+    id,
+    error,
+  },
+});
+
+const handleProjectArchive = (project, boardIds, isAvailable) => ({
+  type: ActionTypes.PROJECT_ARCHIVE_HANDLE,
+  payload: {
+    project,
+    boardIds,
+    isAvailable,
+  },
+});
+
+const restoreProject = (id) => ({
+  type: ActionTypes.PROJECT_RESTORE,
+  payload: {
+    id,
+  },
+});
+
+restoreProject.success = (project) => ({
+  type: ActionTypes.PROJECT_RESTORE__SUCCESS,
+  payload: {
+    project,
+  },
+});
+
+restoreProject.failure = (id, error) => ({
+  type: ActionTypes.PROJECT_RESTORE__FAILURE,
+  payload: {
+    id,
+    error,
+  },
+});
+
+const handleProjectRestore = (
+  project,
+  users,
+  projectManagers,
+  backgroundImages,
+  baseCustomFieldGroups,
+  boards,
+  boardMemberships,
+  customFields,
+  notificationServices,
+) => ({
+  type: ActionTypes.PROJECT_RESTORE_HANDLE,
+  payload: {
+    project,
+    users,
+    projectManagers,
+    backgroundImages,
+    baseCustomFieldGroups,
+    boards,
+    boardMemberships,
+    customFields,
+    notificationServices,
+  },
+});
+
 const deleteProject = (id) => ({
   type: ActionTypes.PROJECT_DELETE,
   payload: {
@@ -182,10 +267,15 @@ export default {
   searchProjects,
   updateProjectsOrder,
   toggleHiddenProjects,
+  toggleArchivedProjects,
   createProject,
   handleProjectCreate,
   updateProject,
   handleProjectUpdate,
+  archiveProject,
+  handleProjectArchive,
+  restoreProject,
+  handleProjectRestore,
   deleteProject,
   handleProjectDelete,
 };

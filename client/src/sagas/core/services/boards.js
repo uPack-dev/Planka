@@ -175,6 +175,197 @@ export function* handleBoardUpdate(board) {
   yield put(actions.handleBoardUpdate(board));
 }
 
+export function* archiveBoard(id) {
+  yield put(actions.archiveBoard(id));
+
+  let board;
+  try {
+    ({ item: board } = yield call(request, api.archiveBoard, id));
+  } catch (error) {
+    yield put(actions.archiveBoard.failure(id, error));
+    return;
+  }
+
+  yield put(actions.archiveBoard.success(board));
+}
+
+export function* archiveCurrentBoard() {
+  const { boardId } = yield select(selectors.selectPath);
+
+  yield call(archiveBoard, boardId);
+}
+
+export function* handleBoardArchive(board) {
+  const { boardId } = yield select(selectors.selectPath);
+
+  const isAvailable = yield select(
+    selectors.selectIsProjectWithIdExternalAccessibleForCurrentUser,
+    board.projectId,
+  );
+
+  yield put(actions.handleBoardArchive(board, isAvailable));
+
+  if (!isAvailable && board.id === boardId) {
+    yield call(goToProject, board.projectId);
+  }
+}
+
+export function* restoreBoard(id) {
+  yield put(actions.restoreBoard(id));
+
+  let board;
+  try {
+    ({ item: board } = yield call(request, api.restoreBoard, id));
+  } catch (error) {
+    yield put(actions.restoreBoard.failure(id, error));
+    return;
+  }
+
+  yield put(actions.restoreBoard.success(board));
+}
+
+export function* restoreCurrentBoard() {
+  const { boardId } = yield select(selectors.selectPath);
+
+  yield call(restoreBoard, boardId);
+}
+
+export function* handleBoardRestore(board) {
+  const isExists = yield select(selectors.selectIsBoardWithIdExists, board.id);
+
+  if (isExists) {
+    yield put(actions.handleBoardRestore(board));
+    return;
+  }
+
+  let users;
+  let projects;
+  let boardMemberships;
+  let labels;
+  let lists;
+  let cards;
+  let cardMemberships;
+  let cardLabels;
+  let taskLists;
+  let tasks;
+  let attachments;
+  let customFieldGroups;
+  let customFields;
+  let customFieldValues;
+  let restoredBoard;
+
+  try {
+    ({
+      item: restoredBoard,
+      included: {
+        users,
+        projects,
+        boardMemberships,
+        labels,
+        lists,
+        cards,
+        cardMemberships,
+        cardLabels,
+        taskLists,
+        tasks,
+        attachments,
+        customFieldGroups,
+        customFields,
+        customFieldValues,
+      },
+    } = yield call(request, api.getBoard, board.id, true));
+  } catch {
+    return;
+  }
+
+  yield put(
+    actions.fetchBoard.success(
+      restoredBoard,
+      users,
+      projects,
+      boardMemberships,
+      labels,
+      lists,
+      cards,
+      cardMemberships,
+      cardLabels,
+      taskLists,
+      tasks,
+      attachments,
+      customFieldGroups,
+      customFields,
+      customFieldValues,
+    ),
+  );
+}
+
+export function* duplicateBoard(id, data = {}) {
+  yield put(actions.duplicateBoard(id, data));
+
+  let board;
+  let boardMemberships;
+  let labels;
+  let lists;
+  let cards;
+  let cardMemberships;
+  let cardLabels;
+  let taskLists;
+  let tasks;
+  let attachments;
+  let customFieldGroups;
+  let customFields;
+  let customFieldValues;
+
+  try {
+    ({
+      item: board,
+      included: {
+        boardMemberships,
+        labels,
+        lists,
+        cards,
+        cardMemberships,
+        cardLabels,
+        taskLists,
+        tasks,
+        attachments,
+        customFieldGroups,
+        customFields,
+        customFieldValues,
+      },
+    } = yield call(request, api.duplicateBoard, id, data));
+  } catch (error) {
+    yield put(actions.duplicateBoard.failure(id, error));
+    return;
+  }
+
+  yield put(
+    actions.duplicateBoard.success(
+      board,
+      boardMemberships,
+      labels,
+      lists,
+      cards,
+      cardMemberships,
+      cardLabels,
+      taskLists,
+      tasks,
+      attachments,
+      customFieldGroups,
+      customFields,
+      customFieldValues,
+    ),
+  );
+
+  yield call(goToBoard, board.id);
+}
+
+export function* duplicateCurrentBoard(data) {
+  const { boardId } = yield select(selectors.selectPath);
+
+  yield call(duplicateBoard, boardId, data);
+}
+
 export function* moveBoard(id, index) {
   const { projectId } = yield select(selectors.selectBoardById, id);
   const position = yield select(selectors.selectNextBoardPosition, projectId, index, id);
@@ -186,6 +377,10 @@ export function* moveBoard(id, index) {
 
 export function* updateBoardContext(id, value) {
   yield put(actions.updateBoardContext(id, value));
+}
+
+export function* toggleArchivedBoards(isVisible) {
+  yield put(actions.toggleArchivedBoards(isVisible));
 }
 
 export function* updateContextInCurrentBoard(value) {
@@ -253,8 +448,17 @@ export default {
   updateBoard,
   updateCurrentBoard,
   handleBoardUpdate,
+  archiveBoard,
+  archiveCurrentBoard,
+  handleBoardArchive,
+  restoreBoard,
+  restoreCurrentBoard,
+  handleBoardRestore,
+  duplicateBoard,
+  duplicateCurrentBoard,
   moveBoard,
   updateBoardContext,
+  toggleArchivedBoards,
   updateContextInCurrentBoard,
   updateBoardView,
   updateViewInCurrentBoard,

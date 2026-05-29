@@ -109,6 +109,10 @@ module.exports = {
       throw Errors.NOT_ENOUGH_RIGHTS;
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     let cardLabel = await CardLabel.qm.getOneByCardIdAndLabelId(card.id, inputs.labelId);
 
     if (!cardLabel) {

@@ -88,6 +88,7 @@ const StoryContent = React.memo(() => {
     canAddAttachment,
     canAddCustomFieldGroup,
   } = useSelector((state) => {
+    const isReadOnly = selectors.selectIsCurrentBoardReadOnly(state);
     const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
 
     let isMember = false;
@@ -98,6 +99,27 @@ const StoryContent = React.memo(() => {
       isMember = true;
       isEditor = boardMembership.role === BoardMembershipRoles.EDITOR;
       isEmployee = boardMembership.role === BoardMembershipRoles.EMPLOYEE;
+    }
+
+    if (isReadOnly) {
+      return {
+        canEditType: false,
+        canEditName: false,
+        canEditDescription: false,
+        canEditDueDate: false,
+        canSubscribe: false,
+        canJoin: false,
+        canDuplicate: false,
+        canMove: false,
+        canRestore: false,
+        canArchive: false,
+        canDelete: false,
+        canUseLists: false,
+        canUseMembers: false,
+        canUseLabels: false,
+        canAddAttachment: false,
+        canAddCustomFieldGroup: false,
+      };
     }
 
     if (isInArchiveList || isInTrashList) {

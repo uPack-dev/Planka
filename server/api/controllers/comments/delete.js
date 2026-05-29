@@ -107,6 +107,10 @@ module.exports = {
       }
     }
 
+    if (sails.helpers.boards.isReadOnly(project, board)) {
+      throw Errors.NOT_ENOUGH_RIGHTS;
+    }
+
     comment = await sails.helpers.comments.deleteOne.with({
       project,
       board,

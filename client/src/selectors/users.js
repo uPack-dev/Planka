@@ -8,6 +8,7 @@ import { createSelector } from 'redux-orm';
 import orm from '../orm';
 import {
   selectIsFavoritesEnabled,
+  selectIsArchivedProjectsVisible,
   selectIsHiddenProjectsVisible,
   selectProjectsOrder,
   selectProjectsSearch,
@@ -167,6 +168,39 @@ export const selectFilteredProjctIdsByGroupForCurrentUser = createSelector(
   },
 );
 
+export const selectFilteredArchivedProjectIdsForCurrentUser = createSelector(
+  orm,
+  (state) => selectCurrentUserId(state),
+  (state) => selectProjectsSearch(state),
+  (state) => selectProjectsOrder(state),
+  ({ User }, id, projectsSearch, projectsOrder) => {
+    if (!id) {
+      return id;
+    }
+
+    const userModel = User.withId(id);
+
+    if (!userModel) {
+      return userModel;
+    }
+
+    return userModel
+      .getFilteredArchivedProjectsModelArray(
+        projectsSearch,
+        ORDER_BY_ARGS_BY_PROJECTS_ORDER[projectsOrder],
+      )
+      .map((projectModel) => projectModel.id);
+  },
+);
+
+export const selectIsArchivedProjectsVisibleForCurrentUser = createSelector(
+  orm,
+  (state) => selectIsArchivedProjectsVisible(state),
+  (state) => selectFilteredArchivedProjectIdsForCurrentUser(state),
+  (_, isArchivedProjectsVisible, archivedProjectIds) =>
+    isArchivedProjectsVisible && archivedProjectIds && archivedProjectIds.length > 0,
+);
+
 export const selectFavoriteProjectIdsForCurrentUser = createSelector(
   orm,
   (state) => selectCurrentUserId(state),
@@ -214,6 +248,27 @@ export const selectProjectsToBoardsWithEditorRightsForCurrentUser = createSelect
         return boardModel.ref;
       }),
     }));
+  },
+);
+
+export const selectProjectsWithManagerRightsForCurrentUser = createSelector(
+  orm,
+  (state) => selectCurrentUserId(state),
+  ({ User }, id) => {
+    if (!id) {
+      return id;
+    }
+
+    const userModel = User.withId(id);
+
+    if (!userModel) {
+      return userModel;
+    }
+
+    return userModel
+      .getManagerProjectsModelArray()
+      .filter((projectModel) => !projectModel.isArchived)
+      .map((projectModel) => projectModel.ref);
   },
 );
 
@@ -269,13 +324,12 @@ export const selectBoardIdsForCurrentUser = createSelector(
       return userModel;
     }
 
-    return userModel
-      .getProjectsModelArray()
-      .flatMap((projectModel) =>
-        projectModel
-          .getBoardsModelArrayAvailableForUser(userModel)
-          .map((boardModel) => boardModel.id),
-      );
+    return userModel.getProjectsModelArray().flatMap((projectModel) =>
+      projectModel
+        .getBoardsModelArrayAvailableForUser(userModel)
+        .filter((boardModel) => !boardModel.isArchived)
+        .map((boardModel) => boardModel.id),
+    );
   },
 );
 
@@ -353,7 +407,10 @@ export default {
   selectProjectIdsForCurrentUser,
   selectFilteredProjectIdsForCurrentUser,
   selectFilteredProjctIdsByGroupForCurrentUser,
+  selectFilteredArchivedProjectIdsForCurrentUser,
+  selectIsArchivedProjectsVisibleForCurrentUser,
   selectFavoriteProjectIdsForCurrentUser,
+  selectProjectsWithManagerRightsForCurrentUser,
   selectProjectsToBoardsWithEditorRightsForCurrentUser,
   selectProjectsToListsWithEditorRightsForCurrentUser,
   selectBoardIdsForCurrentUser,

@@ -57,9 +57,11 @@ const List = React.memo(({ id, index }) => {
   const { canEdit, canArchiveCards, canAddCard, canPasteCard, canDropCard } = useSelector(
     (state) => {
       const isEditModeEnabled = selectors.selectIsEditModeEnabled(state); // TODO: move out?
+      const isReadOnly = selectors.selectIsCurrentBoardReadOnly(state);
 
       const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
-      const isEditor = !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
+      const isEditor =
+        !isReadOnly && !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
 
       return {
         canEdit: isEditModeEnabled && isEditor,

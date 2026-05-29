@@ -38,6 +38,7 @@ export default class extends BaseModel {
       case ActionTypes.CORE_INITIALIZE:
       case ActionTypes.PROJECT_CREATE__SUCCESS:
       case ActionTypes.PROJECT_CREATE_HANDLE:
+      case ActionTypes.PROJECT_RESTORE_HANDLE:
         payload.projectManagers.forEach((projectManager) => {
           ProjectManager.upsert(projectManager);
         });
@@ -45,6 +46,7 @@ export default class extends BaseModel {
         break;
       case ActionTypes.USER_UPDATE_HANDLE:
       case ActionTypes.PROJECT_UPDATE_HANDLE:
+      case ActionTypes.PROJECT_ARCHIVE_HANDLE:
       case ActionTypes.BOARD_MEMBERSHIP_CREATE_HANDLE:
         if (payload.projectManagers) {
           payload.projectManagers.forEach((projectManager) => {

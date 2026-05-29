@@ -28,11 +28,30 @@ export default function* boardsWatchers() {
     takeEvery(EntryActionTypes.BOARD_UPDATE_HANDLE, ({ payload: { board } }) =>
       services.handleBoardUpdate(board),
     ),
+    takeEvery(EntryActionTypes.BOARD_ARCHIVE, ({ payload: { id } }) => services.archiveBoard(id)),
+    takeEvery(EntryActionTypes.CURRENT_BOARD_ARCHIVE, () => services.archiveCurrentBoard()),
+    takeEvery(EntryActionTypes.BOARD_ARCHIVE_HANDLE, ({ payload: { board } }) =>
+      services.handleBoardArchive(board),
+    ),
+    takeEvery(EntryActionTypes.BOARD_RESTORE, ({ payload: { id } }) => services.restoreBoard(id)),
+    takeEvery(EntryActionTypes.CURRENT_BOARD_RESTORE, () => services.restoreCurrentBoard()),
+    takeEvery(EntryActionTypes.BOARD_RESTORE_HANDLE, ({ payload: { board } }) =>
+      services.handleBoardRestore(board),
+    ),
+    takeEvery(EntryActionTypes.BOARD_DUPLICATE, ({ payload: { id, data } }) =>
+      services.duplicateBoard(id, data),
+    ),
+    takeEvery(EntryActionTypes.CURRENT_BOARD_DUPLICATE, ({ payload: { data } }) =>
+      services.duplicateCurrentBoard(data),
+    ),
     takeEvery(EntryActionTypes.BOARD_MOVE, ({ payload: { id, index } }) =>
       services.moveBoard(id, index),
     ),
     takeEvery(EntryActionTypes.CONTEXT_IN_CURRENT_BOARD_UPDATE, ({ payload: { value } }) =>
       services.updateContextInCurrentBoard(value),
+    ),
+    takeEvery(EntryActionTypes.ARCHIVED_BOARDS_TOGGLE, ({ payload: { isVisible } }) =>
+      services.toggleArchivedBoards(isVisible),
     ),
     takeEvery(EntryActionTypes.VIEW_IN_CURRENT_BOARD_UPDATE, ({ payload: { value } }) =>
       services.updateViewInCurrentBoard(value),

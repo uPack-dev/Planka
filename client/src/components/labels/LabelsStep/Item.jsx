@@ -25,6 +25,10 @@ const Item = React.memo(({ id, index, isActive, onSelect, onDeselect, onEdit }) 
   const label = useSelector((state) => selectLabelById(state, id));
 
   const canEdit = useSelector((state) => {
+    if (selectors.selectIsCurrentBoardReadOnly(state)) {
+      return false;
+    }
+
     const boardMembership = selectors.selectCurrentUserMembershipForCurrentBoard(state);
     return !!boardMembership && boardMembership.role === BoardMembershipRoles.EDITOR;
   });

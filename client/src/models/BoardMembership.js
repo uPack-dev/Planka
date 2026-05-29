@@ -32,6 +32,7 @@ export default class extends BaseModel {
       case ActionTypes.LOCATION_CHANGE_HANDLE:
       case ActionTypes.USER_UPDATE_HANDLE:
       case ActionTypes.PROJECT_UPDATE_HANDLE:
+      case ActionTypes.PROJECT_RESTORE_HANDLE:
       case ActionTypes.PROJECT_MANAGER_CREATE_HANDLE:
         if (payload.boardMemberships) {
           payload.boardMemberships.forEach((boardMembership) => {
@@ -51,6 +52,7 @@ export default class extends BaseModel {
       case ActionTypes.CORE_INITIALIZE:
       case ActionTypes.PROJECT_CREATE_HANDLE:
       case ActionTypes.BOARD_CREATE__SUCCESS:
+      case ActionTypes.BOARD_DUPLICATE__SUCCESS:
       case ActionTypes.BOARD_CREATE_HANDLE:
       case ActionTypes.BOARD_FETCH__SUCCESS:
       case ActionTypes.GLOBAL_CALENDAR_CARDS_FETCH__SUCCESS:

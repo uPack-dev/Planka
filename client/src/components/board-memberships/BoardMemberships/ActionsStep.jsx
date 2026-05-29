@@ -38,7 +38,12 @@ const ActionsStep = React.memo(({ boardMembershipId, title, onBack, onClose }) =
     (state) => boardMembership.userId === selectors.selectCurrentUserId(state),
   );
 
-  const canEdit = useSelector(selectors.selectIsCurrentUserManagerForCurrentProject);
+  const canEdit = useSelector(
+    (state) =>
+      !selectors.selectIsCurrentBoardReadOnly(state) &&
+      selectors.selectIsCurrentUserManagerForCurrentProject(state),
+  );
+  const canLeave = useSelector((state) => !selectors.selectIsCurrentBoardReadOnly(state));
 
   const dispatch = useDispatch();
   const [t] = useTranslation();
@@ -132,7 +137,7 @@ const ActionsStep = React.memo(({ boardMembershipId, title, onBack, onClose }) =
         size="tiny"
         onClick={handleFilterClick}
       />
-      {(isCurrentUser || canEdit) && (
+      {((isCurrentUser && canLeave) || canEdit) && (
         <>
           <hr className={styles.divider} />
           {canEdit && (
