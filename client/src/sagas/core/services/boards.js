@@ -75,10 +75,12 @@ export function* createBoard(projectId, { import: boardImport, ...data }) {
 
   if (watchForCreateBoardActionTask.isRunning()) {
     yield call(goToBoard, board.id);
-    yield call(openModal, ModalTypes.BOARD_SETTINGS, {
-      id: board.id,
-      openPreferences: true,
-    });
+    if (!boardImport) {
+      yield call(openModal, ModalTypes.BOARD_SETTINGS, {
+        id: board.id,
+        openPreferences: true,
+      });
+    }
   }
 }
 
