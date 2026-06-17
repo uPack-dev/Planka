@@ -80,6 +80,7 @@ jobs:
           tags: |
             type=raw,value=nightly
             type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ steps.package-version.outputs.changed == 'true' }}
+            type=raw,value=latest,enable=${{ steps.package-version.outputs.changed == 'true' }}
             type=sha
 
       - name: Build and push Docker image
