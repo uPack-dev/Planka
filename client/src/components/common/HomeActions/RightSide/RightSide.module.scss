@@ -50,3 +50,27 @@
     }
   }
 }
+
+:global(#app[data-style-preset='top-commandos']) {
+  .button {
+    background: rgba(0, 0, 0, 0.24);
+    color: rgba(255, 255, 255, 0.72);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.32);
+      color: #fff;
+    }
+  }
+
+  .buttonGroup {
+    .button {
+      &:enabled {
+        background: rgba(0, 0, 0, 0.08);
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.16);
+        }
+      }
+    }
+  }
+}

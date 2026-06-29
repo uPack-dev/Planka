@@ -5,144 +5,24 @@
 
 :global(#app) {
   .cover {
-    background:
-      linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.42)),
-      image-set(
-          url("../../../assets/images/login-upack-paper.avif") type("image/avif"),
-          url("../../../assets/images/login-upack-paper.webp") type("image/webp"),
-          url("../../../assets/images/login-upack-paper.jpg") type("image/jpeg")
-        )
-        center center / cover,
-      #f7f7f2;
-    overflow: hidden;
-    position: relative;
+    background: url('../../../assets/images/login-cover.jpg') left / cover;
   }
 
   .coverOverlay {
-    display: none;
-  }
-
-  .coverScene {
-    align-items: center;
-    display: flex;
+    background: rgba(33, 33, 33, 0.5);
+    bottom: 0;
     height: 100%;
-    justify-content: center;
-    min-height: 100vh;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .coverScene::before {
-    background:
-      radial-gradient(circle at 52% 42%, rgba(255, 255, 255, 0.1), transparent 34%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(221, 230, 235, 0.12));
-    content: "";
-    inset: 0;
-    pointer-events: none;
+    left: 0;
     position: absolute;
-    z-index: 0;
-  }
-
-  .coverStage {
-    aspect-ratio: 1;
-    max-height: 100vh;
-    max-width: 100%;
-    position: relative;
-    width: min(100%, 100vh);
-    z-index: 1;
-  }
-
-  .coverImage {
-    animation: loginCoverReveal 900ms cubic-bezier(0.19, 1, 0.22, 1) both;
-    aspect-ratio: 1;
-    border-radius: 10px;
-    box-shadow: 0 22px 50px rgba(39, 95, 136, 0.14);
-    left: 50%;
-    overflow: hidden;
-    position: absolute;
-    top: 10%;
-    transform: translateX(-50%);
-    width: 80%;
-    z-index: 1;
-  }
-
-  .coverImage::after {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 38%),
-      linear-gradient(0deg, rgba(39, 95, 136, 0.1), transparent 36%);
-    content: "";
-    inset: 0;
-    pointer-events: none;
-    position: absolute;
-  }
-
-  .coverImage img,
-  .coverImage picture {
-    display: block;
-    height: 100%;
+    right: 0;
+    top: 0;
     width: 100%;
-  }
-
-  .coverImage img {
-    object-fit: cover;
-    object-position: center;
-  }
-
-  .keywordBadge {
-    animation: loginKeywordArrive 740ms cubic-bezier(0.18, 1.35, 0.32, 1) var(--keyword-delay)
-      both;
-    left: var(--keyword-left);
-    opacity: 0;
-    position: absolute;
-    top: var(--keyword-top);
-    transform: translate(-50%, -50%) rotate(var(--keyword-rotate));
-    z-index: 2;
-  }
-
-  .keywordBadgeInner {
-    align-items: center;
-    animation: loginKeywordFloat var(--keyword-duration) ease-in-out var(--keyword-delay)
-      infinite alternate;
-    background: #c6d8e5;
-    border: 2px solid #c6d8e5;
-    border-radius: 999px;
-    box-shadow: 0 14px 30px rgba(39, 95, 136, 0.14);
-    color: #fff;
-    display: flex;
-    font-size: clamp(18px, 1.8vw, 24px);
-    justify-content: center;
-    line-height: 40px;
-    min-height: 50px;
-    min-width: 74px;
-    overflow: hidden;
-    padding: 5px 25px;
-    position: relative;
-    white-space: nowrap;
-  }
-
-  .keywordBadgeInner::after {
-    animation: loginKeywordShine 4.8s ease-in-out var(--keyword-delay) infinite;
-    background: linear-gradient(105deg, transparent 24%, rgba(255, 255, 255, 0.7), transparent 76%);
-    content: "";
-    inset: -40% -70%;
-    opacity: 0;
-    position: absolute;
-    transform: translateX(-48%) rotate(12deg);
-  }
-
-  .keywordBadgeIcon .keywordBadgeInner {
-    font-size: clamp(30px, 4vw, 44px);
-    height: clamp(48px, 5.5vw, 58px);
-    line-height: 1;
-    min-height: 0;
-    min-width: 0;
-    padding: 0;
-    width: clamp(48px, 5.5vw, 58px);
   }
 
   .debugLog {
     border: 1px solid rgba(9, 30, 66, 0.13);
     border-radius: 3px;
+    color: #333;
     line-height: 1.4;
     margin-top: 16px;
     padding: 8px 12px;
@@ -161,16 +41,14 @@
   }
 
   .formTitle {
-    font-size: 28px;
+    font-size: 36px;
     font-weight: bold;
-    color: #fff;
   }
 
   .formSubtitle {
     font-size: 28px;
     font-weight: normal;
     margin-bottom: 32px;
-    color: #fff;
   }
 
   .grid {
@@ -224,16 +102,501 @@
   }
 
   .poweredByText {
+    color: #6b808c;
     font-weight: lighter;
     text-align: center;
+  }
 
-    &>a {
-      color: #81EAFF;
+  .wrapper {
+    background: #fff;
+  }
+}
+
+:global(#app[data-style-preset='top-commandos']) {
+  .cover {
+    background: #fff;
+    flex: 1 1 auto !important;
+    height: 100vh !important;
+    max-width: none !important;
+    overflow: hidden;
+    position: relative;
+    width: auto !important;
+  }
+
+  .coverOverlay {
+    display: none;
+  }
+
+  .formTitle {
+    color: #fff;
+    font-size: 25px;
+    font-weight: 500;
+    line-height: 0.95;
+    margin: 0 auto 72px;
+    max-width: 360px;
+    position: relative;
+  }
+
+  .formTitle::before {
+    background: #92aace;
+    bottom: -28px;
+    content: '';
+    height: 7px;
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%) rotate(45deg);
+    width: 7px;
+    z-index: 1;
+  }
+
+  .formTitle::after {
+    background: #92aace;
+    bottom: -25px;
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+  }
+
+  .formSubtitle {
+    color: rgba(255, 255, 255, 0.87);
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+
+  .grid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .gridItem {
+    min-height: 0;
+  }
+
+  .gridItem:first-child {
+    background: #4a72ae;
+    flex: 0 0 min(540px, 100vw) !important;
+    max-width: min(540px, 100vw) !important;
+    width: min(540px, 100vw) !important;
+  }
+
+  .input {
+    input {
+      background: transparent !important;
+      border: 1px solid #fff !important;
+      border-radius: 5px !important;
+      box-shadow: inset 0 0 0 1px rgba(34, 36, 38, 0.35) !important;
+      color: #fff !important;
+      height: 38px;
+    }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: #fff !important;
+      color: #fff !important;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #fff;
+      box-shadow:
+        inset 0 0 0 1px rgba(34, 36, 38, 0.35),
+        inset 0 0 0 100px #4a72ae !important;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.52);
+    }
+
+    :global(i.icon) {
+      color: rgba(255, 255, 255, 0.62);
+    }
+  }
+
+  .inputLabel {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 16px;
+    line-height: 20px;
+    margin-bottom: 6px;
+  }
+
+  .inputWrapper {
+    margin-bottom: 14px;
+  }
+
+  .login {
+    height: 100vh;
+    max-width: 440px;
+    min-height: 0;
+    padding: 40px;
+    row-gap: 24px;
+  }
+
+  .logoWrapper {
+    margin-bottom: 20px;
+  }
+
+  .poweredByText {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+
+    & > a {
+      color: #a1f1ed;
+    }
+  }
+
+  .topCommandosArtwork {
+    aspect-ratio: 1;
+    height: auto;
+    left: 50%;
+    overflow: hidden;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: max(100%, 100vh);
+  }
+
+  .topCommandosBadge {
+    align-items: center;
+    animation: topCommandosBadgeReveal 420ms ease-out var(--top-commandos-delay) both;
+    background: #fff;
+    border: 1px solid #4a72ae;
+    border-radius: 5px;
+    box-sizing: border-box;
+    color: #111;
+    display: flex;
+    font-size: 20px;
+    gap: 10px;
+    height: 4.1111%;
+    justify-content: center;
+    left: var(--top-commandos-left);
+    line-height: normal;
+    padding: 5px 25px;
+    position: absolute;
+    top: var(--top-commandos-top);
+    white-space: nowrap;
+    width: var(--top-commandos-width);
+    z-index: 2;
+  }
+
+  .topCommandosBadgeIcon {
+    display: block;
+    flex: 0 0 auto;
+    height: 20px;
+    width: 20px;
+  }
+
+  .topCommandosCoverImage {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    width: 100%;
+  }
+
+  .topCommandosCoverScene {
+    background: #fff;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .topCommandosCoverScene::after {
+    background: linear-gradient(90deg, rgba(74, 114, 174, 0.08), transparent 22%);
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .topCommandosJoint {
+    background: #fff;
+    border: 1px solid #4a72ae;
+    border-radius: 1px;
+    box-sizing: border-box;
+    height: 1.1111%;
+    left: var(--top-commandos-left);
+    position: absolute;
+    top: var(--top-commandos-top);
+    width: 1.1111%;
+    z-index: 1;
+  }
+
+  .topCommandosLine {
+    display: block;
+    height: var(--top-commandos-height);
+    left: var(--top-commandos-left);
+    position: absolute;
+    top: var(--top-commandos-top);
+    width: var(--top-commandos-width);
+    z-index: 1;
+  }
+
+  .topCommandosLogo {
+    color: #fff;
+    font-size: 29px;
+    font-weight: 800;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .topCommandosNetwork {
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .wrapper {
+    background: #4a72ae;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  :global(.ui.form) {
+    margin-top: 0;
+  }
+
+  :global(.ui.primary.button) {
+    background: #fff !important;
+    border: 1px solid #fff !important;
+    border-radius: 5px;
+    box-shadow: none;
+    color: #4a72ae !important;
+    font-size: 20px;
+    font-weight: 600;
+    min-height: 35px;
+    padding: 8px 20px;
+    text-shadow: none;
+  }
+
+  :global(.ui.primary.button:hover),
+  :global(.ui.primary.button:focus) {
+    background: #4a72ae !important;
+    color: #fff !important;
+  }
+
+  @keyframes topCommandosBadgeReveal {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 1360px) {
+    .cover {
+      display: none !important;
+    }
+
+    .grid {
+      display: block !important;
+      overflow-y: auto;
+    }
+
+    .gridItem:first-child {
+      flex: none !important;
+      max-width: none !important;
+      width: 100% !important;
+    }
+
+    .login {
+      min-height: 100vh;
+    }
+
+    .topCommandosBadge {
+      font-size: 18px;
+      gap: 8px;
+      padding: 5px 18px;
+    }
+  }
+
+  @media only screen and (width < 992px) {
+    .grid {
+      display: block !important;
+      overflow-y: auto;
+    }
+
+    .gridItem:first-child {
+      max-width: none !important;
+      width: 100% !important;
+    }
+
+    .login {
+      min-height: 100vh;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .topCommandosBadge {
+      animation: none;
+    }
+  }
+}
+
+:global(#app[data-style-preset='upack-workspace']) {
+  .cover {
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.42)),
+      image-set(
+          url('../../../assets/images/login-upack-paper.avif') type('image/avif'),
+          url('../../../assets/images/login-upack-paper.webp') type('image/webp'),
+          url('../../../assets/images/login-upack-paper.jpg') type('image/jpeg')
+        )
+        center center / cover,
+      #f7f7f2;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .coverOverlay {
+    display: none;
+  }
+
+  .coverScene {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .coverScene::before {
+    background:
+      radial-gradient(circle at 52% 42%, rgba(255, 255, 255, 0.1), transparent 34%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(221, 230, 235, 0.12));
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+  }
+
+  .coverStage {
+    aspect-ratio: 1;
+    max-height: 100vh;
+    max-width: 100%;
+    position: relative;
+    width: min(100%, 100vh);
+    z-index: 1;
+  }
+
+  .coverImage {
+    animation: loginCoverReveal 900ms cubic-bezier(0.19, 1, 0.22, 1) both;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    box-shadow: 0 22px 50px rgba(39, 95, 136, 0.14);
+    left: 50%;
+    overflow: hidden;
+    position: absolute;
+    top: 10%;
+    transform: translateX(-50%);
+    width: 80%;
+    z-index: 1;
+  }
+
+  .coverImage::after {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 38%),
+      linear-gradient(0deg, rgba(39, 95, 136, 0.1), transparent 36%);
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .coverImage img,
+  .coverImage picture {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+
+  .coverImage img {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .keywordBadge {
+    animation: loginKeywordArrive 740ms cubic-bezier(0.18, 1.35, 0.32, 1) var(--keyword-delay) both;
+    left: var(--keyword-left);
+    opacity: 0;
+    position: absolute;
+    top: var(--keyword-top);
+    transform: translate(-50%, -50%) rotate(var(--keyword-rotate));
+    z-index: 2;
+  }
+
+  .keywordBadgeInner {
+    align-items: center;
+    animation: loginKeywordFloat var(--keyword-duration) ease-in-out var(--keyword-delay) infinite
+      alternate;
+    background: #c6d8e5;
+    border: 2px solid #c6d8e5;
+    border-radius: 999px;
+    box-shadow: 0 14px 30px rgba(39, 95, 136, 0.14);
+    color: #fff;
+    display: flex;
+    font-size: clamp(18px, 1.8vw, 24px);
+    justify-content: center;
+    line-height: 40px;
+    min-height: 50px;
+    min-width: 74px;
+    overflow: hidden;
+    padding: 5px 25px;
+    position: relative;
+    white-space: nowrap;
+  }
+
+  .keywordBadgeInner::after {
+    animation: loginKeywordShine 4.8s ease-in-out var(--keyword-delay) infinite;
+    background: linear-gradient(105deg, transparent 24%, rgba(255, 255, 255, 0.7), transparent 76%);
+    content: '';
+    inset: -40% -70%;
+    opacity: 0;
+    position: absolute;
+    transform: translateX(-48%) rotate(12deg);
+  }
+
+  .keywordBadgeIcon .keywordBadgeInner {
+    font-size: clamp(30px, 4vw, 44px);
+    height: clamp(48px, 5.5vw, 58px);
+    line-height: 1;
+    min-height: 0;
+    min-width: 0;
+    padding: 0;
+    width: clamp(48px, 5.5vw, 58px);
+  }
+
+  .formTitle {
+    color: #fff;
+    font-size: 28px;
+  }
+
+  .formSubtitle {
+    color: #fff;
+  }
+
+  .poweredByText {
+    color: inherit;
+
+    & > a {
+      color: #81eaff;
     }
   }
 
   .wrapper {
-    background: #275F88;
+    background: #275f88;
     color: #fff;
   }
 

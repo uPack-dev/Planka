@@ -30,3 +30,41 @@
     }
   }
 }
+
+:global(#app[data-style-preset='top-commandos']) {
+  .search {
+    max-width: 285px;
+    width: 285px;
+
+    input {
+      font-size: 13px;
+    }
+  }
+
+  .searchInactive {
+    color: rgba(255, 255, 255, 0.72);
+    max-width: 285px;
+
+    input {
+      background: rgba(0, 0, 0, 0.24);
+      border: 0;
+      border-radius: 3px !important;
+      color: rgba(255, 255, 255, 0.72) !important;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.72);
+      }
+    }
+  }
+
+  @media only screen and (width < 768px) {
+    .search {
+      max-width: none;
+      width: 100%;
+    }
+
+    .searchInactive {
+      max-width: none;
+    }
+  }
+}

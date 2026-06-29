@@ -125,3 +125,45 @@
     margin-top: 14px;
   }
 }
+
+:global(#app[data-style-preset='top-commandos']) {
+  .addButton {
+    background: rgba(255, 255, 255, 0.4);
+    color: #fff;
+    fill: #fff;
+
+    &:hover {
+      .addButtonCover {
+        filter: brightness(0.9);
+      }
+    }
+  }
+
+  .addButtonCover {
+    background: rgba(107, 128, 140, 0.08);
+  }
+
+  .card {
+    height: 150px;
+  }
+
+  .title,
+  .titleButton {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    padding-bottom: 14px;
+  }
+
+  .titleIcon {
+    color: #fff;
+    margin-right: 10px;
+  }
+
+  .wrapper:not(:last-child) {
+    margin-bottom: 20px;
+  }
+
+  .wrapperWithoutTitle {
+    margin-top: 6px;
+  }
+}

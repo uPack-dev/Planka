@@ -18,9 +18,27 @@ import entryActions from '../../../entry-actions';
 import { useForm, useNestedRef } from '../../../hooks';
 import { isUsername } from '../../../utils/validator';
 import AccessTokenSteps from '../../../constants/AccessTokenSteps';
+import { isTopCommandosStyle, isUpackWorkspaceStyle } from '../../../constants/StylePresets';
 import TermsModal from './TermsModal';
 
-import logo from '../../../assets/images/logo.svg';
+import plankaLogo from '../../../assets/images/logo.png';
+import upackLogo from '../../../assets/images/logo.svg';
+import topCommandosCover from '../../../assets/images/login-top-commandos-cover.webp';
+import topCommandosAnalyticsIcon from '../../../assets/images/top-commandos/analytics.svg';
+import topCommandosAutomationIcon from '../../../assets/images/top-commandos/automation.svg';
+import topCommandosDesignIcon from '../../../assets/images/top-commandos/design.svg';
+import topCommandosDevelopmentIcon from '../../../assets/images/top-commandos/development.svg';
+import topCommandosIdeasIcon from '../../../assets/images/top-commandos/ideas.svg';
+import topCommandosLine64 from '../../../assets/images/top-commandos/lines/vector-64.svg';
+import topCommandosLine65 from '../../../assets/images/top-commandos/lines/vector-65.svg';
+import topCommandosLine66 from '../../../assets/images/top-commandos/lines/vector-66.svg';
+import topCommandosLine67 from '../../../assets/images/top-commandos/lines/vector-67.svg';
+import topCommandosLine68 from '../../../assets/images/top-commandos/lines/vector-68.svg';
+import topCommandosLine69 from '../../../assets/images/top-commandos/lines/vector-69.svg';
+import topCommandosLine70 from '../../../assets/images/top-commandos/lines/vector-70.svg';
+import topCommandosPartnershipIcon from '../../../assets/images/top-commandos/partnership.svg';
+import topCommandosStrategyIcon from '../../../assets/images/top-commandos/strategy.svg';
+import topCommandosSuccessIcon from '../../../assets/images/top-commandos/success.svg';
 import upackCoverAvif from '../../../assets/images/login-upack-cover.avif';
 import upackCoverJpg from '../../../assets/images/login-upack-cover.jpg';
 import upackCoverWebp from '../../../assets/images/login-upack-cover.webp';
@@ -148,6 +166,152 @@ const coverKeywords = [
     delay: '-0.3s',
     floatX: '13px',
     floatY: '12px',
+  },
+];
+
+const topCommandosLines = [
+  {
+    src: topCommandosLine64,
+    left: '67.5556%',
+    top: '85.5556%',
+    width: '15.4444%',
+    height: '1px',
+  },
+  {
+    src: topCommandosLine65,
+    left: '79.3889%',
+    top: '73.8889%',
+    width: '10.6667%',
+    height: '9.5%',
+  },
+  {
+    src: topCommandosLine66,
+    left: '78.7778%',
+    top: '16.1111%',
+    width: '15%',
+    height: '48.0556%',
+  },
+  {
+    src: topCommandosLine67,
+    left: '78.7778%',
+    top: '6.2778%',
+    width: '21.2222%',
+    height: '5.7222%',
+  },
+  {
+    src: topCommandosLine68,
+    left: '4.2778%',
+    top: '12.5%',
+    width: '14.6111%',
+    height: '73.7222%',
+  },
+  {
+    src: topCommandosLine69,
+    left: '20.7222%',
+    top: '10.4444%',
+    width: '11.2778%',
+    height: '1px',
+  },
+  {
+    src: topCommandosLine70,
+    left: '12.3889%',
+    top: '12.5%',
+    width: '7.9444%',
+    height: '18.2222%',
+  },
+];
+
+const topCommandosJoints = [
+  {
+    left: '74.5556%',
+    top: '85%',
+  },
+  {
+    left: '78.7778%',
+    top: '78.6667%',
+  },
+  {
+    left: '78.2222%',
+    top: '24.4444%',
+  },
+  {
+    left: '6.2222%',
+    top: '75.1111%',
+  },
+  {
+    left: '9.2222%',
+    top: '39.8889%',
+  },
+  {
+    left: '19.7778%',
+    top: '18.5556%',
+  },
+];
+
+const topCommandosKeywords = [
+  {
+    text: 'развитие',
+    icon: topCommandosDevelopmentIcon,
+    left: '2.2222%',
+    top: '8.4444%',
+    width: '18.5556%',
+    delay: '0s',
+  },
+  {
+    text: 'партнёрство',
+    icon: topCommandosPartnershipIcon,
+    left: '75.6667%',
+    top: '12%',
+    width: '22.1111%',
+    delay: '-1.6s',
+  },
+  {
+    text: 'идеи',
+    icon: topCommandosIdeasIcon,
+    left: '2.2222%',
+    top: '31.7778%',
+    width: '14.1111%',
+    delay: '-0.8s',
+  },
+  {
+    text: 'дизайн',
+    icon: topCommandosDesignIcon,
+    left: '81.3333%',
+    top: '29.2222%',
+    width: '16.4444%',
+    delay: '-2.1s',
+  },
+  {
+    text: 'автоматизация',
+    icon: topCommandosAutomationIcon,
+    left: '2.2222%',
+    top: '57.1111%',
+    width: '24.6667%',
+    delay: '-1.2s',
+  },
+  {
+    text: 'стратегия',
+    icon: topCommandosStrategyIcon,
+    left: '78.6667%',
+    top: '52.6667%',
+    width: '19.1111%',
+    delay: '-2.8s',
+  },
+  {
+    text: 'аналитика',
+    icon: topCommandosAnalyticsIcon,
+    left: '2.2222%',
+    top: '79.3333%',
+    width: '19.8889%',
+    delay: '-2.4s',
+  },
+  {
+    text: 'успех',
+    icon: topCommandosSuccessIcon,
+    left: '83%',
+    top: '83.3333%',
+    width: '14.7778%',
+    delay: '-0.4s',
   },
 ];
 
@@ -321,19 +485,121 @@ const Content = React.memo(() => {
     passwordFieldRef.current.focus();
   }, [focusPasswordFieldState]);
 
+  let loginTitle = bootstrap.instanceName;
+
+  if (!loginTitle) {
+    if (isTopCommandosStyle) {
+      loginTitle = 'Команда профессионалов с созидательным мышлением и сильной экспертизой';
+    } else if (isUpackWorkspaceStyle) {
+      loginTitle = 'Workspace для управління проектами';
+    } else {
+      loginTitle = 'PLANKA';
+    }
+  }
+
+  const logoNode = isTopCommandosStyle ? (
+    <div className={styles.topCommandosLogo}>TOP COMMANDOS</div>
+  ) : (
+    <img src={isUpackWorkspaceStyle ? upackLogo : plankaLogo} alt="" className={styles.logo} />
+  );
+
+  let coverNode = <div className={styles.coverOverlay} />;
+
+  if (isTopCommandosStyle) {
+    coverNode = (
+      <div className={styles.topCommandosCoverScene} aria-hidden="true">
+        <div className={styles.topCommandosArtwork}>
+          <img src={topCommandosCover} alt="" className={styles.topCommandosCoverImage} />
+          <div className={styles.topCommandosNetwork}>
+            {topCommandosLines.map((line) => (
+              <img
+                key={line.src}
+                src={line.src}
+                alt=""
+                className={styles.topCommandosLine}
+                style={{
+                  '--top-commandos-left': line.left,
+                  '--top-commandos-top': line.top,
+                  '--top-commandos-width': line.width,
+                  '--top-commandos-height': line.height,
+                }}
+              />
+            ))}
+            {topCommandosJoints.map((joint) => (
+              <span
+                key={`${joint.left}-${joint.top}`}
+                className={styles.topCommandosJoint}
+                style={{
+                  '--top-commandos-left': joint.left,
+                  '--top-commandos-top': joint.top,
+                }}
+              />
+            ))}
+            {topCommandosKeywords.map((keyword) => (
+              <div
+                key={keyword.text}
+                className={styles.topCommandosBadge}
+                style={{
+                  '--top-commandos-left': keyword.left,
+                  '--top-commandos-top': keyword.top,
+                  '--top-commandos-width': keyword.width,
+                  '--top-commandos-delay': keyword.delay,
+                }}
+              >
+                <img src={keyword.icon} alt="" className={styles.topCommandosBadgeIcon} />
+                <span>{keyword.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  } else if (isUpackWorkspaceStyle) {
+    coverNode = (
+      <div className={styles.coverScene} aria-hidden="true">
+        <div className={styles.coverStage}>
+          <div className={styles.coverImage}>
+            <picture>
+              <source srcSet={upackCoverAvif} type="image/avif" />
+              <source srcSet={upackCoverWebp} type="image/webp" />
+              <img src={upackCoverJpg} alt="" />
+            </picture>
+          </div>
+          {coverKeywords.map((keyword) => (
+            <div
+              key={keyword.text}
+              className={classNames(styles.keywordBadge, {
+                [styles.keywordBadgeIcon]: keyword.isIcon,
+              })}
+              style={{
+                '--keyword-left': keyword.left,
+                '--keyword-top': keyword.top,
+                '--keyword-rotate': keyword.rotate,
+                '--keyword-duration': keyword.duration,
+                '--keyword-delay': keyword.delay,
+                '--keyword-float-x': keyword.floatX,
+                '--keyword-float-y': keyword.floatY,
+              }}
+            >
+              <span className={styles.keywordBadgeInner}>{keyword.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={classNames(styles.wrapper, styles.fullHeight)}>
       <Grid verticalAlign="middle" className={styles.grid}>
         <Grid.Column computer={6} tablet={16} mobile={16} className={styles.gridItem}>
           <div className={styles.login}>
             <div className={styles.form}>
-              <div className={styles.logoWrapper}>
-                <img src={logo} alt="" className={styles.logo} />
-              </div>
+              <div className={styles.logoWrapper}>{logoNode}</div>
               <Header
                 as="h1"
                 textAlign="center"
-                content={bootstrap.instanceName || 'Workspace для управління проектами'}
+                content={loginTitle}
                 className={styles.formTitle}
               />
               <Header
@@ -386,8 +652,8 @@ const Content = React.memo(() => {
                     <Form.Button
                       fluid
                       primary
-                      icon="right arrow"
-                      labelPosition="right"
+                      icon={isTopCommandosStyle ? undefined : 'right arrow'}
+                      labelPosition={isTopCommandosStyle ? undefined : 'right'}
                       content={t('action.logIn')}
                       loading={isSubmitting}
                       disabled={isSubmitting || isSubmittingWithOidc}
@@ -439,36 +705,7 @@ const Content = React.memo(() => {
           only="computer"
           className={classNames(styles.gridItem, styles.cover)}
         >
-          <div className={styles.coverScene} aria-hidden="true">
-            <div className={styles.coverStage}>
-              <div className={styles.coverImage}>
-                <picture>
-                  <source srcSet={upackCoverAvif} type="image/avif" />
-                  <source srcSet={upackCoverWebp} type="image/webp" />
-                  <img src={upackCoverJpg} alt="" />
-                </picture>
-              </div>
-              {coverKeywords.map((keyword) => (
-                <div
-                  key={keyword.text}
-                  className={classNames(styles.keywordBadge, {
-                    [styles.keywordBadgeIcon]: keyword.isIcon,
-                  })}
-                  style={{
-                    '--keyword-left': keyword.left,
-                    '--keyword-top': keyword.top,
-                    '--keyword-rotate': keyword.rotate,
-                    '--keyword-duration': keyword.duration,
-                    '--keyword-delay': keyword.delay,
-                    '--keyword-float-x': keyword.floatX,
-                    '--keyword-float-y': keyword.floatY,
-                  }}
-                >
-                  <span className={styles.keywordBadgeInner}>{keyword.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {coverNode}
         </Grid.Column>
       </Grid>
       {step === AccessTokenSteps.ACCEPT_TERMS && <TermsModal />}

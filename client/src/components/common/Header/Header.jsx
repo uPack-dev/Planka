@@ -14,6 +14,7 @@ import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import Paths from '../../../constants/Paths';
 import { BoardMembershipRoles, BoardViews, UserRoles } from '../../../constants/Enums';
+import { isTopCommandosStyle } from '../../../constants/StylePresets';
 import UserAvatar from '../../users/UserAvatar';
 import UserActionsStep from '../../users/UserActionsStep';
 import NotificationsStep from '../../notifications/NotificationsStep';
@@ -113,7 +114,11 @@ const Header = React.memo(() => {
     <div className={styles.wrapper}>
       {!project && (
         <Link to={Paths.ROOT} className={classNames(styles.logo, styles.title)}>
-          <img src={logo} alt="" className={styles.upack} />
+          {isTopCommandosStyle ? (
+            <span className={styles.topCommandosTitle}>TOP COMMANDOS</span>
+          ) : (
+            <img src={logo} alt="" className={styles.upack} />
+          )}
         </Link>
       )}
       <Menu inverted size="large" className={styles.menu}>
