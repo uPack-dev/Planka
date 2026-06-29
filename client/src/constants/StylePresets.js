@@ -21,7 +21,12 @@ const normalizeStylePreset = (value) => {
   return DEFAULT_STYLE_PRESET;
 };
 
-export const stylePreset = normalizeStylePreset(import.meta.env.VITE_STYLE_PRESET);
+const runtimeStylePreset =
+  typeof window !== 'undefined' ? window.STYLE_PRESET || window.VITE_STYLE_PRESET : undefined;
+
+export const stylePreset = normalizeStylePreset(
+  runtimeStylePreset || import.meta.env.VITE_STYLE_PRESET,
+);
 
 export const isUpackWorkspaceStyle = stylePreset === StylePresets.UPACK_WORKSPACE;
 export const isTopCommandosStyle = stylePreset === StylePresets.TOP_COMMANDOS;
