@@ -29,7 +29,16 @@ const createEjsTemplate = () => ({
 
     const ejs = html
       .replace(/(href|src)="\.\/([^"]+)"/g, '$1="<%- basePath %>/$2"')
-      .replace('</head>', "  <script>window.BASE_PATH = '<%- basePath %>';</script>\n  </head>");
+      .replace(
+        '</head>',
+        [
+          '  <script>',
+          "    window.BASE_PATH = '<%- basePath %>';",
+          '    window.STYLE_PRESET = <%- stylePresetJson %>;',
+          '  </script>',
+          '  </head>',
+        ].join('\n'),
+      );
 
     fs.writeFileSync(path.join(distPath, 'index.ejs'), ejs);
     fs.unlinkSync(htmlPath);
