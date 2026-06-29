@@ -28,6 +28,9 @@ services:
 
       # - LOG_LEVEL=warn
 
+      # UI style preset: original, upack-workspace, or top-commandos
+      # - STYLE_PRESET=original
+
       # - TRUST_PROXY=true
       # - MAX_UPLOAD_FILE_SIZE=
       # - TOKEN_EXPIRES_IN=365 # In days
