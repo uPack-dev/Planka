@@ -18,6 +18,9 @@ FROM node:22 AS client
 
 WORKDIR /app
 
+ARG VITE_STYLE_PRESET=original
+ENV VITE_STYLE_PRESET=$VITE_STYLE_PRESET
+
 COPY client .
 
 # Убрано глобальное обновление npm и флаги --omit=dev / --ignore-scripts

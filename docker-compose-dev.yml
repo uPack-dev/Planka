@@ -130,6 +130,7 @@ services:
       - 3005:3000
     environment:
       - PROXY_TARGET=http://planka-server:1337
+      - VITE_STYLE_PRESET=${VITE_STYLE_PRESET:-original}
 
   postgres:
     image: postgres:16-alpine

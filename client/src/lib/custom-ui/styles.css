@@ -9,6 +9,54 @@
 *
 */
 
+@font-face {
+  font-family: "Nunitoga";
+  src: url("./assets/fonts/Nunitoga-Light.woff2") format("woff2");
+  font-weight: lighter;
+  font-style: normal;
+  unicode-range: U+0000-036F, U+0400-1EFF, U+2000-10FFFF;
+}
+
+@font-face {
+  font-family: "Nunitoga";
+  src: url("./assets/fonts/Nunitoga-LightItalic.woff2") format("woff2");
+  font-weight: lighter;
+  font-style: italic;
+  unicode-range: U+0000-036F, U+0400-1EFF, U+2000-10FFFF;
+}
+
+@font-face {
+  font-family: "Nunitoga";
+  src: url("./assets/fonts/Nunitoga-Medium.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  unicode-range: U+0000-036F, U+0400-1EFF, U+2000-10FFFF;
+}
+
+@font-face {
+  font-family: "Nunitoga";
+  src: url("./assets/fonts/Nunitoga-MediumItalic.woff2") format("woff2");
+  font-weight: normal;
+  font-style: italic;
+  unicode-range: U+0000-036F, U+0400-1EFF, U+2000-10FFFF;
+}
+
+@font-face {
+  font-family: "Nunitoga";
+  src: url("./assets/fonts/Nunitoga-Bold.woff2") format("woff2");
+  font-weight: bold;
+  font-style: normal;
+  unicode-range: U+0000-036F, U+0400-1EFF, U+2000-10FFFF;
+}
+
+@font-face {
+  font-family: "Nunitoga";
+  src: url("./assets/fonts/Nunitoga-BoldItalic.woff2") format("woff2");
+  font-weight: bold;
+  font-style: italic;
+  unicode-range: U+0000-036F, U+0400-1EFF, U+2000-10FFFF;
+}
+
 /*!
 * # Semantic UI 2.4.0 - Reset
 * http://github.com/semantic-org/semantic-ui/
@@ -569,7 +617,7 @@ body {
   overflow-x: hidden;
   min-width: 320px;
   background: #ffffff;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 14px;
   line-height: 1.4285em;
   color: rgba(0, 0, 0, 0.87);
@@ -585,7 +633,7 @@ h2,
 h3,
 h4,
 h5 {
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   line-height: 1.28571429em;
   margin: calc(2rem - 0.14285714em) 0em 1rem;
   font-weight: bold;
@@ -782,7 +830,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   vertical-align: baseline;
   background: #e0e1e2 none;
   color: rgba(0, 0, 0, 0.6);
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   margin: 0em 0.25em 0em 0em;
   padding: 0.78571429em 1.5em 0.78571429em;
   text-transform: none;
@@ -801,13 +849,13 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  -webkit-transition: opacity 0.1s ease, background-color 0.1s ease, border-color 0.1s ease,
+  -webkit-transition: opacity 0.1s ease, background-color 0.1s ease,
     color 0.1s ease, background 0.1s ease, -webkit-box-shadow 0.1s ease;
-  transition: opacity 0.1s ease, background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease,
+  transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease,
     background 0.1s ease, -webkit-box-shadow 0.1s ease;
-  transition: opacity 0.1s ease, background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease,
+  transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease,
     box-shadow 0.1s ease, background 0.1s ease;
-  transition: opacity 0.1s ease, background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease,
+  transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease,
     box-shadow 0.1s ease, background 0.1s ease, -webkit-box-shadow 0.1s ease;
   will-change: "";
   -webkit-tap-highlight-color: transparent;
@@ -1773,14 +1821,8 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.labeled.icon.buttons > .button > .icon,
 .ui.labeled.icon.button > .icon {
-  height: calc(100% - 8px);
-  rotate: -45deg;
-  top: 4px;
+  top: 0em;
   left: 0em;
-  aspect-ratio: 1;
-  width: auto;
-  background-color: #275F88;
-  color: #fff;
 }
 
 /* Right Labeled */
@@ -1792,11 +1834,12 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui[class*="right labeled"].icon.button > .icon {
   left: auto;
-  right: 4px;
-  border-radius: 50%;
+  right: 0em;
+  border-radius: 0px;
+  border-top-right-radius: inherit;
+  border-bottom-right-radius: inherit;
   -webkit-box-shadow: 1px 0px 0px 0px transparent inset;
   box-shadow: 1px 0px 0px 0px transparent inset;
-  box-shadow: none !important;
 }
 
 .ui.labeled.icon.buttons > .button > .icon:before,
@@ -2762,21 +2805,21 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.blue.buttons .button:hover,
 .ui.blue.button:hover {
-  background-color: #275F88;
+  background-color: #1678c2;
   color: #ffffff;
   text-shadow: none;
 }
 
 .ui.blue.buttons .button:focus,
 .ui.blue.button:focus {
-  background-color: #275F88 ;
+  background-color: #0d71bb;
   color: #ffffff;
   text-shadow: none;
 }
 
 .ui.blue.buttons .button:active,
 .ui.blue.button:active {
-  background-color: #275F88;
+  background-color: #1a69a4;
   color: #ffffff;
   text-shadow: none;
 }
@@ -2802,17 +2845,17 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.basic.blue.buttons .button:hover,
 .ui.basic.blue.button:hover {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #275F88 inset !important;
-  box-shadow: 0px 0px 0px 1px #275F88 inset !important;
-  color: #275F88 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #1678c2 inset !important;
+  box-shadow: 0px 0px 0px 1px #1678c2 inset !important;
+  color: #1678c2 !important;
 }
 
 .ui.basic.blue.buttons .button:focus,
 .ui.basic.blue.button:focus {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #275F88  inset !important;
-  box-shadow: 0px 0px 0px 1px #275F88  inset !important;
-  color: #275F88 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #0d71bb inset !important;
+  box-shadow: 0px 0px 0px 1px #0d71bb inset !important;
+  color: #1678c2 !important;
 }
 
 .ui.basic.blue.buttons .active.button,
@@ -4503,10 +4546,8 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.primary.buttons .button,
 .ui.primary.button {
-  border: 2px solid transparent;
-  border-radius: 100vw;
-  background-color: #fff;
-  color: #275F88;
+  background-color: #2185d0;
+  color: #ffffff;
   text-shadow: none;
   background-image: none;
 }
@@ -4518,16 +4559,14 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 
 .ui.primary.buttons .button:hover,
 .ui.primary.button:hover {
-  border-color: #fff;
-  background-color: #275F88;
+  background-color: #1678c2;
   color: #ffffff;
   text-shadow: none;
 }
 
 .ui.primary.buttons .button:focus,
 .ui.primary.button:focus {
-  border-color: #fff;
-  background-color: #275F88 ;
+  background-color: #0d71bb;
   color: #ffffff;
   text-shadow: none;
 }
@@ -4560,17 +4599,17 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.basic.primary.buttons .button:hover,
 .ui.basic.primary.button:hover {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #275F88 inset !important;
-  box-shadow: 0px 0px 0px 1px #275F88 inset !important;
-  color: #275F88 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #1678c2 inset !important;
+  box-shadow: 0px 0px 0px 1px #1678c2 inset !important;
+  color: #1678c2 !important;
 }
 
 .ui.basic.primary.buttons .button:focus,
 .ui.basic.primary.button:focus {
   background: transparent !important;
-  -webkit-box-shadow: 0px 0px 0px 1px #275F88  inset !important;
-  box-shadow: 0px 0px 0px 1px #275F88  inset !important;
-  color: #275F88 !important;
+  -webkit-box-shadow: 0px 0px 0px 1px #0d71bb inset !important;
+  box-shadow: 0px 0px 0px 1px #0d71bb inset !important;
+  color: #1678c2 !important;
 }
 
 .ui.basic.primary.buttons .active.button,
@@ -5266,7 +5305,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 /* Text Container */
 
 .ui.text.container {
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   max-width: 700px !important;
   line-height: 1.5;
 }
@@ -6877,7 +6916,7 @@ i.flag.zimbabwe:before {
   border: none;
   margin: calc(2rem - 0.14285714em) 0em 1rem;
   padding: 0em 0em;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-weight: bold;
   line-height: 1.28571429em;
   text-transform: none;
@@ -7368,7 +7407,7 @@ a.ui.inverted.teal.header:hover {
 }
 
 a.ui.blue.header:hover {
-  color: #275F88 !important;
+  color: #1678c2 !important;
 }
 
 .ui.blue.dividing.header {
@@ -14210,12 +14249,12 @@ img.ui.bordered.image {
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
   text-align: left;
   line-height: 1.21428571em;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   padding: 0.67857143em 1em;
   background: #ffffff;
   border: 1px solid rgba(34, 36, 38, 0.15);
   color: rgba(0, 0, 0, 0.87);
-  border-radius: 100vw;
+  border-radius: 0.28571429rem;
   -webkit-transition: border-color 0.1s ease, -webkit-box-shadow 0.1s ease;
   transition: border-color 0.1s ease, -webkit-box-shadow 0.1s ease;
   transition: box-shadow 0.1s ease, border-color 0.1s ease;
@@ -15582,8 +15621,8 @@ a.ui.basic.teal.label:hover {
 
 .ui.blue.labels .label:hover,
 a.ui.blue.label:hover {
-  background-color: #275F88 !important;
-  border-color: #275F88 !important;
+  background-color: #1678c2 !important;
+  border-color: #1678c2 !important;
   color: #ffffff !important;
 }
 
@@ -15611,8 +15650,8 @@ a.ui.blue.label:hover {
 .ui.basic.blue.labels a.label:hover,
 a.ui.basic.blue.label:hover {
   background-color: #ffffff !important;
-  color: #275F88 !important;
-  border-color: #275F88 !important;
+  color: #1678c2 !important;
+  border-color: #1678c2 !important;
 }
 
 /*--- Violet ---*/
@@ -16355,7 +16394,7 @@ ol.ui.list ol li,
 .ui.list > .item .header {
   display: block;
   margin: 0em;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-weight: bold;
   color: rgba(0, 0, 0, 0.87);
 }
@@ -19543,7 +19582,7 @@ ol.ui.horizontal.list li:before,
 /* Title */
 
 .ui.steps .step .title {
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 1.14285714em;
   font-weight: bold;
 }
@@ -20327,7 +20366,7 @@ ol.ui.horizontal.list li:before,
 .ui.form input[type="text"],
 .ui.form input[type="file"],
 .ui.form input[type="url"] {
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   margin: 0em;
   outline: none;
   -webkit-appearance: none;
@@ -23751,7 +23790,7 @@ ol.ui.horizontal.list li:before,
   display: -ms-flexbox;
   display: flex;
   margin: 1rem 0em;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   background: #ffffff;
   font-weight: normal;
   border: 1px solid rgba(34, 36, 38, 0.15);
@@ -26078,7 +26117,7 @@ Floated Menu / Item
 
 .ui.message .header {
   display: block;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-weight: bold;
   margin: -0.14285714em 0em 0rem 0em;
 }
@@ -28392,7 +28431,7 @@ Vertical Alignment
 .ui.card > .content > .header {
   display: block;
   margin: "";
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   color: rgba(0, 0, 0, 0.85);
 }
 
@@ -28891,9 +28930,9 @@ a.ui.card:hover,
 .ui.blue.cards > .card:hover,
 .ui.cards > .blue.card:hover,
 .ui.blue.card:hover {
-  -webkit-box-shadow: 0px 0px 0px 1px #d4d4d5, 0px 2px 0px 0px #275F88,
+  -webkit-box-shadow: 0px 0px 0px 1px #d4d4d5, 0px 2px 0px 0px #1678c2,
     0px 1px 3px 0px #bcbdbd;
-  box-shadow: 0px 0px 0px 1px #d4d4d5, 0px 2px 0px 0px #275F88,
+  box-shadow: 0px 0px 0px 1px #d4d4d5, 0px 2px 0px 0px #1678c2,
     0px 1px 3px 0px #bcbdbd;
 }
 
@@ -30127,7 +30166,7 @@ a.ui.card:hover,
 .ui.items > .item > .content > .header {
   display: inline-block;
   margin: -0.21425em 0em 0em;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-weight: bold;
   color: rgba(0, 0, 0, 0.85);
 }
@@ -30603,7 +30642,7 @@ a.ui.card:hover,
 
 .ui.statistics .statistic > .value,
 .ui.statistic > .value {
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 4rem;
   font-weight: normal;
   line-height: 1em;
@@ -30618,7 +30657,7 @@ a.ui.card:hover,
 
 .ui.statistics .statistic > .label,
 .ui.statistic > .label {
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 1em;
   font-weight: bold;
   color: rgba(0, 0, 0, 0.87);
@@ -31166,7 +31205,7 @@ a.ui.card:hover,
 
 .ui.accordion .title:not(.ui) {
   padding: 0.5em 0em;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: rgba(0, 0, 0, 0.87);
 }
@@ -32025,7 +32064,7 @@ to prevent manually triggering */
 
 .ui.toggle.checkbox input:focus:checked ~ .box:before,
 .ui.toggle.checkbox input:focus:checked ~ label:before {
-  background-color: #275F88  !important;
+  background-color: #0d71bb !important;
 }
 
 /*******************************
@@ -32119,7 +32158,7 @@ to prevent manually triggering */
   text-align: center;
   vertical-align: middle;
   padding: 1em;
-  background-color: rgba(39, 95, 136, 0.85);
+  background-color: rgba(0, 0, 0, 0.85);
   opacity: 0;
   line-height: 1;
   -webkit-animation-fill-mode: both;
@@ -34270,7 +34309,7 @@ select.ui.dropdown {
 
 .ui.modal > .header {
   display: block;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   background: #ffffff;
   margin: 0em;
   padding: 1.25rem 1.5rem;
@@ -35064,7 +35103,7 @@ a.ui.nag {
 
 .ui.popup > .header {
   padding: 0em;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 1.14285714em;
   line-height: 1.2;
   font-weight: bold;
@@ -36860,7 +36899,7 @@ a.ui.nag {
 
 .ui.search > .results .result .title {
   margin: -0.14285714em 0em 0em;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-weight: bold;
   font-size: 1em;
   color: rgba(0, 0, 0, 0.85);
@@ -36886,7 +36925,7 @@ a.ui.nag {
 }
 
 .ui.search > .results > .message .header {
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 1rem;
   font-weight: bold;
   color: rgba(0, 0, 0, 0.87);
@@ -37033,8 +37072,8 @@ a.ui.nag {
   position: absolute;
   left: auto;
   opacity: 0;
-  color: #fff;
-  top: 2px;
+  color: "";
+  top: 0em;
   right: 0em;
   -webkit-transition: color 0.1s ease, opacity 0.1s ease;
   transition: color 0.1s ease, opacity 0.1s ease;
@@ -37103,7 +37142,7 @@ a.ui.nag {
   width: 100px;
   white-space: nowrap;
   background: transparent;
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   font-size: 1em;
   padding: 0.4em 1em;
   font-weight: bold;
@@ -40628,7 +40667,7 @@ input,
 optgroup,
 select,
 textarea {
-  font-family: "Ubuntu", "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
   resize: none !important;
 }
 
@@ -40662,14 +40701,14 @@ textarea {
 *******************************/
 
 .ui.input {
-  color: #275F88;
+  color: #17394d;
 }
 
 .ui.input > input {
   line-height: 20px !important;
   padding: 8px 12px !important;
-  color: #275F88 !important;
-  border-radius: 100vw !important;
+  color: #17394d !important;
+  border-radius: 3px !important;
 }
 
 /*******************************
@@ -40683,7 +40722,7 @@ textarea {
   line-height: 20px;
   min-height: 32px;
   padding: 5px 12px 3px;
-  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  transition: background 0.3s ease;
 }
 
 /*--------------

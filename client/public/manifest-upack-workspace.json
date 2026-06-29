@@ -1,24 +1,24 @@
 {
-  "name": "PLANKA",
+  "name": "uPack Workspace",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "favicon-upack-workspace.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "logo192-upack-workspace.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "logo512-upack-workspace.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#22252a",
+  "theme_color": "#275F88",
   "background_color": "#ffffff"
 }

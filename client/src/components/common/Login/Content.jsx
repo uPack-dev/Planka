@@ -18,9 +18,11 @@ import entryActions from '../../../entry-actions';
 import { useForm, useNestedRef } from '../../../hooks';
 import { isUsername } from '../../../utils/validator';
 import AccessTokenSteps from '../../../constants/AccessTokenSteps';
+import { isUpackWorkspaceStyle } from '../../../constants/StylePresets';
 import TermsModal from './TermsModal';
 
-import logo from '../../../assets/images/logo.svg';
+import plankaLogo from '../../../assets/images/logo.png';
+import upackLogo from '../../../assets/images/logo.svg';
 import upackCoverAvif from '../../../assets/images/login-upack-cover.avif';
 import upackCoverJpg from '../../../assets/images/login-upack-cover.jpg';
 import upackCoverWebp from '../../../assets/images/login-upack-cover.webp';
@@ -321,6 +323,10 @@ const Content = React.memo(() => {
     passwordFieldRef.current.focus();
   }, [focusPasswordFieldState]);
 
+  const loginTitle =
+    bootstrap.instanceName ||
+    (isUpackWorkspaceStyle ? 'Workspace для управління проектами' : 'PLANKA');
+
   return (
     <div className={classNames(styles.wrapper, styles.fullHeight)}>
       <Grid verticalAlign="middle" className={styles.grid}>
@@ -328,12 +334,16 @@ const Content = React.memo(() => {
           <div className={styles.login}>
             <div className={styles.form}>
               <div className={styles.logoWrapper}>
-                <img src={logo} alt="" className={styles.logo} />
+                <img
+                  src={isUpackWorkspaceStyle ? upackLogo : plankaLogo}
+                  alt=""
+                  className={styles.logo}
+                />
               </div>
               <Header
                 as="h1"
                 textAlign="center"
-                content={bootstrap.instanceName || 'Workspace для управління проектами'}
+                content={loginTitle}
                 className={styles.formTitle}
               />
               <Header
@@ -439,36 +449,40 @@ const Content = React.memo(() => {
           only="computer"
           className={classNames(styles.gridItem, styles.cover)}
         >
-          <div className={styles.coverScene} aria-hidden="true">
-            <div className={styles.coverStage}>
-              <div className={styles.coverImage}>
-                <picture>
-                  <source srcSet={upackCoverAvif} type="image/avif" />
-                  <source srcSet={upackCoverWebp} type="image/webp" />
-                  <img src={upackCoverJpg} alt="" />
-                </picture>
-              </div>
-              {coverKeywords.map((keyword) => (
-                <div
-                  key={keyword.text}
-                  className={classNames(styles.keywordBadge, {
-                    [styles.keywordBadgeIcon]: keyword.isIcon,
-                  })}
-                  style={{
-                    '--keyword-left': keyword.left,
-                    '--keyword-top': keyword.top,
-                    '--keyword-rotate': keyword.rotate,
-                    '--keyword-duration': keyword.duration,
-                    '--keyword-delay': keyword.delay,
-                    '--keyword-float-x': keyword.floatX,
-                    '--keyword-float-y': keyword.floatY,
-                  }}
-                >
-                  <span className={styles.keywordBadgeInner}>{keyword.text}</span>
+          {isUpackWorkspaceStyle ? (
+            <div className={styles.coverScene} aria-hidden="true">
+              <div className={styles.coverStage}>
+                <div className={styles.coverImage}>
+                  <picture>
+                    <source srcSet={upackCoverAvif} type="image/avif" />
+                    <source srcSet={upackCoverWebp} type="image/webp" />
+                    <img src={upackCoverJpg} alt="" />
+                  </picture>
                 </div>
-              ))}
+                {coverKeywords.map((keyword) => (
+                  <div
+                    key={keyword.text}
+                    className={classNames(styles.keywordBadge, {
+                      [styles.keywordBadgeIcon]: keyword.isIcon,
+                    })}
+                    style={{
+                      '--keyword-left': keyword.left,
+                      '--keyword-top': keyword.top,
+                      '--keyword-rotate': keyword.rotate,
+                      '--keyword-duration': keyword.duration,
+                      '--keyword-delay': keyword.delay,
+                      '--keyword-float-x': keyword.floatX,
+                      '--keyword-float-y': keyword.floatY,
+                    }}
+                  >
+                    <span className={styles.keywordBadgeInner}>{keyword.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className={styles.coverOverlay} />
+          )}
         </Grid.Column>
       </Grid>
       {step === AccessTokenSteps.ACCEPT_TERMS && <TermsModal />}
