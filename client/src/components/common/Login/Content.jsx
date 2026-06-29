@@ -23,7 +23,7 @@ import TermsModal from './TermsModal';
 
 import plankaLogo from '../../../assets/images/logo.png';
 import upackLogo from '../../../assets/images/logo.svg';
-import topCommandosCover from '../../../assets/images/login-top-commandos-cover.jpg';
+import topCommandosCover from '../../../assets/images/login-top-commandos-cover.webp';
 import topCommandosAnalyticsIcon from '../../../assets/images/top-commandos/analytics.svg';
 import topCommandosAutomationIcon from '../../../assets/images/top-commandos/automation.svg';
 import topCommandosDesignIcon from '../../../assets/images/top-commandos/design.svg';
