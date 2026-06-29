@@ -6,6 +6,7 @@
 export const StylePresets = {
   ORIGINAL: 'original',
   UPACK_WORKSPACE: 'upack-workspace',
+  TOP_COMMANDOS: 'top-commandos',
 };
 
 export const DEFAULT_STYLE_PRESET = StylePresets.ORIGINAL;
@@ -23,6 +24,7 @@ const normalizeStylePreset = (value) => {
 export const stylePreset = normalizeStylePreset(import.meta.env.VITE_STYLE_PRESET);
 
 export const isUpackWorkspaceStyle = stylePreset === StylePresets.UPACK_WORKSPACE;
+export const isTopCommandosStyle = stylePreset === StylePresets.TOP_COMMANDOS;
 
 export const stylePresetMeta = {
   [StylePresets.ORIGINAL]: {
@@ -42,5 +44,13 @@ export const stylePresetMeta = {
     manifestHref: '/manifest-upack-workspace.json',
     fontStylesheetHref:
       'https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap',
+  },
+  [StylePresets.TOP_COMMANDOS]: {
+    title: 'TOP COMMANDOS',
+    description: 'Команда профессионалов с созидательным мышлением и сильной экспертизой',
+    themeColor: '#4A72AE',
+    iconHref: '/favicon.ico',
+    appleTouchIconHref: '/logo192.png',
+    manifestHref: '/manifest-top-commandos.json',
   },
 };

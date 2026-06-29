@@ -346,6 +346,156 @@
   }
 }
 
+:global {
+  #app[data-style-preset="top-commandos"] {
+    background: #4a72ae;
+
+    &,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    .ui.button,
+    .ui.text.container,
+    .ui.header,
+    .ui.list > .item .header,
+    .ui.steps .step .title,
+    .ui.form input[type="date"],
+    .ui.form input[type="datetime-local"],
+    .ui.form input[type="email"],
+    .ui.form input[type="number"],
+    .ui.form input[type="password"],
+    .ui.form input[type="search"],
+    .ui.form input[type="tel"],
+    .ui.form input[type="time"],
+    .ui.form input[type="text"],
+    .ui.form input[type="file"],
+    .ui.form input[type="url"],
+    .ui.segment,
+    .ui.message .header,
+    .ui.card > .content > .header,
+    .ui.items > .item > .content > .header,
+    .ui.statistics .statistic > .value,
+    .ui.statistic > .value,
+    .ui.statistics .statistic > .label,
+    .ui.statistic > .label,
+    .ui.accordion .title:not(.ui),
+    .ui.modal > .header,
+    .ui.popup > .header,
+    .ui.search > .results .result .title,
+    .ui.search > .results > .message .header,
+    .ui.category.search > .results .category > .name,
+    input,
+    optgroup,
+    select,
+    textarea {
+      font-family: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif;
+    }
+
+    button,
+    input,
+    optgroup,
+    select,
+    textarea {
+      font-family: inherit;
+    }
+
+    .g-root {
+      --g-font-family-sans: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif !important;
+    }
+
+    .yfm {
+      --yfm-color-accent: #4a72ae !important;
+      --yfm-color-link: #315f9d !important;
+      --yfm-font-family-sans: "Nunitoga", "Helvetica Neue", Arial, Helvetica, sans-serif !important;
+    }
+
+    .ui.blue.buttons .button,
+    .ui.blue.button,
+    .ui.primary.buttons .button,
+    .ui.primary.button {
+      background-color: #4a72ae;
+      border-radius: 5px;
+      color: #fff;
+      text-shadow: none;
+    }
+
+    .ui.blue.buttons .button:hover,
+    .ui.blue.button:hover,
+    .ui.blue.buttons .button:focus,
+    .ui.blue.button:focus,
+    .ui.primary.buttons .button:hover,
+    .ui.primary.button:hover,
+    .ui.primary.buttons .button:focus,
+    .ui.primary.button:focus {
+      background-color: #3e659d;
+      color: #fff;
+      text-shadow: none;
+    }
+
+    .ui.basic.blue.buttons .button:hover,
+    .ui.basic.blue.button:hover,
+    .ui.basic.blue.buttons .button:focus,
+    .ui.basic.blue.button:focus,
+    .ui.basic.primary.buttons .button:hover,
+    .ui.basic.primary.button:hover,
+    .ui.basic.primary.buttons .button:focus,
+    .ui.basic.primary.button:focus {
+      background: transparent !important;
+      box-shadow: 0 0 0 1px #4a72ae inset !important;
+      color: #4a72ae !important;
+    }
+
+    a.ui.blue.header:hover {
+      color: #4a72ae !important;
+    }
+
+    .ui.input > input {
+      border-radius: 5px !important;
+    }
+
+    .ui.blue.labels .label:hover,
+    a.ui.blue.label:hover {
+      background-color: #4a72ae !important;
+      border-color: #4a72ae !important;
+      color: #fff !important;
+    }
+
+    .ui.basic.blue.labels a.label:hover,
+    a.ui.basic.blue.label:hover {
+      background-color: #fff !important;
+      border-color: #4a72ae !important;
+      color: #4a72ae !important;
+    }
+
+    .ui.blue.cards > .card:hover,
+    .ui.cards > .blue.card:hover,
+    .ui.blue.card:hover {
+      box-shadow:
+        0 0 0 1px #d4d4d5,
+        0 2px 0 0 #4a72ae,
+        0 1px 3px 0 #bcbdbd;
+    }
+
+    .ui.toggle.checkbox input:focus:checked ~ .box::before,
+    .ui.toggle.checkbox input:focus:checked ~ label::before {
+      background-color: #4a72ae !important;
+    }
+
+    .ui.dimmer {
+      background-color: rgba(74, 114, 174, 0.84);
+    }
+
+    .ui.button {
+      transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+    }
+  }
+}
+
 :global(#app) {
   &.dragging > * {
     pointer-events: none;

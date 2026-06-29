@@ -99,6 +99,14 @@
     font-weight: bold;
   }
 
+  .topCommandosTitle {
+    display: block;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 50px;
+    white-space: nowrap;
+  }
+
   .userName {
     margin-right: 10px;
 
@@ -111,5 +119,34 @@
     background: rgba(0, 0, 0, 0.24);
     display: flex;
     flex: 0 0 auto;
+  }
+}
+
+:global(#app[data-style-preset='top-commandos']) {
+  .itemHoverable:hover {
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .logo {
+    letter-spacing: 0;
+    padding: 0 14px;
+    width: 268px;
+
+    @media only screen and (width < 768px) {
+      width: auto;
+    }
+  }
+
+  .menu {
+    height: 50px;
+  }
+
+  .notification {
+    background: #a1f1ed;
+    color: #2d4d7e;
+  }
+
+  .wrapper {
+    background: rgba(0, 0, 0, 0.24);
   }
 }

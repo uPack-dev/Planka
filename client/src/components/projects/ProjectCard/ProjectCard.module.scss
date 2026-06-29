@@ -223,3 +223,29 @@
     }
   }
 }
+
+:global(#app[data-style-preset='top-commandos']) {
+  .cover::after {
+    opacity: 0.3;
+  }
+
+  .favoriteButton:hover {
+    background: rgba(0, 0, 0, 0.16);
+  }
+
+  .notifications {
+    background: #a1f1ed;
+    color: #2d4d7e;
+  }
+
+  .wrapperLarge {
+    .description {
+      max-height: calc(100% - 84px);
+    }
+
+    .title {
+      font-size: 22px;
+      margin: 0 20px 14px;
+    }
+  }
+}
