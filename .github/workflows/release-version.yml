@@ -115,30 +115,26 @@ jobs:
         with:
           ref: ${{ needs.prepare.outputs.target_sha }}
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          cache: npm
-          cache-dependency-path: |
-            client/package-lock.json
-            server/package-lock.json
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
           node-version: "22"
 
-      - name: Install server dependencies
-        run: npm ci --ignore-scripts
-        working-directory: ./server
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build server
-        run: npm run build
-        working-directory: ./server
-
-      - name: Install client dependencies
-        run: npm ci
-        working-directory: ./client
+        run: pnpm --filter planka-server build
 
       - name: Build client
-        run: INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true npm run build
-        working-directory: ./client
+        run: INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true pnpm --filter planka-client build
 
       - name: Create release package
         run: |

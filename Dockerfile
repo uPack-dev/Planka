@@ -2,19 +2,21 @@
 FROM node:22-alpine AS server
 
 RUN apk -U upgrade \
-  && apk add build-base python3 --no-cache
+  && apk add build-base python3 --no-cache \
+  && npm install -g pnpm@latest
 
 WORKDIR /app
 
 COPY server .
 
-# Убрано "npm install npm --global"
-RUN npm install \
-  && npm run build \
-  && npm prune --production
+RUN pnpm install \
+  && pnpm run build \
+  && pnpm prune --prod
 
 # Stage 2: Client build
-FROM node:22 AS client
+FROM node:22-alpine AS client
+
+RUN npm install -g pnpm@latest
 
 WORKDIR /app
 
@@ -23,9 +25,8 @@ ENV VITE_STYLE_PRESET=$VITE_STYLE_PRESET
 
 COPY client .
 
-# Убрано глобальное обновление npm и флаги --omit=dev / --ignore-scripts
-RUN npm install \
-  && INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true npm run build
+RUN pnpm install \
+  && INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true pnpm run build
 
 # Stage 3: Final image (этот этап остаётся без изменений)
 FROM node:22-alpine
@@ -49,7 +50,7 @@ RUN python3 -m venv .venv \
   && .venv/bin/pip3 install -r requirements.txt --no-cache-dir \
   && mv .env.sample .env \
   && mv public/index.ejs views \
-  && npm config set update-notifier false
+  && pnpm config set update-notifier false
 
 VOLUME /app/data
 EXPOSE 1337
