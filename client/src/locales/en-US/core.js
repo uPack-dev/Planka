@@ -151,6 +151,7 @@ export default {
       currentPassword: 'Current password',
       currentUser: 'Current user',
       custom: 'Custom',
+      currentCard: 'This card',
       customColor: 'Custom color',
       customFieldGroup_title: 'Custom Field Group',
       customFieldGroups_title: 'Custom Field Groups',
@@ -390,6 +391,8 @@ export default {
       repeatOn: 'Repeat on',
       recurrence: 'Recurrence',
       recurringCard: 'Recurring card',
+      recurringCardUpdateEntireSeriesNotice:
+        'Moving or resizing this occurrence will update the entire series.',
       schedule: 'Schedule',
       stopwatch: 'Stopwatch',
       story: 'Story',
@@ -502,6 +505,8 @@ export default {
       tasksCount_one: '{{count}} task',
       tasksCount_other: '{{count}} tasks',
       thisRecurringCardUpdateScope: 'This card is recurring. What do you want to update?',
+      invalidRecurrenceRule: 'The recurrence rule is invalid.',
+      yearly: 'Yearly',
     },
 
     action: {

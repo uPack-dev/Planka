@@ -79,13 +79,19 @@ module.exports = {
       values.isClosed = true;
     }
 
-    const card = await Card.qm.createOne({
+    let card = await Card.qm.createOne({
       ...values,
       boardId: values.board.id,
       listId: values.list.id,
       creatorUserId: values.creatorUser.id,
       listChangedAt: new Date().toISOString(),
     });
+
+    if (card.recurrenceRule && !card.recurrenceSeriesId) {
+      ({ card } = await Card.qm.updateOne(card.id, {
+        recurrenceSeriesId: card.id,
+      }));
+    }
 
     sails.sockets.broadcast(
       `board:${card.boardId}`,

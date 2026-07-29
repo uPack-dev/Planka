@@ -402,6 +402,11 @@ export default {
       schedule: 'Schedule',
       startDate: 'Start date',
       startTime: 'Start time',
+      currentCard: 'This card',
+      invalidRecurrenceRule: 'The recurrence rule is invalid.',
+      recurringCardUpdateEntireSeriesNotice:
+        'Moving or resizing this occurrence will update the entire series.',
+      yearly: 'Yearly',
       thisRecurringCardUpdateScope: 'This card is recurring. What do you want to update?',
       week: 'Week',
       weekly: 'Weekly',

@@ -230,6 +230,8 @@ export function* handleCardCreate(card) {
 }
 
 export function* updateCard(id, data) {
+  const prevCard = yield select(selectors.selectCardById, id);
+  const { recurrenceScope, ...optimisticData } = data;
   let prevListId;
   let isClosed;
 
@@ -260,7 +262,7 @@ export function* updateCard(id, data) {
 
   yield put(
     actions.updateCard(id, {
-      ...data,
+      ...optimisticData,
       ...(prevListId !== undefined && {
         prevListId,
       }),
@@ -274,7 +276,12 @@ export function* updateCard(id, data) {
   try {
     ({ item: card } = yield call(request, api.updateCard, id, data));
   } catch (error) {
-    yield put(actions.updateCard.failure(id, error));
+    yield put(actions.updateCard.failure(id, prevCard, error));
+
+    if (error.code === 'E_UNPROCESSABLE_ENTITY') {
+      yield call(toast.error, error.message);
+    }
+
     return;
   }
 

@@ -469,12 +469,17 @@ const ProjectContent = React.memo(() => {
                         )}
                       </>
                     ) : (
-                      <DueDateChip
-                        withStatusIcon
-                        value={card.dueDate || card.startDate}
-                        isCompleted={card.isDueCompleted}
-                        withStatus={!!card.dueDate && !card.isClosed}
-                      />
+                      <>
+                        <DueDateChip
+                          withStatusIcon
+                          value={card.dueDate || card.startDate}
+                          isCompleted={card.isDueCompleted}
+                          withStatus={!!card.dueDate && !card.isClosed}
+                        />
+                        {card.recurrenceRule && (
+                          <span className={styles.recurrenceText}>{t('common.recurringCard')}</span>
+                        )}
+                      </>
                     )}
                   </span>
                 </div>

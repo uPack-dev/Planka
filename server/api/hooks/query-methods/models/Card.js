@@ -163,6 +163,42 @@ const getByListIds = async (listIds, { sort = ['position', 'id'] } = {}) =>
     { sort },
   );
 
+const getRecurring = () =>
+  defaultFind({
+    recurrenceRule: {
+      '!=': null,
+    },
+  });
+
+const getDueRecurring = async (at, limit = LIMIT) => {
+  const queryResult = await sails.sendNativeQuery(
+    `SELECT card.* FROM card
+    INNER JOIN list ON card.list_id = list.id
+    INNER JOIN board ON card.board_id = board.id
+    INNER JOIN project ON board.project_id = project.id
+    WHERE card.recurrence_rule IS NOT NULL
+      AND card.recurrence_next_at <= $1
+      AND list.type IN ('${List.Types.ACTIVE}', '${List.Types.CLOSED}')
+      AND board.is_archived = FALSE
+      AND board.is_template = FALSE
+      AND project.is_archived = FALSE
+    ORDER BY card.recurrence_next_at, card.id
+    LIMIT $2`,
+    [at, limit],
+  );
+
+  return queryResult.rows.map((row) => transformRowToModel(row));
+};
+
+const getOneByRecurrenceSeriesIdAndOccurrenceAt = (recurrenceSeriesId, recurrenceOccurrenceAt) =>
+  Card.findOne({
+    recurrenceSeriesId,
+    recurrenceOccurrenceAt:
+      recurrenceOccurrenceAt instanceof Date
+        ? recurrenceOccurrenceAt.toISOString()
+        : recurrenceOccurrenceAt,
+  });
+
 const countByBoardIds = async (boardIds) => {
   if (boardIds.length === 0) {
     return {};
@@ -254,7 +290,7 @@ const getByCalendarRange = async ({
     )
     OR (
       card.recurrence_rule IS NOT NULL
-      AND COALESCE(card.recurrence_until, card.end_date, card.due_date, card.start_date, $${endIndex}) >= $${startIndex}
+      AND (card.recurrence_until IS NULL OR card.recurrence_until >= $${startIndex})
       AND COALESCE(card.start_date, card.due_date, $${startIndex}) < $${endIndex}
     )
   )`;
@@ -425,6 +461,9 @@ module.exports = {
   getByListId,
   getByEndlessListId,
   getByListIds,
+  getRecurring,
+  getDueRecurring,
+  getOneByRecurrenceSeriesIdAndOccurrenceAt,
   countByBoardIds,
   getByCalendarRange,
   getOneById,

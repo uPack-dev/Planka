@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Gallery, Item as GalleryItem } from 'react-photoswipe-gallery';
-import { Button, Grid, Icon } from 'semantic-ui-react';
+import { Button, Checkbox, Grid, Icon } from 'semantic-ui-react';
 import { useDidUpdate } from '../../../lib/hooks';
 
 import selectors from '../../../selectors';
@@ -36,6 +36,7 @@ import ListsStep from '../../lists/ListsStep';
 import Attachments from '../../attachments/Attachments';
 import AddAttachmentStep from '../../attachments/AddAttachmentStep';
 import AddCustomFieldGroupStep from '../../custom-field-groups/AddCustomFieldGroupStep';
+import DueDateChip from '../DueDateChip';
 
 import styles from './StoryContent.module.scss';
 
@@ -278,6 +279,14 @@ const StoryContent = React.memo(() => {
     setIsEditDescriptionOpened(false);
   }, []);
 
+  const handleDueCompletionChange = useCallback(() => {
+    dispatch(
+      entryActions.updateCurrentCard({
+        isDueCompleted: !card.isDueCompleted,
+      }),
+    );
+  }, [card.isDueCompleted, dispatch]);
+
   const handleBeforeGalleryOpen = useCallback(
     (gallery) => {
       activateClosable();
@@ -355,7 +364,12 @@ const StoryContent = React.memo(() => {
             }}
             onBeforeOpen={handleBeforeGalleryOpen}
           >
-            {(board.alwaysDisplayCardCreator || labelIds.length > 0 || coverAttachment) && (
+            {(board.alwaysDisplayCardCreator ||
+              labelIds.length > 0 ||
+              coverAttachment ||
+              card.dueDate ||
+              card.startDate ||
+              card.recurrenceRule) && (
               <div className={classNames(styles.moduleWrapper, styles.moduleWrapperAttachments)}>
                 {coverAttachment && (
                   <div className={styles.coverWrapper}>
@@ -385,6 +399,37 @@ const StoryContent = React.memo(() => {
                         <UserAvatar withCreatorIndicator id={card.creatorUserId} size="tiny" />
                       </CreationDetailsPopup>
                     </span>
+                  </div>
+                )}
+                {(card.dueDate || card.startDate || card.recurrenceRule) && (
+                  <div className={styles.attachments}>
+                    {card.dueDate && !card.isClosed && (
+                      <Checkbox
+                        checked={card.isDueCompleted}
+                        disabled={!canEditDueDate}
+                        onChange={handleDueCompletionChange}
+                      />
+                    )}
+                    <span className={styles.attachment}>
+                      {canEditDueDate ? (
+                        <EditDueDatePopup cardId={card.id}>
+                          <DueDateChip
+                            value={card.dueDate || card.startDate}
+                            isCompleted={card.isDueCompleted}
+                            withStatus={!!card.dueDate && !card.isClosed}
+                          />
+                        </EditDueDatePopup>
+                      ) : (
+                        <DueDateChip
+                          value={card.dueDate || card.startDate}
+                          isCompleted={card.isDueCompleted}
+                          withStatus={!!card.dueDate && !card.isClosed}
+                        />
+                      )}
+                    </span>
+                    {card.recurrenceRule && (
+                      <span className={styles.attachment}>{t('common.recurringCard')}</span>
+                    )}
                   </div>
                 )}
                 {labelIds.length > 0 && (

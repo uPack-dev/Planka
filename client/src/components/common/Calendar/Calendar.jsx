@@ -46,7 +46,7 @@ const RecurringUpdateModal = React.memo(({ mutation, onConfirm, onCancel }) => {
     <Modal open={!!mutation} size="tiny" onClose={onCancel}>
       <Modal.Header>{t('common.recurringCard')}</Modal.Header>
       <Modal.Content>
-        <p>{t('common.thisRecurringCardUpdateScope')}</p>
+        <p>{t('common.recurringCardUpdateEntireSeriesNotice')}</p>
       </Modal.Content>
       <Modal.Actions>
         <Button onClick={onCancel}>{t('action.cancel')}</Button>

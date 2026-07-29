@@ -18,7 +18,7 @@ import {
   selectionToCardDefaults,
 } from '../../../utils/calendar-events';
 import Paths from '../../../constants/Paths';
-import { BoardMembershipRoles, UserRoles } from '../../../constants/Enums';
+import { BoardMembershipRoles, ListTypes, UserRoles } from '../../../constants/Enums';
 import Calendar from '../Calendar';
 import GlobalCalendarCreateCardModal from './GlobalCalendarCreateCardModal';
 import UserAvatar from '../../users/UserAvatar';
@@ -65,7 +65,10 @@ const GlobalCalendarView = React.memo(() => {
         (board) =>
           board.membership &&
           board.membership.role === BoardMembershipRoles.EDITOR &&
-          lists.some((list) => list.boardId === board.id),
+          !board.isArchived &&
+          !board.isTemplate &&
+          !(board.project && board.project.isArchived) &&
+          lists.some((list) => list.boardId === board.id && list.type === ListTypes.ACTIVE),
       ),
     [boards, lists],
   );
@@ -125,6 +128,16 @@ const GlobalCalendarView = React.memo(() => {
     return result;
   }, [boards]);
 
+  const projectsById = useMemo(() => {
+    const result = {};
+
+    projects.forEach((project) => {
+      result[project.id] = project;
+    });
+
+    return result;
+  }, [projects]);
+
   const events = useMemo(
     () =>
       cards
@@ -137,8 +150,15 @@ const GlobalCalendarView = React.memo(() => {
           }
 
           const board = boardsById[card.boardId] || card.board;
+          const project =
+            (board && (board.project || projectsById[board.projectId])) || card.project;
           const canEditSchedule =
-            !!board && !!board.membership && board.membership.role === BoardMembershipRoles.EDITOR;
+            !!board &&
+            !board.isArchived &&
+            !board.isTemplate &&
+            !(project && project.isArchived) &&
+            !!board.membership &&
+            board.membership.role === BoardMembershipRoles.EDITOR;
 
           return {
             ...event,
@@ -155,7 +175,7 @@ const GlobalCalendarView = React.memo(() => {
           };
         })
         .filter(Boolean),
-    [cards, filters.hideCompleted, boardsById],
+    [boardsById, cards, filters.hideCompleted, projectsById],
   );
 
   const projectOptions = useMemo(

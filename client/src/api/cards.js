@@ -12,7 +12,15 @@ import { transformNotification } from './notifications';
 
 /* Transformers */
 
-const DATE_FIELD_NAMES = ['dueDate', 'startDate', 'endDate', 'recurrenceUntil'];
+const DATE_FIELD_NAMES = [
+  'dueDate',
+  'startDate',
+  'endDate',
+  'recurrenceUntil',
+  'recurrenceSeriesStartAt',
+  'recurrenceOccurrenceAt',
+  'recurrenceNextAt',
+];
 
 const transformDateFields = (record) =>
   DATE_FIELD_NAMES.reduce(

@@ -16,7 +16,7 @@
     "start": "nodemon",
     "start:prod": "cross-env NODE_ENV=production node app.js --prod",
     "swagger:generate": "node generate-swagger.js",
-    "test": "mocha test/lifecycle.test.js test/integration/**/*.test.js test/utils/**/*.test.js"
+    "test": "mocha --exit test/lifecycle.test.js test/integration/**/*.test.js test/utils/**/*.test.js"
   },
   "eslintConfig": {
     "plugins": [
@@ -74,6 +74,7 @@
     "pg": "^8.20.0",
     "read": "^5.0.1",
     "rimraf": "^6.1.3",
+    "rrule": "^2.8.1",
     "sails": "^1.5.17",
     "sails-hook-orm": "^4.0.3",
     "sails-hook-sockets": "^3.0.2",

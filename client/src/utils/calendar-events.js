@@ -3,36 +3,107 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+import { rrulestr } from 'rrule';
+
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_TIMED_DURATION_IN_MS = 60 * 60 * 1000;
+const RECURRENCE_KEYS = new Set([
+  'FREQ',
+  'INTERVAL',
+  'COUNT',
+  'UNTIL',
+  'BYDAY',
+  'BYMONTHDAY',
+  'BYMONTH',
+]);
+const RECURRENCE_FREQUENCIES = new Set(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']);
+const RECURRENCE_WEEKDAYS = new Set(['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']);
 
-const RRULE_KEY_BY_FULLCALENDAR_KEY = {
-  FREQ: 'freq',
-  INTERVAL: 'interval',
-  COUNT: 'count',
-  UNTIL: 'until',
-  BYDAY: 'byweekday',
-  BYMONTHDAY: 'bymonthday',
-  BYMONTH: 'bymonth',
-};
+const isIntegerListInRange = (value, min, max) =>
+  value.split(',').every((part) => {
+    if (!/^-?[0-9]+$/.test(part)) {
+      return false;
+    }
+
+    const number = Number(part);
+    return number >= min && number <= max && number !== 0;
+  });
+
+const isWeekdayList = (value) =>
+  value.split(',').every((part) => {
+    const match = part.match(/^([+-]?\d{1,2})?([A-Z]{2})$/);
+    if (!match || !RECURRENCE_WEEKDAYS.has(match[2])) {
+      return false;
+    }
+
+    if (!match[1]) {
+      return true;
+    }
+
+    const ordinal = Number(match[1]);
+    return ordinal >= -53 && ordinal <= 53 && ordinal !== 0;
+  });
 
 const cloneDate = (date) => (date ? new Date(date.getTime()) : null);
 
 const addMilliseconds = (date, milliseconds) =>
   date ? new Date(date.getTime() + milliseconds) : null;
 
-const addDays = (date, days) => addMilliseconds(date, days * DAY_IN_MS);
+const addDays = (date, days) => {
+  if (!date) {
+    return null;
+  }
 
-const toDateOnly = (date) => {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
+  const result = cloneDate(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
 
-  return `${year}-${month}-${day}`;
+const addCalendarDuration = (date, duration, fallbackMilliseconds = 0) => {
+  if (!date) {
+    return null;
+  }
+
+  if (!duration) {
+    return addMilliseconds(date, fallbackMilliseconds);
+  }
+
+  const result = cloneDate(date);
+  result.setFullYear(result.getFullYear() + (duration.years || 0));
+  result.setMonth(result.getMonth() + (duration.months || 0));
+  result.setDate(result.getDate() + (duration.days || 0));
+  result.setTime(result.getTime() + (duration.milliseconds || 0));
+  return result;
+};
+
+const getDateParts = (date, timeZone) =>
+  Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(date)
+      .filter(({ type }) => type !== 'literal')
+      .map(({ type, value }) => [type, value]),
+  );
+
+const buildDtStart = (date, isAllDay, timeZone) => {
+  const parts = getDateParts(date, timeZone);
+  const dateValue = `${parts.year}${parts.month}${parts.day}`;
+  const timeValue = isAllDay ? '000000' : `${parts.hour}${parts.minute}${parts.second}`;
+  return timeZone === 'UTC'
+    ? `DTSTART:${dateValue}T${timeValue}Z`
+    : `DTSTART;TZID=${timeZone}:${dateValue}T${timeValue}`;
 };
 
 const getDefaultEndDate = (startDate, isAllDay) =>
-  addMilliseconds(startDate, isAllDay ? DAY_IN_MS : DEFAULT_TIMED_DURATION_IN_MS);
+  isAllDay ? addDays(startDate, 1) : addMilliseconds(startDate, DEFAULT_TIMED_DURATION_IN_MS);
 
 const getDuration = (startDate, endDate, isAllDay) => {
   if (!startDate) {
@@ -43,8 +114,15 @@ const getDuration = (startDate, endDate, isAllDay) => {
   const durationInMs = normalizedEndDate.getTime() - startDate.getTime();
 
   if (isAllDay) {
+    const startDay = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const endDay = Date.UTC(
+      normalizedEndDate.getFullYear(),
+      normalizedEndDate.getMonth(),
+      normalizedEndDate.getDate(),
+    );
+
     return {
-      days: Math.max(Math.round(durationInMs / DAY_IN_MS), 1),
+      days: Math.max(Math.round((endDay - startDay) / DAY_IN_MS), 1),
     };
   }
 
@@ -89,58 +167,69 @@ export const normalizeFullCalendarEnd = (startDate, endDate, isAllDay) => {
   return getDefaultEndDate(startDate, isAllDay);
 };
 
-export const parseRecurrenceRule = (recurrenceRule, startDate, isAllDay) => {
+const normalizeRecurrenceRule = (recurrenceRule) =>
+  recurrenceRule
+    .trim()
+    .replace(/^RRULE:/i, '')
+    .toUpperCase();
+
+export const parseRecurrenceFields = (recurrenceRule) =>
+  normalizeRecurrenceRule(recurrenceRule)
+    .split(';')
+    .reduce((result, field) => {
+      const [key, value, ...rest] = field.split('=');
+
+      if (!key || !value || rest.length > 0 || result[key]) {
+        throw new Error('Invalid recurrence rule');
+      }
+
+      return {
+        ...result,
+        [key]: value,
+      };
+    }, {});
+
+export const parseRecurrenceRule = (
+  recurrenceRule,
+  startDate,
+  isAllDay,
+  recurrenceTimezone = 'UTC',
+) => {
   if (!recurrenceRule || !startDate) {
     return null;
   }
 
-  const normalizedRule = recurrenceRule.startsWith('RRULE:')
-    ? recurrenceRule.substring('RRULE:'.length)
-    : recurrenceRule;
+  const normalizedRule = normalizeRecurrenceRule(recurrenceRule);
+  return `${buildDtStart(startDate, isAllDay, recurrenceTimezone)}\nRRULE:${normalizedRule}`;
+};
 
-  return normalizedRule.split(';').reduce(
-    (result, field) => {
-      const [key, value] = field.split('=');
-      const fullCalendarKey = RRULE_KEY_BY_FULLCALENDAR_KEY[key];
+export const validateRecurrenceRule = (recurrenceRule, startDate, isAllDay, recurrenceTimezone) => {
+  const fields = parseRecurrenceFields(recurrenceRule);
+  const interval = fields.INTERVAL ? Number(fields.INTERVAL) : 1;
+  const count = fields.COUNT ? Number(fields.COUNT) : null;
 
-      if (!fullCalendarKey || !value) {
-        return result;
-      }
+  if (
+    !RECURRENCE_FREQUENCIES.has(fields.FREQ) ||
+    Object.keys(fields).some((key) => !RECURRENCE_KEYS.has(key)) ||
+    (fields.COUNT && fields.UNTIL) ||
+    (fields.INTERVAL && !/^[1-9][0-9]*$/.test(fields.INTERVAL)) ||
+    !Number.isInteger(interval) ||
+    interval < 1 ||
+    interval > 365 ||
+    (count !== null &&
+      (!/^[1-9][0-9]*$/.test(fields.COUNT) ||
+        !Number.isInteger(count) ||
+        count < 1 ||
+        count > 1000)) ||
+    (fields.BYDAY && !isWeekdayList(fields.BYDAY)) ||
+    (fields.BYMONTHDAY && !isIntegerListInRange(fields.BYMONTHDAY, -31, 31)) ||
+    (fields.BYMONTH && !isIntegerListInRange(fields.BYMONTH, 1, 12)) ||
+    (!isAllDay && fields.UNTIL && !/^\d{8}T\d{6}Z$/.test(fields.UNTIL))
+  ) {
+    throw new Error('Invalid recurrence rule');
+  }
 
-      switch (key) {
-        case 'FREQ':
-          return {
-            ...result,
-            [fullCalendarKey]: value.toLowerCase(),
-          };
-        case 'INTERVAL':
-        case 'COUNT':
-          return {
-            ...result,
-            [fullCalendarKey]: Number(value),
-          };
-        case 'BYDAY':
-          return {
-            ...result,
-            [fullCalendarKey]: value.split(',').map((day) => day.toLowerCase()),
-          };
-        case 'BYMONTHDAY':
-        case 'BYMONTH':
-          return {
-            ...result,
-            [fullCalendarKey]: value.split(',').map(Number),
-          };
-        default:
-          return {
-            ...result,
-            [fullCalendarKey]: value,
-          };
-      }
-    },
-    {
-      dtstart: isAllDay ? toDateOnly(startDate) : startDate,
-    },
-  );
+  rrulestr(parseRecurrenceRule(recurrenceRule, startDate, isAllDay, recurrenceTimezone));
 };
 
 export const cardToCalendarEvent = (card) => {
@@ -167,6 +256,7 @@ export const cardToCalendarEvent = (card) => {
       startDate: card.startDate,
       endDate: card.endDate,
       recurrenceRule: card.recurrenceRule,
+      recurrenceTimezone: card.recurrenceTimezone,
       labels: card.labels || [],
       users: card.users || [],
       list: card.list,
@@ -174,7 +264,12 @@ export const cardToCalendarEvent = (card) => {
   };
 
   if (card.recurrenceRule) {
-    const rrule = parseRecurrenceRule(card.recurrenceRule, startDate, isAllDay);
+    const rrule = parseRecurrenceRule(
+      card.recurrenceRule,
+      startDate,
+      isAllDay,
+      card.recurrenceTimezone || 'UTC',
+    );
 
     if (!rrule) {
       return null;
@@ -194,7 +289,7 @@ export const cardToCalendarEvent = (card) => {
   };
 };
 
-export const eventDropToCardData = ({ event, oldEvent }) => {
+export const eventDropToCardData = ({ event, oldEvent, delta }) => {
   const isAllDay = event.allDay;
   const baseStartDate = event.extendedProps.startDate || oldEvent.start;
   const baseEndDate =
@@ -203,8 +298,8 @@ export const eventDropToCardData = ({ event, oldEvent }) => {
     normalizeFullCalendarEnd(oldEvent.start, null, oldEvent.allDay);
 
   const deltaInMs = event.start.getTime() - oldEvent.start.getTime();
-  const startDate = addMilliseconds(baseStartDate, deltaInMs);
-  const endDate = addMilliseconds(baseEndDate, deltaInMs);
+  const startDate = addCalendarDuration(baseStartDate, delta, deltaInMs);
+  const endDate = addCalendarDuration(baseEndDate, delta, deltaInMs);
 
   return {
     startDate,
@@ -214,14 +309,16 @@ export const eventDropToCardData = ({ event, oldEvent }) => {
   };
 };
 
-export const eventResizeToCardData = ({ event }) => {
+export const eventResizeToCardData = ({ event, endDelta }) => {
   const isAllDay = event.allDay;
-  const durationInMs =
-    (event.end || normalizeFullCalendarEnd(event.start, null, isAllDay)).getTime() -
-    event.start.getTime();
-
   const startDate = event.extendedProps.startDate || event.start;
-  const endDate = addMilliseconds(startDate, durationInMs);
+  const baseEndDate =
+    event.extendedProps.endDate || normalizeFullCalendarEnd(startDate, null, isAllDay);
+  const fallbackDeltaInMs =
+    (event.end || normalizeFullCalendarEnd(event.start, null, isAllDay)).getTime() -
+    event.start.getTime() -
+    (baseEndDate.getTime() - startDate.getTime());
+  const endDate = addCalendarDuration(baseEndDate, endDelta, fallbackDeltaInMs);
 
   return {
     endDate,
@@ -266,10 +363,9 @@ export const buildRecurrenceRule = ({ frequency, interval, weekdays, endType, un
   }
 
   if (endType === 'onDate' && until) {
-    const year = until.getUTCFullYear();
-    const month = `${until.getUTCMonth() + 1}`.padStart(2, '0');
-    const day = `${until.getUTCDate()}`.padStart(2, '0');
-    fields.push(`UNTIL=${year}${month}${day}T235959Z`);
+    const endOfDay = new Date(until.getFullYear(), until.getMonth(), until.getDate(), 23, 59, 59);
+    const untilValue = endOfDay.toISOString().replace(/[-:]/g, '').replace('.000', '');
+    fields.push(`UNTIL=${untilValue}`);
   } else if (endType === 'after' && count) {
     fields.push(`COUNT=${count}`);
   }
