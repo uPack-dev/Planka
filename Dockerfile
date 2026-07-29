@@ -3,32 +3,42 @@ FROM node:22-alpine AS server
 
 RUN apk -U upgrade \
   && apk add build-base python3 --no-cache \
-  && npm install -g pnpm@latest
+  && npm install -g pnpm@11.18.0
 
 WORKDIR /app
 
+COPY server/package.json server/pnpm-workspace.yaml server/.npmrc server/requirements.txt server/setup-python.js ./
+COPY server/patches patches
+
+RUN --mount=type=cache,id=pnpm-server,target=/root/.local/share/pnpm/store \
+  pnpm install
+
 COPY server .
 
-RUN pnpm install \
-  && pnpm run build \
-  && pnpm prune --prod
+RUN pnpm run build \
+  && pnpm prune --prod --ignore-scripts
 
 # Stage 2: Client build
 FROM node:22-alpine AS client
 
-RUN npm install -g pnpm@latest
+RUN npm install -g pnpm@11.18.0
 
 WORKDIR /app
 
 ARG VITE_STYLE_PRESET=original
 ENV VITE_STYLE_PRESET=$VITE_STYLE_PRESET
 
+COPY client/package.json client/pnpm-workspace.yaml client/.npmrc ./
+COPY client/patches patches
+
+RUN --mount=type=cache,id=pnpm-client,target=/root/.local/share/pnpm/store \
+  pnpm install
+
 COPY client .
 
-RUN pnpm install \
-  && INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true pnpm run build
+RUN INDEX_FORMAT=ejs DISABLE_ESLINT_PLUGIN=true pnpm run build
 
-# Stage 3: Final image (этот этап остаётся без изменений)
+# Stage 3: Final image
 FROM node:22-alpine
 
 RUN apk -U upgrade \
@@ -42,15 +52,12 @@ COPY --chown=node:node ["LICENSES/PLANKA Community License DE.md", "LICENSE_DE.m
 
 COPY --from=server --chown=node:node /app/node_modules node_modules
 COPY --from=server --chown=node:node /app/dist .
+COPY --from=server --chown=node:node /app/.venv .venv
 
 COPY --from=client --chown=node:node /app/dist public
 
-RUN python3 -m venv .venv \
-  && .venv/bin/pip3 install --upgrade pip \
-  && .venv/bin/pip3 install -r requirements.txt --no-cache-dir \
-  && mv .env.sample .env \
-  && mv public/index.ejs views \
-  && pnpm config set update-notifier false
+RUN mv .env.sample .env \
+  && mv public/index.ejs views
 
 VOLUME /app/data
 EXPOSE 1337

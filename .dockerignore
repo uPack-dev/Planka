@@ -1,9 +1,13 @@
 **/.DS_Store
+.git
 
-*/node_modules
+**/node_modules
+**/.pnpm-store
+**/.env
 
 server/swagger.json
-server/.env
+client/pnpm-lock.yaml
+server/pnpm-lock.yaml
 
 server/dist
 server/logs
