@@ -58,6 +58,10 @@
     color: #fff;
     flex: 0 0 auto;
     letter-spacing: 3.5px;
+    line-height: 50px;
+    display: inline-flex;
+    align-items: center;
+    height: 50px;
     padding: 0 16px;
     text-transform: uppercase;
 
@@ -119,6 +123,7 @@
     background: rgba(0, 0, 0, 0.24);
     display: flex;
     flex: 0 0 auto;
+    align-items: center;
   }
 }
 
