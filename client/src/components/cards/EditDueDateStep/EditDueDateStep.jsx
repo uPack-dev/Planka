@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import DatePicker from 'react-datepicker';
-import { Button, Form } from 'semantic-ui-react';
+import { Button, Form, Message } from 'semantic-ui-react';
 import { useDidUpdate, useToggle } from '../../../lib/hooks';
 import { Input, Popup } from '../../../lib/custom-ui';
 
@@ -16,11 +16,14 @@ import selectors from '../../../selectors';
 import entryActions from '../../../entry-actions';
 import { useForm, useNestedRef } from '../../../hooks';
 import parseTime from '../../../utils/parse-time';
-import { buildRecurrenceRule } from '../../../utils/calendar-events';
+import {
+  buildRecurrenceRule,
+  parseRecurrenceFields,
+  validateRecurrenceRule,
+} from '../../../utils/calendar-events';
 
 import styles from './EditDueDateStep.module.scss';
 
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_TIMED_DURATION_IN_MS = 60 * 60 * 1000;
 
 const RecurrenceModes = {
@@ -28,6 +31,7 @@ const RecurrenceModes = {
   DAILY: 'daily',
   WEEKLY: 'weekly',
   MONTHLY: 'monthly',
+  YEARLY: 'yearly',
   CUSTOM: 'custom',
 };
 
@@ -40,6 +44,11 @@ const RecurrenceEndTypes = {
 const WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
 
 const addMilliseconds = (date, milliseconds) => new Date(date.getTime() + milliseconds);
+const addDays = (date, days) => {
+  const result = new Date(date.getTime());
+  result.setDate(result.getDate() + days);
+  return result;
+};
 
 const formatDate = (t, value) =>
   t('format:date', {
@@ -70,7 +79,7 @@ const getVisibleEndDate = (card) => {
   const isAllDay = card.isAllDay ?? !card.startDate;
 
   if (card.endDate) {
-    return isAllDay ? addMilliseconds(card.endDate, -DAY_IN_MS) : card.endDate;
+    return isAllDay ? addDays(card.endDate, -1) : card.endDate;
   }
 
   return addMilliseconds(startDate, isAllDay ? 0 : DEFAULT_TIMED_DURATION_IN_MS);
@@ -86,25 +95,42 @@ const parseRecurrenceData = (recurrenceRule, recurrenceUntil, t) => {
       recurrenceUntilDate: formatDate(t, recurrenceUntil || new Date()),
       recurrenceCount: 10,
       customRecurrenceRule: '',
+      recurrenceError: false,
     };
   }
 
-  const fields = recurrenceRule
-    .replace(/^RRULE:/, '')
-    .split(';')
-    .reduce((result, field) => {
-      const [key, value] = field.split('=');
-      return {
-        ...result,
-        [key]: value,
-      };
-    }, {});
+  let fields;
+  try {
+    fields = parseRecurrenceFields(recurrenceRule);
+  } catch (error) {
+    return {
+      recurrenceMode: RecurrenceModes.CUSTOM,
+      recurrenceInterval: 1,
+      recurrenceWeekdays: [],
+      recurrenceEndType: RecurrenceEndTypes.NEVER,
+      recurrenceUntilDate: formatDate(t, recurrenceUntil || new Date()),
+      recurrenceCount: 10,
+      customRecurrenceRule: recurrenceRule,
+      recurrenceError: true,
+    };
+  }
 
   const recurrenceModeByFrequency = {
     DAILY: RecurrenceModes.DAILY,
     WEEKLY: RecurrenceModes.WEEKLY,
     MONTHLY: RecurrenceModes.MONTHLY,
+    YEARLY: RecurrenceModes.YEARLY,
   };
+
+  const keys = Object.keys(fields);
+  const simpleKeys = new Set(['FREQ', 'INTERVAL', 'COUNT', 'UNTIL']);
+  if (fields.FREQ === 'WEEKLY') {
+    simpleKeys.add('BYDAY');
+  }
+
+  const hasUnsupportedSimpleField =
+    keys.some((key) => !simpleKeys.has(key)) ||
+    (fields.BYDAY && fields.BYDAY.split(',').some((weekday) => /^[-+]?\d/.test(weekday)));
 
   let recurrenceEndType = RecurrenceEndTypes.NEVER;
 
@@ -115,13 +141,17 @@ const parseRecurrenceData = (recurrenceRule, recurrenceUntil, t) => {
   }
 
   return {
-    recurrenceMode: recurrenceModeByFrequency[fields.FREQ] || RecurrenceModes.CUSTOM,
+    recurrenceMode:
+      !hasUnsupportedSimpleField && recurrenceModeByFrequency[fields.FREQ]
+        ? recurrenceModeByFrequency[fields.FREQ]
+        : RecurrenceModes.CUSTOM,
     recurrenceInterval: fields.INTERVAL || 1,
     recurrenceWeekdays: fields.BYDAY ? fields.BYDAY.split(',') : [],
     recurrenceEndType,
     recurrenceUntilDate: formatDate(t, recurrenceUntil || new Date()),
     recurrenceCount: fields.COUNT || 10,
     customRecurrenceRule: recurrenceRule,
+    recurrenceError: false,
   };
 };
 
@@ -131,7 +161,9 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
   const card = useSelector((state) => selectCardById(state, cardId));
 
   const dispatch = useDispatch();
-  const [t] = useTranslation();
+  const [t, i18n] = useTranslation();
+  const recurrenceTimezone =
+    card.recurrenceTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
   const [data, handleFieldChange, setData] = useForm(() => {
     const startDate = card.startDate || card.dueDate || new Date(new Date().setHours(12, 0, 0, 0));
@@ -155,6 +187,17 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
   const [endDateFieldRef, handleEndDateFieldRef] = useNestedRef('inputRef');
   const [endTimeFieldRef, handleEndTimeFieldRef] = useNestedRef('inputRef');
 
+  const handleFormFieldChange = useCallback(
+    (event, fieldData) => {
+      handleFieldChange(event, fieldData);
+      setData((prevData) => ({
+        ...prevData,
+        recurrenceError: false,
+      }));
+    },
+    [handleFieldChange, setData],
+  );
+
   const nullableStartDate = useMemo(() => {
     const date = parseDate(t, data.startDate);
 
@@ -165,108 +208,147 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
     return date;
   }, [data.startDate, t]);
 
-  const handleSubmit = useCallback(() => {
-    const startDateOnly = parseDate(t, data.startDate);
-    const endDateOnly = parseDate(t, data.endDate);
+  const saveSchedule = useCallback(
+    (recurrenceScope) => {
+      const startDateOnly = parseDate(t, data.startDate);
+      const endDateOnly = parseDate(t, data.endDate);
 
-    if (Number.isNaN(startDateOnly.getTime())) {
-      startDateFieldRef.current.select();
-      return;
-    }
+      if (Number.isNaN(startDateOnly.getTime())) {
+        startDateFieldRef.current.select();
+        return;
+      }
 
-    if (Number.isNaN(endDateOnly.getTime())) {
-      endDateFieldRef.current.select();
-      return;
-    }
+      if (Number.isNaN(endDateOnly.getTime())) {
+        endDateFieldRef.current.select();
+        return;
+      }
 
-    let startDate;
-    let endDate;
+      let startDate;
+      let endDate;
 
-    if (data.isAllDay) {
-      startDate = startDateOnly;
-      endDate = addMilliseconds(endDateOnly, DAY_IN_MS);
-    } else {
-      startDate = parseDateTime(t, data.startDate, data.startTime);
-
-      if (Number.isNaN(startDate.getTime())) {
-        startDate = parseTime(data.startTime, startDateOnly);
+      if (data.isAllDay) {
+        startDate = startDateOnly;
+        endDate = addDays(endDateOnly, 1);
+      } else {
+        startDate = parseDateTime(t, data.startDate, data.startTime);
 
         if (Number.isNaN(startDate.getTime())) {
-          startTimeFieldRef.current.select();
-          return;
+          startDate = parseTime(data.startTime, startDateOnly);
+
+          if (Number.isNaN(startDate.getTime())) {
+            startTimeFieldRef.current.select();
+            return;
+          }
         }
-      }
 
-      endDate = parseDateTime(t, data.endDate, data.endTime);
-
-      if (Number.isNaN(endDate.getTime())) {
-        endDate = parseTime(data.endTime, endDateOnly);
+        endDate = parseDateTime(t, data.endDate, data.endTime);
 
         if (Number.isNaN(endDate.getTime())) {
-          endTimeFieldRef.current.select();
-          return;
-        }
-      }
-    }
+          endDate = parseTime(data.endTime, endDateOnly);
 
-    if (endDate.getTime() <= startDate.getTime()) {
-      endDateFieldRef.current.select();
-      return;
-    }
-
-    let recurrenceRule = null;
-    let recurrenceUntil = null;
-
-    if (data.recurrenceMode === RecurrenceModes.CUSTOM) {
-      recurrenceRule = data.customRecurrenceRule.trim() || null;
-    } else if (data.recurrenceMode !== RecurrenceModes.NONE) {
-      const frequency = data.recurrenceMode.toUpperCase();
-
-      if (data.recurrenceEndType === RecurrenceEndTypes.ON_DATE) {
-        recurrenceUntil = parseDate(t, data.recurrenceUntilDate);
-
-        if (Number.isNaN(recurrenceUntil.getTime())) {
-          return;
+          if (Number.isNaN(endDate.getTime())) {
+            endTimeFieldRef.current.select();
+            return;
+          }
         }
       }
 
-      recurrenceRule = buildRecurrenceRule({
-        frequency,
-        interval: Number(data.recurrenceInterval) || 1,
-        weekdays: data.recurrenceWeekdays,
-        endType: data.recurrenceEndType,
-        until: recurrenceUntil,
-        count: Number(data.recurrenceCount) || 10,
-      });
-    }
+      if (endDate.getTime() <= startDate.getTime()) {
+        endDateFieldRef.current.select();
+        return;
+      }
 
-    dispatch(
-      entryActions.updateCard(cardId, {
-        startDate,
-        endDate,
-        isAllDay: data.isAllDay,
-        dueDate: data.isAllDay ? addMilliseconds(endDate, -DAY_IN_MS) : endDate,
-        recurrenceRule,
-        recurrenceUntil,
-        recurrenceTimezone:
-          recurrenceRule && Intl.DateTimeFormat().resolvedOptions().timeZone
-            ? Intl.DateTimeFormat().resolvedOptions().timeZone
-            : null,
-      }),
-    );
+      let recurrenceRule = null;
+      let recurrenceUntil = null;
+      if (data.recurrenceMode === RecurrenceModes.CUSTOM) {
+        recurrenceRule = data.customRecurrenceRule.trim() || null;
+      } else if (data.recurrenceMode !== RecurrenceModes.NONE) {
+        const frequency = data.recurrenceMode.toUpperCase();
+        const interval = Number(data.recurrenceInterval);
+        const count = Number(data.recurrenceCount);
 
-    onClose();
-  }, [
-    cardId,
-    data,
-    dispatch,
-    endDateFieldRef,
-    endTimeFieldRef,
-    onClose,
-    startDateFieldRef,
-    startTimeFieldRef,
-    t,
-  ]);
+        if (
+          !Number.isInteger(interval) ||
+          interval < 1 ||
+          interval > 365 ||
+          (data.recurrenceEndType === RecurrenceEndTypes.AFTER &&
+            (!Number.isInteger(count) || count < 1 || count > 1000))
+        ) {
+          setData((prevData) => ({
+            ...prevData,
+            recurrenceError: true,
+          }));
+          return;
+        }
+
+        if (data.recurrenceEndType === RecurrenceEndTypes.ON_DATE) {
+          recurrenceUntil = parseDate(t, data.recurrenceUntilDate);
+
+          if (Number.isNaN(recurrenceUntil.getTime())) {
+            return;
+          }
+        }
+
+        recurrenceRule = buildRecurrenceRule({
+          frequency,
+          interval,
+          weekdays: data.recurrenceWeekdays,
+          endType: data.recurrenceEndType,
+          until: recurrenceUntil,
+          count,
+        });
+      }
+
+      if (recurrenceRule) {
+        try {
+          validateRecurrenceRule(recurrenceRule, startDate, data.isAllDay, recurrenceTimezone);
+        } catch (error) {
+          setData((prevData) => ({
+            ...prevData,
+            recurrenceError: true,
+          }));
+          return;
+        }
+      }
+
+      dispatch(
+        entryActions.updateCard(cardId, {
+          startDate,
+          endDate,
+          isAllDay: data.isAllDay,
+          dueDate: data.isAllDay ? addDays(endDate, -1) : endDate,
+          recurrenceRule,
+          recurrenceUntil,
+          recurrenceTimezone: recurrenceRule ? recurrenceTimezone : null,
+          ...(card.recurrenceRule && { recurrenceScope }),
+        }),
+      );
+
+      onClose();
+    },
+    [
+      cardId,
+      card.recurrenceRule,
+      data,
+      dispatch,
+      endDateFieldRef,
+      endTimeFieldRef,
+      onClose,
+      recurrenceTimezone,
+      startDateFieldRef,
+      startTimeFieldRef,
+      setData,
+      t,
+    ],
+  );
+
+  const handleSubmit = useCallback(() => {
+    saveSchedule('series');
+  }, [saveSchedule]);
+
+  const handleCurrentCardClick = useCallback(() => {
+    saveSchedule('current');
+  }, [saveSchedule]);
 
   const handleClearClick = useCallback(() => {
     dispatch(
@@ -289,6 +371,7 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
       setData((prevData) => ({
         ...prevData,
         isAllDay: checked,
+        recurrenceError: false,
       }));
     },
     [setData],
@@ -301,6 +384,7 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
         recurrenceWeekdays: prevData.recurrenceWeekdays.includes(value)
           ? prevData.recurrenceWeekdays.filter((weekday) => weekday !== value)
           : [...prevData.recurrenceWeekdays, value],
+        recurrenceError: false,
       }));
     },
     [setData],
@@ -312,11 +396,24 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
         ...prevData,
         startDate: formatDate(t, date),
         endDate: prevData.endDate || formatDate(t, date),
+        recurrenceError: false,
       }));
       selectStartTimeField();
     },
     [t, setData, selectStartTimeField],
   );
+
+  const weekdayLabels = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(i18n.resolvedLanguage || i18n.language, {
+      weekday: 'short',
+      timeZone: 'UTC',
+    });
+
+    return WEEKDAYS.map((weekday, index) => ({
+      value: weekday,
+      label: formatter.format(new Date(Date.UTC(2026, 0, 5 + index))),
+    }));
+  }, [i18n.language, i18n.resolvedLanguage]);
 
   useEffect(() => {
     startDateFieldRef.current.select();
@@ -341,7 +438,7 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                 name="startDate"
                 value={data.startDate}
                 maxLength={16}
-                onChange={handleFieldChange}
+                onChange={handleFormFieldChange}
               />
             </div>
             {!data.isAllDay && (
@@ -352,7 +449,7 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                   name="startTime"
                   value={data.startTime}
                   maxLength={16}
-                  onChange={handleFieldChange}
+                  onChange={handleFormFieldChange}
                 />
               </div>
             )}
@@ -365,7 +462,7 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                 name="endDate"
                 value={data.endDate}
                 maxLength={16}
-                onChange={handleFieldChange}
+                onChange={handleFormFieldChange}
               />
             </div>
             {!data.isAllDay && (
@@ -376,7 +473,7 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                   name="endTime"
                   value={data.endTime}
                   maxLength={16}
-                  onChange={handleFieldChange}
+                  onChange={handleFormFieldChange}
                 />
               </div>
             )}
@@ -409,12 +506,17 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                 text: t('common.monthly'),
               },
               {
+                key: RecurrenceModes.YEARLY,
+                value: RecurrenceModes.YEARLY,
+                text: t('common.yearly'),
+              },
+              {
                 key: RecurrenceModes.CUSTOM,
                 value: RecurrenceModes.CUSTOM,
                 text: t('common.custom'),
               },
             ]}
-            onChange={handleFieldChange}
+            onChange={handleFormFieldChange}
           />
           {data.recurrenceMode !== RecurrenceModes.NONE && (
             <div className={styles.recurrenceOptions}>
@@ -425,7 +527,7 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                     name="customRecurrenceRule"
                     value={data.customRecurrenceRule}
                     maxLength={1024}
-                    onChange={handleFieldChange}
+                    onChange={handleFormFieldChange}
                   />
                 </>
               ) : (
@@ -439,7 +541,7 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                         min="1"
                         max="365"
                         value={`${data.recurrenceInterval}`}
-                        onChange={handleFieldChange}
+                        onChange={handleFormFieldChange}
                       />
                     </div>
                   </div>
@@ -447,19 +549,19 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                     <>
                       <div className={styles.text}>{t('common.repeatOn')}</div>
                       <div className={styles.weekdayButtons}>
-                        {WEEKDAYS.map((weekday) => (
+                        {weekdayLabels.map(({ value, label }) => (
                           <button
-                            key={weekday}
+                            key={value}
                             type="button"
-                            value={weekday}
+                            value={value}
                             className={
-                              data.recurrenceWeekdays.includes(weekday)
+                              data.recurrenceWeekdays.includes(value)
                                 ? styles.weekdayButtonActive
                                 : styles.weekdayButton
                             }
                             onClick={handleWeekdayToggle}
                           >
-                            {weekday}
+                            {label}
                           </button>
                         ))}
                       </div>
@@ -488,14 +590,14 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                         }),
                       },
                     ]}
-                    onChange={handleFieldChange}
+                    onChange={handleFormFieldChange}
                   />
                   {data.recurrenceEndType === RecurrenceEndTypes.ON_DATE && (
                     <Input
                       name="recurrenceUntilDate"
                       value={data.recurrenceUntilDate}
                       maxLength={16}
-                      onChange={handleFieldChange}
+                      onChange={handleFormFieldChange}
                     />
                   )}
                   {data.recurrenceEndType === RecurrenceEndTypes.AFTER && (
@@ -505,12 +607,18 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
                       min="1"
                       max="1000"
                       value={`${data.recurrenceCount}`}
-                      onChange={handleFieldChange}
+                      onChange={handleFormFieldChange}
                     />
                   )}
                 </>
               )}
             </div>
+          )}
+          {data.recurrenceMode !== RecurrenceModes.NONE && (
+            <div className={styles.recurrenceTimezone}>{recurrenceTimezone}</div>
+          )}
+          {data.recurrenceError && (
+            <Message negative size="small" content={t('common.invalidRecurrenceRule')} />
           )}
           <DatePicker
             inline
@@ -518,7 +626,17 @@ const EditDueDateStep = React.memo(({ cardId, onBack, onClose }) => {
             selected={nullableStartDate}
             onChange={handleDatePickerChange}
           />
-          <Button positive content={t('action.saveSchedule')} />
+          {card.recurrenceRule && (
+            <Button
+              type="button"
+              content={t('common.currentCard')}
+              onClick={handleCurrentCardClick}
+            />
+          )}
+          <Button
+            positive
+            content={card.recurrenceRule ? t('common.entireSeries') : t('action.saveSchedule')}
+          />
         </Form>
         <Button
           negative

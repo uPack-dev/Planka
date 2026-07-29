@@ -34,6 +34,10 @@
  *         - recurrenceRule
  *         - recurrenceUntil
  *         - recurrenceTimezone
+ *         - recurrenceSeriesId
+ *         - recurrenceSeriesStartAt
+ *         - recurrenceOccurrenceAt
+ *         - recurrenceNextAt
  *         - isDueCompleted
  *         - stopwatch
  *         - commentsTotal
@@ -114,19 +118,40 @@
  *         recurrenceRule:
  *           type: string
  *           nullable: true
- *           description: RRULE recurrence definition for the whole card
+ *           description: RRULE of the series, carried by every occurrence except the last one
  *           example: FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE,FR
  *         recurrenceUntil:
  *           type: string
  *           format: date-time
  *           nullable: true
- *           description: Optional recurrence end date for filtering and UI
+ *           readOnly: true
+ *           description: Derived last occurrence of the series, used for range filtering
  *           example: 2024-12-31T23:59:59.000Z
  *         recurrenceTimezone:
  *           type: string
  *           nullable: true
- *           description: IANA timezone used for recurring card display
+ *           description: IANA timezone used to calculate recurring occurrences
  *           example: Europe/Kyiv
+ *         recurrenceSeriesId:
+ *           type: string
+ *           nullable: true
+ *           description: Stable identifier shared by materialized cards in one series
+ *         recurrenceSeriesStartAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           readOnly: true
+ *           description: Immutable anchor the recurrence rule is evaluated against
+ *         recurrenceOccurrenceAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: Scheduled start of this materialized occurrence
+ *         recurrenceNextAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           description: Next occurrence to materialize for the active series owner
  *         isDueCompleted:
  *           type: boolean
  *           nullable: true
@@ -242,6 +267,22 @@ module.exports = {
       isNotEmptyString: true,
       allowNull: true,
       columnName: 'recurrence_timezone',
+    },
+    recurrenceSeriesId: {
+      type: 'ref',
+      columnName: 'recurrence_series_id',
+    },
+    recurrenceSeriesStartAt: {
+      type: 'ref',
+      columnName: 'recurrence_series_start_at',
+    },
+    recurrenceOccurrenceAt: {
+      type: 'ref',
+      columnName: 'recurrence_occurrence_at',
+    },
+    recurrenceNextAt: {
+      type: 'ref',
+      columnName: 'recurrence_next_at',
     },
     isDueCompleted: {
       type: 'boolean',

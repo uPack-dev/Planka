@@ -7,6 +7,7 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { shallowEqual, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Icon } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
@@ -41,6 +42,7 @@ const StoryContent = React.memo(({ cardId }) => {
   const selectAttachmentById = useMemo(() => selectors.makeSelectAttachmentById(), []);
 
   const card = useSelector((state) => selectCardById(state, cardId));
+  const [t] = useTranslation();
   const list = useSelector((state) => selectListById(state, card.listId));
   const labelIds = useSelector((state) => selectLabelIdsByCardId(state, cardId));
   const attachmentsTotal = useSelector((state) => selectAttachmentsTotalByCardId(state, cardId));
@@ -105,7 +107,11 @@ const StoryContent = React.memo(({ cardId }) => {
           {card.name}
         </div>
         {card.description && <div className={styles.descriptionText}>{descriptionText}</div>}
-        {(withAge || attachmentsTotal > 0 || notificationsTotal > 0 || listName) && (
+        {(card.recurrenceRule ||
+          withAge ||
+          attachmentsTotal > 0 ||
+          notificationsTotal > 0 ||
+          listName) && (
           <span className={styles.attachments}>
             {notificationsTotal > 0 && (
               <span
@@ -116,6 +122,13 @@ const StoryContent = React.memo(({ cardId }) => {
                 )}
               >
                 {notificationsTotal}
+              </span>
+            )}
+            {card.recurrenceRule && (
+              <span className={classNames(styles.attachment, styles.attachmentLeft)}>
+                <span className={styles.attachmentContent} title={t('common.recurringCard')}>
+                  <Icon name="repeat" />
+                </span>
               </span>
             )}
             {listName && (

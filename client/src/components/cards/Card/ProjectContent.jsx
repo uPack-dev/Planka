@@ -7,6 +7,7 @@ import React, { useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { Icon } from 'semantic-ui-react';
 
 import selectors from '../../../selectors';
@@ -100,6 +101,7 @@ const ProjectContent = React.memo(({ cardId }) => {
   });
 
   const dispatch = useDispatch();
+  const [t] = useTranslation();
 
   const handleToggleStopwatchClick = useCallback(
     (event) => {
@@ -119,6 +121,7 @@ const ProjectContent = React.memo(({ cardId }) => {
   const hasInformation =
     card.description ||
     card.dueDate ||
+    card.recurrenceRule ||
     card.stopwatch ||
     card.commentsTotal > 0 ||
     withAge ||
@@ -200,6 +203,13 @@ const ProjectContent = React.memo(({ cardId }) => {
                 isCompleted={card.isDueCompleted}
                 withStatus={!card.isClosed}
               />
+            </span>
+          )}
+          {card.recurrenceRule && (
+            <span className={classNames(styles.attachment, styles.attachmentLeft)}>
+              <span className={styles.attachmentContent} title={t('common.recurringCard')}>
+                <Icon name="repeat" />
+              </span>
             </span>
           )}
           {card.stopwatch && (

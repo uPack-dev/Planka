@@ -4,6 +4,7 @@
  */
 
 import keyBy from 'lodash/keyBy';
+import omit from 'lodash/omit';
 import { attr, fk, many, oneToOne } from 'redux-orm';
 
 import BaseModel from './BaseModel';
@@ -100,6 +101,10 @@ export default class extends BaseModel {
     recurrenceRule: attr(),
     recurrenceUntil: attr(),
     recurrenceTimezone: attr(),
+    recurrenceSeriesId: attr(),
+    recurrenceSeriesStartAt: attr(),
+    recurrenceOccurrenceAt: attr(),
+    recurrenceNextAt: attr(),
     taskAssigneeUserIds: attr({
       getDefault: () => [],
     }),
@@ -401,6 +406,12 @@ export default class extends BaseModel {
         break;
       case ActionTypes.CARD_UPDATE__SUCCESS:
         Card.upsert(payload.card);
+
+        break;
+      case ActionTypes.CARD_UPDATE__FAILURE:
+        if (payload.prevCard) {
+          Card.upsert(omit(payload.prevCard, ['isPersisted']));
+        }
 
         break;
       case ActionTypes.CARD_CREATE__SUCCESS:
@@ -811,6 +822,11 @@ export default class extends BaseModel {
       recurrenceRule: this.recurrenceRule,
       recurrenceUntil: this.recurrenceUntil,
       recurrenceTimezone: this.recurrenceTimezone,
+      // A duplicate starts its own series; the server assigns the real identifiers.
+      recurrenceSeriesId: null,
+      recurrenceSeriesStartAt: null,
+      recurrenceOccurrenceAt: null,
+      recurrenceNextAt: null,
       isDueCompleted: this.isDueCompleted,
       stopwatch: this.stopwatch,
       isClosed: this.isClosed,

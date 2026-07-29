@@ -3,6 +3,8 @@
  * Licensed under the Fair Use License: https://github.com/plankanban/planka/blob/master/LICENSE.md
  */
 
+const { normalizeCardRecurrenceValues } = require('../../../utils/recurrence');
+
 module.exports = {
   inputs: {
     record: {
@@ -36,11 +38,19 @@ module.exports = {
       type: 'boolean',
       defaultsTo: true,
     },
+    copyCardSubscriptions: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
     skipEvents: {
       type: 'boolean',
       defaultsTo: false,
     },
     detachBaseCustomFieldGroups: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
+    resetTaskCompletion: {
       type: 'boolean',
       defaultsTo: false,
     },
@@ -199,14 +209,42 @@ module.exports = {
         'recurrenceRule',
         'recurrenceUntil',
         'recurrenceTimezone',
+        'recurrenceSeriesStartAt',
+        'recurrenceNextAt',
         'isDueCompleted',
         'stopwatch',
         'isClosed',
       ]),
       ...values,
-      creatorUserId: values.creatorUser.id,
+      creatorUserId: values.creatorUser ? values.creatorUser.id : inputs.record.creatorUserId,
       listChangedAt: new Date().toISOString(),
     });
+
+    // A copy that is not part of an existing series starts its own, anchored to its own dates.
+    if (card.recurrenceRule && !card.recurrenceSeriesId) {
+      const recurrenceValues = {
+        recurrenceRule: card.recurrenceRule,
+        recurrenceTimezone: card.recurrenceTimezone,
+      };
+
+      try {
+        normalizeCardRecurrenceValues(recurrenceValues, card);
+      } catch (error) {
+        Object.assign(recurrenceValues, {
+          recurrenceRule: null,
+          recurrenceUntil: null,
+          recurrenceTimezone: null,
+          recurrenceSeriesStartAt: null,
+          recurrenceOccurrenceAt: null,
+          recurrenceNextAt: null,
+        });
+      }
+
+      ({ card } = await Card.qm.updateOne(card.id, {
+        ...recurrenceValues,
+        recurrenceSeriesId: recurrenceValues.recurrenceRule ? card.id : null,
+      }));
+    }
 
     const boardMemberUserIds = inputs.copyCardMemberships
       ? await sails.helpers.boards.getMemberUserIds(card.boardId)
@@ -227,6 +265,19 @@ module.exports = {
     }));
 
     const nextCardMemberships = await CardMembership.qm.create(cardMembershipsValues);
+
+    if (inputs.copyCardSubscriptions) {
+      const cardSubscriptions = await CardSubscription.qm.getByCardId(inputs.record.id);
+
+      await Promise.all(
+        cardSubscriptions.map((cardSubscription) =>
+          CardSubscription.qm.createOne({
+            cardId: card.id,
+            userId: cardSubscription.userId,
+          }),
+        ),
+      );
+    }
 
     if (!values.board) {
       const cardLabels = await CardLabel.qm.getByCardId(inputs.record.id);
@@ -266,6 +317,9 @@ module.exports = {
 
     const nextTasksValues = tasks.map((task) => ({
       ..._.pick(task, ['linkedCardId', 'position', 'name', 'isCompleted']),
+      ...(inputs.resetTaskCompletion && {
+        isCompleted: false,
+      }),
       taskListId: nextTaskListIdByTaskListId[task.taskListId],
       assigneeUserId: boardMemberUserIdsSet.has(task.assigneeUserId) ? task.assigneeUserId : null,
     }));

@@ -55,8 +55,38 @@
  *               dueDate:
  *                 type: string
  *                 format: date-time
+ *                 nullable: true
  *                 description: Due date for the card
  *                 example: 2024-01-01T00:00:00.000Z
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
+ *                 description: Calendar start date/time for the card
+ *               endDate:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
+ *                 description: Calendar end date/time for the card
+ *               isAllDay:
+ *                 type: boolean
+ *                 description: Whether the calendar schedule is an all-day event
+ *               recurrenceRule:
+ *                 type: string
+ *                 nullable: true
+ *                 description: RFC 5545 RRULE for future occurrences; a schedule is required
+ *                 example: FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE,FR
+ *               recurrenceUntil:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
+ *                 readOnly: true
+ *                 description: Derived last occurrence used for range filtering
+ *               recurrenceTimezone:
+ *                 type: string
+ *                 nullable: true
+ *                 description: IANA timezone used to calculate recurring occurrences
+ *                 example: Europe/Kyiv
  *               isDueCompleted:
  *                 type: boolean
  *                 nullable: true
@@ -112,6 +142,10 @@ const {
   isTimezone,
 } = require('../../../utils/validators');
 const { idInput } = require('../../../utils/inputs');
+const {
+  RecurrenceErrorCodes,
+  normalizeCardRecurrenceValues,
+} = require('../../../utils/recurrence');
 
 const Errors = {
   NOT_ENOUGH_RIGHTS: {
@@ -125,6 +159,15 @@ const Errors = {
   },
   END_DATE_MUST_BE_AFTER_START_DATE: {
     endDateMustBeAfterStartDate: 'End date must be after start date',
+  },
+  INVALID_RECURRENCE: {
+    invalidRecurrence: 'Invalid recurrence',
+  },
+  RECURRENCE_START_DATE_REQUIRED: {
+    recurrenceStartDateRequired: 'A recurring card must have a start date',
+  },
+  RECURRENCE_NEVER_REPEATS: {
+    recurrenceNeverRepeats: 'Recurrence never repeats',
   },
 };
 
@@ -210,6 +253,15 @@ module.exports = {
     endDateMustBeAfterStartDate: {
       responseType: 'unprocessableEntity',
     },
+    invalidRecurrence: {
+      responseType: 'unprocessableEntity',
+    },
+    recurrenceStartDateRequired: {
+      responseType: 'unprocessableEntity',
+    },
+    recurrenceNeverRepeats: {
+      responseType: 'unprocessableEntity',
+    },
   },
 
   async fn(inputs) {
@@ -263,6 +315,22 @@ module.exports = {
     if ((_.has(values, 'startDate') || _.has(values, 'endDate')) && _.isUndefined(values.dueDate)) {
       const isAllDay = _.isUndefined(values.isAllDay) ? true : values.isAllDay;
       values.dueDate = isAllDay ? values.startDate : values.endDate || values.startDate;
+    }
+
+    try {
+      normalizeCardRecurrenceValues(values);
+    } catch (error) {
+      if (error.code === RecurrenceErrorCodes.START_DATE_REQUIRED) {
+        throw Errors.RECURRENCE_START_DATE_REQUIRED;
+      }
+
+      if (error.code === RecurrenceErrorCodes.NEVER_REPEATS) {
+        throw Errors.RECURRENCE_NEVER_REPEATS;
+      }
+
+      throw {
+        invalidRecurrence: error.message,
+      };
     }
 
     const card = await sails.helpers.cards.createOne

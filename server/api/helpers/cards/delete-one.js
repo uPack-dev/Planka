@@ -31,6 +31,12 @@ module.exports = {
   },
 
   async fn(inputs) {
+    if (inputs.record.recurrenceRule) {
+      await sails.helpers.cards.advanceRecurrenceOne.with({
+        record: inputs.record,
+      });
+    }
+
     await sails.helpers.cards.deleteRelated(inputs.record);
 
     const card = await Card.qm.deleteOne(inputs.record.id);
