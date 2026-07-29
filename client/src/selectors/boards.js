@@ -412,6 +412,8 @@ export const selectCalendarCardsForCurrentBoard = createSelector(
       .filter((cardModel) => cardModel.startDate || cardModel.dueDate || cardModel.recurrenceRule)
       .map((cardModel) => ({
         ...cardModel.ref,
+        project: boardModel.project && boardModel.project.ref,
+        board: boardModel.ref,
         labels: cardModel.labels.toRefArray(),
         users: cardModel.users.toRefArray(),
         list: cardModel.list && cardModel.list.ref,

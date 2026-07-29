@@ -259,6 +259,8 @@ export const cardToCalendarEvent = (card) => {
       recurrenceTimezone: card.recurrenceTimezone,
       labels: card.labels || [],
       users: card.users || [],
+      project: card.project,
+      board: card.board,
       list: card.list,
     },
   };

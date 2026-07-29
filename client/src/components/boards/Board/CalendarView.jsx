@@ -203,6 +203,7 @@ const CalendarView = React.memo(({ cardIds }) => {
         onDateClick={handleDateClick}
         onSelect={handleSelect}
         onEventUpdate={handleEventUpdate}
+        dayMaxEvents={false}
       />
       <CalendarCreateCardModal
         isOpened={!!createDefaults}

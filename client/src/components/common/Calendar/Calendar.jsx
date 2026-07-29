@@ -20,6 +20,7 @@ import ukLocale from '@fullcalendar/core/locales/uk';
 import { Button, Loader, Modal } from 'semantic-ui-react';
 
 import { eventDropToCardData, eventResizeToCardData } from '../../../utils/calendar-events';
+import UserAvatar from '../../users/UserAvatar';
 
 import styles from './Calendar.module.scss';
 import globalStyles from '../../../styles.module.scss';
@@ -38,6 +39,8 @@ const LOCALE_BY_LANGUAGE = {
   uk: ukLocale,
   'uk-UA': ukLocale,
 };
+
+const MAX_VISIBLE_EVENT_USERS = 5;
 
 const RecurringUpdateModal = React.memo(({ mutation, onConfirm, onCancel }) => {
   const [t] = useTranslation();
@@ -81,7 +84,6 @@ const Calendar = React.memo(
     onSelect,
     onDatesSet,
     onEventUpdate,
-    renderEventMeta,
     dayMaxEvents,
   }) => {
     const [t, i18n] = useTranslation();
@@ -176,7 +178,12 @@ const Calendar = React.memo(
       (eventInfo) => {
         const { extendedProps } = eventInfo.event;
         const labels = extendedProps.labels || [];
-        const meta = renderEventMeta ? renderEventMeta(eventInfo) : null;
+        const { project, board, list, users = [] } = extendedProps;
+        const listName = list && (list.name || t(`common.${list.type}`));
+        const boardListName = [board && board.name, listName].filter(Boolean).join(' · ');
+        const visibleUsers = users.slice(0, MAX_VISIBLE_EVENT_USERS);
+        const hiddenUsersTotal = users.length - visibleUsers.length;
+        const hasMeta = !!(project || boardListName || visibleUsers.length);
 
         return (
           <div
@@ -185,7 +192,7 @@ const Calendar = React.memo(
               extendedProps.isDueCompleted && styles.eventCompleted,
               extendedProps.isClosed && styles.eventClosed,
               extendedProps.canEditSchedule === false && styles.eventReadOnly,
-              meta && styles.eventWithMeta,
+              hasMeta && styles.eventWithMeta,
             )}
           >
             <div className={styles.eventTop}>
@@ -207,11 +214,35 @@ const Calendar = React.memo(
                 </span>
               )}
             </div>
-            {meta && <div className={styles.eventMeta}>{meta}</div>}
+            {hasMeta && (
+              <div className={styles.eventMeta}>
+                <span className={styles.eventMetaStack}>
+                  {project && project.name && (
+                    <span className={styles.eventMetaLine}>{project.name}</span>
+                  )}
+                  {boardListName && <span className={styles.eventMetaLine}>{boardListName}</span>}
+                  {visibleUsers.length > 0 && (
+                    <span className={styles.eventMetaAvatars}>
+                      {visibleUsers.map((user) => (
+                        <UserAvatar
+                          key={user.id}
+                          id={user.id}
+                          size="tiny"
+                          className={styles.eventMetaAvatar}
+                        />
+                      ))}
+                      {hiddenUsersTotal > 0 && (
+                        <span className={styles.eventMetaAvatarOverflow}>+{hiddenUsersTotal}</span>
+                      )}
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         );
       },
-      [renderEventMeta],
+      [t],
     );
 
     return (
@@ -281,7 +312,6 @@ Calendar.propTypes = {
   onSelect: PropTypes.func,
   onDatesSet: PropTypes.func,
   onEventUpdate: PropTypes.func,
-  renderEventMeta: PropTypes.func,
   dayMaxEvents: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
 };
 
@@ -295,7 +325,6 @@ Calendar.defaultProps = {
   onSelect: undefined,
   onDatesSet: undefined,
   onEventUpdate: undefined,
-  renderEventMeta: undefined,
   dayMaxEvents: true,
 };
 

@@ -21,7 +21,6 @@ import Paths from '../../../constants/Paths';
 import { BoardMembershipRoles, ListTypes, UserRoles } from '../../../constants/Enums';
 import Calendar from '../Calendar';
 import GlobalCalendarCreateCardModal from './GlobalCalendarCreateCardModal';
-import UserAvatar from '../../users/UserAvatar';
 
 import styles from './GlobalCalendarView.module.scss';
 
@@ -34,8 +33,6 @@ const DEFAULT_FILTERS = {
   onlyMyCards: false,
   hideCompleted: true,
 };
-
-const MAX_VISIBLE_EVENT_USERS = 5;
 
 const GlobalCalendarView = React.memo(() => {
   const calendar = useSelector(selectors.selectGlobalCalendar);
@@ -167,9 +164,6 @@ const GlobalCalendarView = React.memo(() => {
             durationEditable: canEditSchedule,
             extendedProps: {
               ...event.extendedProps,
-              project: card.project,
-              board: card.board,
-              list: card.list,
               canEditSchedule,
             },
           };
@@ -308,39 +302,6 @@ const GlobalCalendarView = React.memo(() => {
     [dispatch],
   );
 
-  const renderEventMeta = useCallback(
-    ({ event }) => {
-      const { project, board, list, users: eventUsers = [] } = event.extendedProps;
-      const listName = list && (list.name || t(`common.${list.type}`));
-      const boardListName = [board && board.name, listName].filter(Boolean).join(' · ');
-      const visibleEventUsers = eventUsers.slice(0, MAX_VISIBLE_EVENT_USERS);
-      const hiddenEventUsersTotal = eventUsers.length - visibleEventUsers.length;
-
-      return (
-        <span className={styles.eventMetaStack}>
-          {project && project.name && <span className={styles.eventMetaLine}>{project.name}</span>}
-          {boardListName && <span className={styles.eventMetaLine}>{boardListName}</span>}
-          {visibleEventUsers.length > 0 && (
-            <span className={styles.eventMetaAvatars}>
-              {visibleEventUsers.map((user) => (
-                <UserAvatar
-                  key={user.id}
-                  id={user.id}
-                  size="tiny"
-                  className={styles.eventMetaAvatar}
-                />
-              ))}
-              {hiddenEventUsersTotal > 0 && (
-                <span className={styles.eventMetaAvatarOverflow}>+{hiddenEventUsersTotal}</span>
-              )}
-            </span>
-          )}
-        </span>
-      );
-    },
-    [t],
-  );
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.filters}>
@@ -428,7 +389,6 @@ const GlobalCalendarView = React.memo(() => {
         onSelect={handleSelect}
         onDatesSet={handleDatesSet}
         onEventUpdate={handleEventUpdate}
-        renderEventMeta={renderEventMeta}
         dayMaxEvents={false}
       />
       <GlobalCalendarCreateCardModal
