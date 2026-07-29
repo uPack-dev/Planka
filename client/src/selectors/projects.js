@@ -127,7 +127,15 @@ export const makeSelectCardsTotalByProjectId = () =>
           boardModel.cardsTotal === null ||
           boardModel.cardsTotal === undefined
         ) {
-          return result + boardModel.getCardsModelArray().length;
+          return (
+            result +
+            boardModel
+              .getCardsModelArray()
+              .filter(
+                (cardModel) =>
+                  cardModel.dueDate && !cardModel.isDueCompleted && !cardModel.isClosed,
+              ).length
+          );
         }
 
         return result + boardModel.cardsTotal;

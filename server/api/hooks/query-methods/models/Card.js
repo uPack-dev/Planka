@@ -222,6 +222,9 @@ const countByBoardIds = async (boardIds) => {
       INNER JOIN list ON card.list_id = list.id
       WHERE card.board_id IN (${boardInValues.join(', ')})
       AND list.type IN (${typeInValues.join(', ')})
+      AND card.due_date IS NOT NULL
+      AND card.is_due_completed = FALSE
+      AND card.is_closed = FALSE
       GROUP BY card.board_id
     `,
     queryValues,

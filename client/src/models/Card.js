@@ -37,7 +37,7 @@ const addCardLabel = (Card, cardId, labelId) => {
 };
 
 const isCardCounted = (Card, card) => {
-  if (!card || !card.boardId) {
+  if (!card || !card.boardId || !card.dueDate || card.isDueCompleted || card.isClosed) {
     return false;
   }
 
