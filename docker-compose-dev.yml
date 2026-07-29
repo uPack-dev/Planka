@@ -5,13 +5,14 @@ services:
       dockerfile: Dockerfile.dev
     image: planka-dev
     pull_policy: never
-    command: ["bash", "-c", "npm install && npm run db:init && npm start"]
+    command: ["bash", "-c", "pnpm install --no-frozen-lockfile && pnpm run db:init && pnpm start"]
     restart: on-failure
     volumes:
       - ./server:/app
     ports:
       - 1337:1337
     environment:
+      - CI=true
       - BASE_URL=http://localhost:1337
       - DATABASE_URL=postgresql://postgres@postgres/planka
       - SECRET_KEY=notsecretkey
@@ -122,13 +123,14 @@ services:
   planka-client:
     image: planka-dev
     pull_policy: never
-    command: ["bash", "-c", "npm install && npx vite --host"]
+    command: ["bash", "-c", "pnpm install --no-frozen-lockfile && pnpm exec vite --host"]
     restart: on-failure
     volumes:
       - ./client:/app
     ports:
-      - 3005:3000
+      - 3000:3000
     environment:
+      - CI=true
       - PROXY_TARGET=http://planka-server:1337
       - VITE_STYLE_PRESET=${VITE_STYLE_PRESET:-original}
 

@@ -4,12 +4,13 @@ docker-compose.override.yml
 
 node_modules
 
-# Prevent another lockfile than package-lock.json (npm) from being created
-# If some case you are using pnpm or yarn, don't forget to generate npm lockfile
-# before commiting your code by running:
-# `npm i --package-lock-only`
-pnpm-lock.yaml
+# Lockfiles other than root pnpm-lock.yaml
+package-lock.json
 yarn.lock
+client/pnpm-lock.yaml
+server/pnpm-lock.yaml
+.pnpm-store
+node-compile-cache
 
 # Chart dependencies
 **/charts/*.tgz

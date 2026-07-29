@@ -18,11 +18,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Set up PostgreSQL
         uses: ikalnytskyi/action-setup-postgres@v5
@@ -31,19 +36,11 @@ jobs:
           password: ${{ env.POSTGRES_PASSWORD }}
           database: ${{ env.POSTGRES_DATABASE }}
 
-      - name: Cache Node.js modules
-        uses: actions/cache@v3
-        with:
-          path: client/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('client/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Install dependencies and build client
         run: |
-          npm install
+          pnpm install --frozen-lockfile
           cd client
-          INDEX_FORMAT=ejs npm run build
+          INDEX_FORMAT=ejs pnpm run build
 
       - name: Set up and start server for testing
         env:
@@ -56,8 +53,8 @@ jobs:
           cd server
           cp .env.sample .env
           sed -i "s|^DATABASE_URL=.*|DATABASE_URL=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@localhost/${POSTGRES_DATABASE}|" .env
-          npm run db:init
-          npm start --prod &
+          pnpm run db:init
+          pnpm run start:prod &
 
       - name: Wait for server to start
         run: |
@@ -72,6 +69,6 @@ jobs:
 
       - name: Run UI tests
         run: |
-          npx playwright install chromium
-          npm run test:acceptance
+          pnpm exec playwright install chromium
+          pnpm run test:acceptance
         working-directory: ./client

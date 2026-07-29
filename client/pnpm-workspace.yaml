@@ -1,0 +1,15 @@
+allowBuilds:
+  '@parcel/watcher': true
+  bcrypt: true
+  esbuild: true
+  lodepng: true
+  sharp: true
+  unrs-resolver: true
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - bcrypt
+  - esbuild
+  - lodepng
+  - sharp
+  - unrs-resolver
