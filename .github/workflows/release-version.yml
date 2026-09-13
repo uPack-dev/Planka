@@ -16,7 +16,7 @@ permissions:
 jobs:
   prepare:
     name: Prepare release
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/master'
     outputs:
       prerelease: ${{ steps.version.outputs.prerelease }}
@@ -105,7 +105,7 @@ jobs:
 
   release:
     name: Build package and publish release
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: prepare
     if: needs.prepare.outputs.version_changed == 'true' && needs.prepare.outputs.release_exists == 'false'
 
